@@ -144,7 +144,8 @@
 
     <modules>
         <module>org.kevoree.kubi.model</module>
-		<module>org.kevoree.kubi.model.js</module>
+        <module>org.kevoree.kubi.model.js</module>
+        <module>org.kevoree.kubi.web</module>
     </modules>
 
     <distributionManagement>

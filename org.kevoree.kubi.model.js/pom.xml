@@ -36,7 +36,7 @@
                         </goals>
                         <configuration>
                             <ecore>${basedir}/../org.kevoree.kubi.model/kubi.ecore</ecore>
-                            <packagePrefix>org</packagePrefix>
+                            <packagePrefix>org.kevoree</packagePrefix>
                             <clearOutput>false</clearOutput>
                             <js>true</js>
                             <ecma5>true</ecma5>

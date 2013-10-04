@@ -42,7 +42,6 @@
                         <configuration>
                             <ecore>kubi.ecore</ecore>
                             <packagePrefix>org.kevoree</packagePrefix>
-                            <clearOutput>false</clearOutput>
                             <js>false</js>
                             <ecma5>false</ecma5>
                             <events>true</events>

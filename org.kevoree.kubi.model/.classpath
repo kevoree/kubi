@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+  <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="var" path="M2_REPO/org/kevoree/modeling/org.kevoree.modeling.microframework/1.5.7/org.kevoree.modeling.microframework-1.5.7.jar" sourcepath="M2_REPO/org/kevoree/modeling/org.kevoree.modeling.microframework/1.5.7/org.kevoree.modeling.microframework-1.5.7-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/duke/.m2/repository/org/kevoree/modeling/org.kevoree.modeling.microframework/1.5.7/org.kevoree.modeling.microframework-1.5.7-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="var" path="M2_REPO/org/jetbrains/kotlin/kotlin-stdlib/0.6.69/kotlin-stdlib-0.6.69.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jetbrains/kotlin/kotlin-runtime/0.6.69/kotlin-runtime-0.6.69.jar"/>
+  <classpathentry kind="var" path="M2_REPO/fr/inria/jfilter/jfilter-library/1.3/jfilter-library-1.3.jar"/>
+</classpath>

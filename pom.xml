@@ -32,8 +32,8 @@
 
     <properties>
         <kevoree.version>${project.version}</kevoree.version>
-        <kotlin.version>0.6.69</kotlin.version>
-        <kmf.version>1.5.7</kmf.version>
+        <kotlin.version>0.6.602</kotlin.version>
+        <kmf.version>1.5.8-SNAPSHOT</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

@@ -31,8 +31,9 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     public WebSocketServerHandler() {
         Log.set(Log.LEVEL_DEBUG);
         //init default Model
-        //TODO REMOVE
         model = factory.createKubiModel();
+        //TODO REMOVE
+        /*
         //create GW
         for (int i = 0; i < 2; i++) {
             Node gw = factory.createNode();
@@ -45,7 +46,7 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
                 gw.addLinks(devices);
             }
         }
-
+        */
         //END TODO REMOVE
         model.addModelTreeListener(new ModelTreeListener() {
             public void elementChanged(ModelEvent event) {

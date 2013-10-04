@@ -137,14 +137,27 @@
         });
 
         $(nodeUI).click(function () { // click
+            console.log("Click on nodeUi");
+            //console.log("this",this);
+            console.log("ModelElem",modelElem);
+            //console.log("Node",node);
+
             selectedNode = node;
-            console.log("click", node);
 
             document.getElementById("entity_id").innerHTML = modelElem.id;
 
             var metaClassShort = modelElem.metaClassName()
             metaClassShort = modelElem.metaClassName().substring(metaClassShort.lastIndexOf('.') + 1)
             document.getElementById("entity_metaclass").innerHTML = metaClassShort;
+
+            var dropDownMenu = $('.dropdown-menu');
+            dropDownMenu.empty();
+            console.log("Services", modelElem.services.array);
+
+            for(var srv in modelElem.services.array) {
+                var localService = modelElem.services.array[srv];
+                $('<li role="presentation"><a role="menuitem" tabindex="-1" href="#">' +localService.function.name+'</a></li>').appendTo(dropDownMenu)
+            }
 
         });
 
@@ -173,7 +186,9 @@
     //            });
 
     //Web Socket connection to server
-    var ws = new WebSocket('ws://' + document.location.host + '/ws');
+    var wsAddr =  'ws://' + document.location.host + '/ws';
+    console.log("Opening WebSocket to " + wsAddr);
+    var ws = new WebSocket(wsAddr);
     ws.onopen = function () {
     };
     ws.onclose = function () {
@@ -194,7 +209,7 @@
     });
 
     var executeAction = function () {
-        console.log("execute" + selectedAction);
+        console.log("execute " + selectedAction);
 
         selectedNode.data.trigger(factory.createShutdown(), selectedNode.data);
 

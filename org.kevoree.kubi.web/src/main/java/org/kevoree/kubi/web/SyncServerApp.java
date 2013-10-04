@@ -18,6 +18,10 @@ public class SyncServerApp {
 
      public static void main(String[] args) throws URISyntaxException {
 
+         Log.DEBUG();
+
+
+
          File baseStaticDir = null;
          File staticDirFromRoot = new File("org.kevoree.kubi.web/src/main/resources/static");
          if(staticDirFromRoot.exists() && staticDirFromRoot.isDirectory()){
@@ -38,7 +42,22 @@ public class SyncServerApp {
                  .add("/ws", modelAtRuntimeHandler)
                  .add(new StaticFileHandler(baseStaticDir));
          webServer.start();
-         System.out.println("Server running at " + webServer.getUri());
+         Log.info("Server running at " + webServer.getUri());
+
+         final ZWaveConnector zWaveConnector = new ZWaveConnector();
+         zWaveConnector.setWebSocketHandler(modelAtRuntimeHandler);
+         zWaveConnector.start();
+         zWaveConnector.init();
+
+
+         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+             public void run() {
+                 zWaveConnector.stop();
+             }
+         }));
+
+
+
      }
 
 }

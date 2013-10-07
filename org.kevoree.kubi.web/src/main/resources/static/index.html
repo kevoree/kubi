@@ -1,229 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>SmartGrid Model Visualization</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="css/bootstrap.css" rel="stylesheet" media="screen">
-<link href="css/sticky-footer-navbar.css" rel="stylesheet" media="screen">
+    <meta charset="utf-8">
+    <title>Kevoree Ubiquitous Model Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="css/sticky-footer-navbar.css" rel="stylesheet" media="screen">
 
-<style>
-    html, body, svg {
-        width: 100%;
-        height: 100%;
-    }
-    body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-    }
-        /*TODO ugly hack! better with onLoad refresh */
-    .graph {
-        height: 500px;
-    }
-    .sidebar_contant {
-        height: 500px;
-    }
-</style>
-
-<script src="lib/model/org.kevoree.kubi.model.js.min.js"></script>
-<script src="lib/vivagraph.js"></script>
-<script src="lib/jquery-2.0.3.min.js"></script>
-<script src="lib/bootstrap.js"></script>
-
-<script>
-    //Load SmartGrid module
-    var module = Kotlin.modules['org.kevoree.kubi.model.js'];
-    var smartGridModel = null;
-
-    var saver = new module.org.kevoree.kubi.serializer.JSONModelSerializer();
-    var loader = new module.org.kevoree.kubi.loader.JSONModelLoader();
-    var cloner = new module.org.kevoree.kubi.cloner.DefaultModelCloner();
-    var compare = new module.org.kevoree.kubi.compare.DefaultModelCompare();
-    var factory = new module.org.kevoree.kubi.impl.DefaultKubiFactory();
-
-    module.org.kevoree.log.Log.DEBUG();
-
-    function refreshModel(model) {
-        graph.beginUpdate();
-        //TODO incremental modification
-        graph.clear();
-        var childVisitor = new module.org.kevoree.modeling.api.util.ModelVisitor();
-        // TODO check why it is not possible to put outside the refresh method
-        var renderer = Viva.Graph.View.renderer(graph,
-                {
-                    layout: layout,
-                    graphics: graphics,
-                    container: document.getElementById('graphContainer'),
-                    renderLinks: true
-                });
-        /* ugly hack */
-        graph.addNode('home',{id:'home', metaClassName:function(){return 'home';}});
-
-        Object.getPrototypeOf(childVisitor).visit = function (modelElem) {
-            if (modelElem.metaClassName() == "org.kevoree.kubi.Node") {
-                graph.addNode(modelElem.id, modelElem);
-                $.each(modelElem.links.array, function (key, val) {
-                    graph.addLink(modelElem.id, val.id);
-                });
-                /* ugly hack */
-                if(modelElem.id.startsWith("gw_")){
-                    graph.addLink(modelElem.id, 'home');
-                }
-
-            }
+    <style>
+        html, body, svg {
+            width: 100%;
+            height: 100%;
         }
-        model.visit(childVisitor, true, true, false);
-        graph.endUpdate();
-        renderer.run(50);
-        console.log("ModelUpdated!");
-    }
-
-    var selectedNode = null;
-    var selectedAction = null;
-
-    var graph = Viva.Graph.graph();
-    var layout = Viva.Graph.Layout.forceDirected(graph, {
-        springLength: 10,
-        springCoeff: 0.0008,
-        dragCoeff: 0.02,
-        gravity: -1.2
-    });
-
-    var graphics = Viva.Graph.View.svgGraphics();
-    graphics.node(function (node) {
-        var modelElem = node.data;
-        var nodeUI = Viva.Graph.svg('rect');
-        if(modelElem != undefined && modelElem.metaClassName != undefined){
-            switch (modelElem.metaClassName()) {
-                /*
-                 case "smartgrid.core.CentralSystem":
-                 var color = currentState != 'Active' ? 'grey' : 'red';
-                 nodeUI.attr('width', 10)
-                 .attr('height', 10)
-                 .attr('fill', color);
-                 break;
-
-                 case "smartgrid.core.Hub":
-                 var color = currentState != 'Active' ? 'grey' : 'yellow';
-                 nodeUI.attr('width', 10)
-                 .attr('height', 10)
-                 .attr('fill', color);
-                 break;
-
-                 case "smartgrid.core.SmartMeter":
-                 var color = currentState != 'Active' ? 'grey' : 'blue';
-                 nodeUI.attr('width', 10)
-                 .attr('height', 10)
-                 .attr('fill', color);
-                 break;
-                 */
-                default:
-                    nodeUI.attr('width', 10)
-                            .attr('height', 10)
-                            .attr('fill', 'blue');
-                    break;
-            }
-        } else {
-            nodeUI.attr('width', 10)
-                    .attr('height', 10)
-                    .attr('fill', 'blue');
+        body {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
         }
-
-
-
-        $(nodeUI).hover(function () { // mouse over
-            highlightRelatedNodes(node.id, true,nodeUI);
-        }, function () { // mouse out
-            highlightRelatedNodes(node.id, false,nodeUI);
-        });
-
-        $(nodeUI).click(function () { // click
-            console.log("Click on nodeUi");
-            //console.log("this",this);
-            console.log("ModelElem",modelElem);
-            //console.log("Node",node);
-
-            selectedNode = node;
-
-            document.getElementById("entity_id").innerHTML = modelElem.id;
-
-            var metaClassShort = modelElem.metaClassName()
-            metaClassShort = modelElem.metaClassName().substring(metaClassShort.lastIndexOf('.') + 1)
-            document.getElementById("entity_metaclass").innerHTML = metaClassShort;
-
-            var dropDownMenu = $('.dropdown-menu');
-            dropDownMenu.empty();
-            console.log("Services", modelElem.services.array);
-
-            for(var srv in modelElem.services.array) {
-                var localService = modelElem.services.array[srv];
-                $('<li role="presentation"><a role="menuitem" tabindex="-1" href="#">' +localService.function.name+'</a></li>').appendTo(dropDownMenu)
-            }
-
-        });
-
-        // when user hovers mouse over a node:
-        var highlightRelatedNodes = function (nodeId, isOn,nodeUI) {
-            // just enumerate all realted nodes and update link color:
-            nodeUI.attr('fill', isOn ? 'orange' : 'blue');
-            graph.forEachLinkedNode(nodeId, function (node, link) {
-                if (link && link.ui) {
-                    // link.ui is a special property of each link
-                    // points to the link presentation object.
-                    link.ui.attr('stroke', isOn ? 'orange' : 'gray');
-                }
-            });
-        };
-
-        return nodeUI;
-    });
-
-    //    var renderer = Viva.Graph.View.renderer(graph,
-    //            {
-    //                layout: layout,
-    //                graphics: graphics,
-    //                container: document.getElementById('graphContainer'),
-    //                renderLinks: true
-    //            });
-
-    //Web Socket connection to server
-    var wsAddr =  'ws://' + document.location.host + '/ws';
-    console.log("Opening WebSocket to " + wsAddr);
-    var ws = new WebSocket(wsAddr);
-    ws.onopen = function () {
-    };
-    ws.onclose = function () {
-    };
-    ws.onmessage = function (msg) {
-        console.log("Model receive from server");
-        smartGridModel = loader.loadModelFromString(msg.data).get(0);
-        console.log("Model loaded");
-        refreshModel(smartGridModel);
-    };
-
-    $(function () {
-        $(".dropdown-menu li a").click(function () {
-            selectedAction = $(this).text();
-            console.log(selectedAction);
-            document.getElementById("dropdown-link").innerHTML = selectedAction + "<b class=\"caret\"></b>";
-        });
-    });
-
-    var executeAction = function () {
-        console.log("execute " + selectedAction);
-
-        selectedNode.data.trigger(factory.createShutdown(), selectedNode.data);
-
-//                refreshModel(smartGridModel);
-
-//        var msg = selectedAction + "/" + selectedNode.data.id
-//        ws.send(msg);
-                // TODO replace by incremental graph updates!
-                // document.location.reload()
-            };
-
-
-</script>
-
+            /*TODO ugly hack! better with onLoad refresh */
+        .graph {
+            height: 500px;
+        }
+        .sidebar_contant {
+            height: 500px;
+        }
+    </style>
 </head>
 
 <body>
@@ -252,9 +51,7 @@
     <div class="row">
         <div class="col-lg-9">
             <div class="jumbotron">
-                <div id="graphContainer" class="graph">
-
-                </div>
+                <div id="graphContainer" class="graph"></div>
             </div>
         </div>
 
@@ -276,6 +73,10 @@
                         <td>Type</td>
                         <td id="entity_metaclass">
                     </tr>
+                    <tr>
+                        <td>Technology</td>
+                        <td id="entity_technology">
+                    </tr>
                     </tbody>
                 </table>
 
@@ -289,19 +90,11 @@
                     <tbody>
                     <tr>
                         <td>
-                            <div id="dropdown-component" class="dropdown">
-                                <!--<button class="btn dropdown-toggle" name="action" data-toggle="dropdown">Action</button>-->
-                                <a id="dropdown-link" role="button" data-toggle="dropdown" href="#">Choose...<b
-                                        class="caret"></b></a>
-                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Startup</a></li>
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Shutdown</a></li>
-                                </ul>
-                            </div>
+                            <div class="kubiFunctionList"></div>
                         </td>
                         <td>
-                            <button id="execute-button" onclick="executeAction()" type="button"
-                                    class="btn btn-primary btn-xs">execute
+                            <button id="execute-button" type="button"
+                                    class="btn btn-primary btn-xs action-executor">execute
                             </button>
                         </td>
                     </tr>
@@ -318,6 +111,53 @@
 <!--<p class="text-muted credit">Example courtesy <a href="http://martinbean.co.uk">Martin Bean</a> and <a href="http://ryanfait.com/sticky-footer/">Ryan Fait</a>.</p>-->
 <!--</div>-->
 <!--</div>-->
+
+<script src="lib/model/org.kevoree.kubi.model.js.min.js"></script>
+<script src="lib/vivagraph.js"></script>
+<script src="lib/jquery-2.0.3.min.js"></script>
+<script src="lib/bootstrap.js"></script>
+
+
+<script src="scripts/kubiKernel.js"></script>
+<script src="scripts/graphHandler.js"></script>
+<script src="scripts/webSocketHandler.js"></script>
+<script src="scripts/kubiFunctionList.js"></script>
+<script src="scripts/uiActionsHandler.js"></script>
+
+<script> //Startup
+
+//Kotlin.modules['org.kevoree.kubi.model.js'];
+KubiKernel.init();
+KubiKernel.setLogLevelToDebug();
+
+KubiFunctionList.init();
+
+KubiGraphHandler.init();
+
+KubiUiActionsHandler.initAll();
+
+WebSocketHandler.init();
+WebSocketHandler.setOnMessage(function(msg){
+    console.log("Model receive from server");
+    KubiKernel.smartGridModel = KubiKernel.loader.loadModelFromString(msg.data).get(0);
+    console.log("Model loaded");
+    KubiGraphHandler.refreshModel();
+});
+
+//    var renderer = Viva.Graph.View.renderer(graph,
+//            {
+//                layout: layout,
+//                graphics: graphics,
+//                container: document.getElementById('graphContainer'),
+//                renderLinks: true
+//            });
+
+//Web Socket connection to server
+
+
+
+
+</script>
 
 </body>
 </html>

@@ -27,35 +27,21 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     private JSONModelLoader loader = new JSONModelLoader();
     private DefaultKubiFactory factory = new DefaultKubiFactory();
     private List<WebSocketConnection> openConnections = new ArrayList<WebSocketConnection>();
+    private SyncServerApp mainApp;
 
-    public WebSocketServerHandler() {
+
+    public WebSocketServerHandler(SyncServerApp app) {
+        mainApp = app;
         Log.set(Log.LEVEL_DEBUG);
         //init default Model
         model = factory.createKubiModel();
-        //TODO REMOVE
-        /*
-        //create GW
-        for (int i = 0; i < 2; i++) {
-            Node gw = factory.createNode();
-            gw.setId("gw_" + i);
-            model.addNodes(gw);
-            for (int j = 0; j < 5; j++) {
-                Node devices = factory.createNode();
-                devices.setId("devices_" + i + "_" + j);
-                model.addNodes(devices);
-                gw.addLinks(devices);
-            }
+    }
+
+    public void sendModelToClients() {
+        //TODO incremental update
+        for (WebSocketConnection connection : openConnections) {
+            connection.send(saver.serialize(model));
         }
-        */
-        //END TODO REMOVE
-        model.addModelTreeListener(new ModelTreeListener() {
-            public void elementChanged(ModelEvent event) {
-                //TODO incremental update
-                for (WebSocketConnection connection : openConnections) {
-                    connection.send(saver.serialize(model));
-                }
-            }
-        });
     }
 
     public void onOpen(WebSocketConnection connection) {
@@ -68,7 +54,8 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     }
 
     public void onMessage(WebSocketConnection connection, String message) {
-        Log.info("rec from client : "+message);
+        Log.info("rec from client : " + message);
+        mainApp.messageReceivedFromClient(message);
 
         //connection.send(saver.serialize(model));
     }

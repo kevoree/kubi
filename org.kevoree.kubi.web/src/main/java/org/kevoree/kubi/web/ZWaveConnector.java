@@ -3,19 +3,26 @@ package org.kevoree.kubi.web;/*
 * Date : 04/10/13
 */
 
+import com.sun.xml.internal.bind.v2.model.core.EnumConstant;
 import lu.snt.helios.extra.zwave.driver.ZWaveManager;
 import lu.snt.helios.extra.zwave.driver.core.messages.Message;
 import lu.snt.helios.extra.zwave.driver.core.messages.MessageListener;
 import lu.snt.helios.extra.zwave.driver.core.messages.RequestFactory;
 import lu.snt.helios.extra.zwave.driver.core.messages.commands.CommandClass;
+import lu.snt.helios.extra.zwave.driver.core.messages.commands.CommandFunction;
+import lu.snt.helios.extra.zwave.driver.core.messages.commands.ZWCommand;
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetApiCapabilities;
 import lu.snt.helios.extra.zwave.driver.config.Manufacturer;
 import lu.snt.helios.extra.zwave.driver.config.Manufacturers;
 import lu.snt.helios.extra.zwave.driver.config.Product;
 
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetInitData;
+import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationCommandHandler;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationNodeInformation;
+import lu.snt.helios.extra.zwave.driver.core.messages.zw_transport.ZW_SendData;
 import lu.snt.helios.extra.zwave.driver.utils.ByteEnum;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.kevoree.kubi.*;
 import org.kevoree.kubi.impl.DefaultKubiFactory;
 import org.kevoree.log.Log;
@@ -52,6 +59,9 @@ public class ZWaveConnector {
         Log.debug("Received" + response.toString());
 
         final KubiModel model = webSocketHandler.getModel();
+        final Technology zWave = factory.createTechnology();
+        zWave.setName("Z-Wave");
+        model.addTechnologies(zWave);
 
         final Node controler = factory.createNode();
         Manufacturer manufacturer = Manufacturers.getManufacturer(response.getManufacturerId_msb(), response.getManufacturerId_lsb());
@@ -61,6 +71,8 @@ public class ZWaveConnector {
         controler.setId("gw_" + product.getName());
 
         model.addNodes(controler);
+
+        webSocketHandler.sendModelToClients();
 
 
         MessageListener lst = new MessageListener() {
@@ -72,19 +84,23 @@ public class ZWaveConnector {
                         Log.info("[Message Listener] List of Commands for node " + nodeInfos.getNodeId() + ": " + String.format("%s", nodeInfos.getCommandClasses()));
 
                         Node n = factory.createNode();
+                        n.setTechnology(zWave);
                         n.setId("" + nodeInfos.getNodeId());
                         for(CommandClass cc : nodeInfos.getCommandClasses()) {
                             for(ByteEnum function : cc.getFunctionEnum().getEnumConstants()) {
-                                Function f = factory.createFunction();
-                                f.setName(cc.toString() + "_" + function.toString());
-                                model.addFuntions(f);
-                                Service s = factory.createService();
-                                s.setFunction(f);
-                                n.addServices(s);
+                                if(!function.toString().contains("REPORT")) {
+                                    Function f = factory.createFunction();
+                                    f.setName(cc.toString() + "::" + function.toString());
+                                    model.addFuntions(f);
+                                    Service s = factory.createService();
+                                    s.setFunction(f);
+                                    n.addServices(s);
+                                }
                             }
                         }
                         controler.addLinks(n);
                         model.addNodes(n);
+                        webSocketHandler.sendModelToClients();
                     }
                 }
             }
@@ -94,14 +110,16 @@ public class ZWaveConnector {
         Log.info("Collecting the Initial Data of the Z-Wave Network");
         Serial_GetInitData response2 = (Serial_GetInitData)manager.sendMessageAndWaitResponse(RequestFactory.serialApiGetInitData());
         for(int nodeId : response2.getNodeLlist()) {
-            if(nodeId != 0 && nodeId != 1&& nodeId != 2)
-            manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(nodeId));
+            if(nodeId != 0 && nodeId != 1)
+                manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(nodeId));
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
+
+
 
 
 
@@ -120,6 +138,32 @@ public class ZWaveConnector {
 
 */
     }
+
+
+
+    public void sendToNetwork(JSONObject msg) {
+
+        try {
+
+
+            String nodeId = msg.getString("nodeId");
+            String cc = msg.getString("action").substring(0, msg.getString("action").lastIndexOf("::"));
+            String function = msg.getString("action").substring(msg.getString("action").lastIndexOf("::") + 2, msg.getString("action").length());
+
+            Log.debug("Have to send " + cc + "->" + function + " to " + nodeId);
+
+            Log.info("Requesting switch state");
+            ZWCommand request = new ZWCommand(Integer.valueOf(nodeId), CommandClass.SWITCH_BINARY, CommandFunction.SWITCH_BINARY.GET);
+            ZW_SendData resp = (ZW_SendData)manager.sendMessageAndWaitResponse(request);
+
+            Log.debug(resp.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+    }
+
 
 
     public void stop() {

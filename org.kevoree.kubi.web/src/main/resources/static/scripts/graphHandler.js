@@ -19,6 +19,11 @@ var KubiGraphHandler = function(){
         graph.beginUpdate();
         //TODO incremental modification
         graph.clear();
+
+        graph.endUpdate();
+
+        graph.beginUpdate();
+
         var childVisitor = KubiKernel.createModelVisitor();
         // TODO check why it is not possible to put outside the refresh method
 
@@ -28,7 +33,7 @@ var KubiGraphHandler = function(){
 
         //Add nodes
         $.each(KubiKernel.smartGridModel.nodes.array, function (key, val) {
-            console.log("Element in Nodes", val);
+            //console.log("Element in Nodes", val);
             if (val.metaClassName() == "org.kevoree.kubi.Node") {
                 graph.addNode(val.id, val);
                 console.log("Adding node id:" + val.id, val);

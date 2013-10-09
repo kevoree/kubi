@@ -9,10 +9,44 @@
 
 var KubiUiActionsHandler = function(){
 
+    var displayParameters = function(listItem) {
+
+        //console.log("MenuItem", listItem);
+        var funId = $(listItem).attr("function_id");
+        var theFunction = KubiKernel.getKubiModel()._functions.get(funId);
+        console.log(theFunction);
+        var parameterTable = $(".parameterTable").first();
+        if(theFunction.parameters.array.length > 0) {
+            parameterTable.removeAttr("hidden");
+            var tbody = parameterTable.find('tbody');
+            tbody.children().remove();
+            $.each(theFunction.parameters.array, function(key, val){
+                console.log("parameter:", key, val);
+
+                if(val.valueType == "BOOLEAN") {
+                    var newParameterLine = $('<tr><td>'+val.name+'</td><td><input type="checkbox" class="functionParameter" parameter_id=""'+val.name+'"></td></tr>');
+                    console.log("ParameterLine", newParameterLine);
+                    newParameterLine.appendTo(tbody);
+                } else {
+                    console.log("Could not fill the parameter Table for parameter type:" + val.valueType, val);
+                }
+
+
+            });
+        } else {
+            parameterTable.attr("hidden","");
+        }
+
+    }
+
+
     var initDropdownMenuElements = function() {
         $(".dropdown-menu li a").click(function () {
-            KubiKernel.selectedAction = $(this).text();
-            document.getElementById("dropdown-link").innerHTML = KubiKernel.selectedAction + "<b class=\"caret\"></b>";
+
+            displayParameters(this);
+
+            KubiKernel.setSelectedAction($(this));
+            document.getElementById("dropdown-link").innerHTML = KubiKernel.getSelectedAction().text() + "<b class=\"caret\"></b>";
         });
     }
 
@@ -20,10 +54,10 @@ var KubiUiActionsHandler = function(){
 
         var button = $('.action-executor');
         button.click(function() {
-            console.log("execute " + KubiKernel.selectedAction);
+            console.log("execute " + KubiKernel.getSelectedAction().text());
 
             //selectedNode.data.trigger(factory.createShutdown(), selectedNode.data);
-            var msg = {nodeId:KubiKernel.selectedNode.data.id, action:KubiKernel.selectedAction, technology:KubiKernel.selectedNode.data.technology.name};
+            var msg = {nodeId:KubiKernel.getSelectedNode().data.id, action:KubiKernel.getSelectedAction().text(), technology:KubiKernel.getSelectedNode().data.technology.name};
             WebSocketHandler.send(JSON.stringify(msg));
         });
 

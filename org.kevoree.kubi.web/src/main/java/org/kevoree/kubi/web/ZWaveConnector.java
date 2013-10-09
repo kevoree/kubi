@@ -3,7 +3,6 @@ package org.kevoree.kubi.web;/*
 * Date : 04/10/13
 */
 
-import com.sun.xml.internal.bind.v2.model.core.EnumConstant;
 import lu.snt.helios.extra.zwave.driver.ZWaveManager;
 import lu.snt.helios.extra.zwave.driver.core.messages.Message;
 import lu.snt.helios.extra.zwave.driver.core.messages.MessageListener;
@@ -17,7 +16,6 @@ import lu.snt.helios.extra.zwave.driver.config.Manufacturers;
 import lu.snt.helios.extra.zwave.driver.config.Product;
 
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetInitData;
-import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationCommandHandler;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationNodeInformation;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_transport.ZW_SendData;
 import lu.snt.helios.extra.zwave.driver.utils.ByteEnum;
@@ -91,10 +89,18 @@ public class ZWaveConnector {
                                 if(!function.toString().contains("REPORT")) {
                                     Function f = factory.createFunction();
                                     f.setName(cc.toString() + "::" + function.toString());
-                                    model.addFuntions(f);
+                                    model.addFunctions(f);
                                     Service s = factory.createService();
                                     s.setFunction(f);
                                     n.addServices(s);
+
+                                    if(cc.name().equals("SWITCH_BINARY") && function.toString().equals("SET")) {
+                                        Parameter p1 = factory.createParameter();
+                                        p1.setName("on");
+                                        p1.setValueType(ParameterTypes.BOOLEAN);
+                                        f.addParameters(p1);
+                                    }
+
                                 }
                             }
                         }

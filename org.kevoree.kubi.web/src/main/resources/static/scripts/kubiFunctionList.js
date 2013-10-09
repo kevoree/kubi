@@ -31,7 +31,7 @@ var KubiFunctionList = function() {
         if(modelElem.services != undefined) {
             for(var srv in modelElem.services.array) {
                 var localService = modelElem.services.array[srv];
-                $('<li role="presentation"><a role="menuitem" tabindex="-1" href="#">' +localService.function.name+'</a></li>').appendTo(dropDownMenu);
+                $('<li role="presentation"><a role="menuitem" tabindex="-1" href="#" function_id="'+localService.function.generated_KMF_ID+'">' +localService.function.name+'</a></li>').appendTo(dropDownMenu);
             }
 
             KubiUiActionsHandler.initDropdownMenuElements();
@@ -42,7 +42,7 @@ var KubiFunctionList = function() {
     var clearList = function() {
         var dropDownMenu = $('.dropdown-menu');
         dropDownMenu.empty();
-        console.log("DopdownLink", $("a#dropdown-link"));
+        //console.log("DopdownLink", $("a#dropdown-link"));
         $("a#dropdown-link").each(function(){this.innerHTML = "Choose...<b class=\"caret\"></b>";});
     };
 

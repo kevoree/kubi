@@ -31,14 +31,19 @@ var KubiKernel = function(){
             selectedAction = null;
         },
        // module : function(){return module},
-        smartGridModel : function(){return smartGridModel},
-        saver : function(){return saver},
-        loader : loader,
-        cloner : function(){return cloner},
-        compare : function(){return compare},
-        factory : function(){return factory},
-        selectedNode : function(){return selectedNode},
-        selectedAction : function(){return selectedAction},
+        getKubiModel : function(){return smartGridModel},
+        getSaver : function(){return saver},
+        getLoader : loader,
+        getCloner : function(){return cloner},
+        getCompare : function(){return compare},
+        getFactory : function(){return factory},
+        getSelectedNode : function(){return selectedNode},
+        getSelectedAction : function(){return selectedAction},
+
+        setKubiModel : function(model){smartGridModel=model},
+        setSelectedNode : function(node){return selectedNode = node},
+        setSelectedAction : function(action){return selectedAction = action},
+
         setLogLevelToDebug : function() {
             module.org.kevoree.log.Log.DEBUG();
         },

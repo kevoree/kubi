@@ -29,27 +29,27 @@ var KubiGraphHandler = function(){
 
         /* ugly hack */
         graph.addNode('home',{id:'home', metaClassName:function(){return 'home';}});
-        console.log("Adding node 'home'");
+        //console.log("Adding node 'home'");
 
         //Add nodes
-        $.each(KubiKernel.smartGridModel.nodes.array, function (key, val) {
+        $.each(KubiKernel.getKubiModel().nodes.array, function (key, val) {
             //console.log("Element in Nodes", val);
             if (val.metaClassName() == "org.kevoree.kubi.Node") {
                 graph.addNode(val.id, val);
-                console.log("Adding node id:" + val.id, val);
+               // console.log("Adding node id:" + val.id, val);
             }
         });
 
         //add links
-        $.each(KubiKernel.smartGridModel.nodes.array, function (key, val) {
+        $.each(KubiKernel.getKubiModel().nodes.array, function (key, val) {
             if (val.metaClassName() == "org.kevoree.kubi.Node") {
                 var node = val;
                 $.each(val.links.array, function (key, val2) {
-                    console.log("Linking "+node.id+" with " +val2.id);
+                   // console.log("Linking "+node.id+" with " +val2.id);
                     graph.addLink(node.id, val2.id);
                 });
                 if(node.id.startsWith("gw_")){
-                    console.log("Linking "+node.id+" with 'home'");
+                    //console.log("Linking "+node.id+" with 'home'");
                     graph.addLink(node.id, 'home');
                 }
             }
@@ -156,7 +156,7 @@ var KubiGraphHandler = function(){
                 //console.log("this",this);
                 //console.log("Node",node);
 
-                KubiKernel.selectedNode = node;
+                KubiKernel.setSelectedNode(node);
 
                 document.getElementById("entity_id").innerHTML = modelElem.id;
                 document.getElementById("entity_technology").innerHTML = modelElem.technology.name;

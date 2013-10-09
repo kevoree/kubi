@@ -46,7 +46,7 @@
         </div>
     </div>
 </div>
-
+<div class="alert connectionStatus" hidden><h2></h2></div>
 <div class="container">
     <div class="row">
         <div class="col-lg-9">
@@ -100,6 +100,16 @@
                     </tr>
                     </tbody>
                 </table>
+                <table class="table parameterTable" width="100%" hidden>
+                    <thead>
+                    <tr>
+                        <th>Parameters</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -139,7 +149,7 @@ KubiUiActionsHandler.initAll();
 WebSocketHandler.init();
 WebSocketHandler.setOnMessage(function(msg){
     console.log("Model receive from server");
-    KubiKernel.smartGridModel = KubiKernel.loader.loadModelFromString(msg.data).get(0);
+    KubiKernel.setKubiModel(KubiKernel.getLoader.loadModelFromString(msg.data).get(0));
     console.log("Model loaded");
     KubiGraphHandler.refreshModel();
 });

@@ -1166,11 +1166,13 @@ Viva.Graph.graph = function () {
         recordNodeChange = function (node, changeType) {
             // TODO: Could add changeType verification.
             changes.push({node : node, changeType : changeType});
+           // console.log("VivaGraph Node Changed:" + changeType, node);
         },
 
         recordLinkChange = function (link, changeType) {
             // TODO: Could add change type verification;
             changes.push({link : link, changeType : changeType});
+            //console.log("VivaGraph Link Changed:" + changeType, link);
         },
 
         isArray = function (value) {
@@ -2308,6 +2310,9 @@ Viva.Graph.Layout.forceDirected = function(graph, settings) {
 
         updateNodeMass = function(node) {
             var body = node.force_directed_body;
+            if(body == undefined) {
+                console.log("Body undefined for node ", node)
+            }
             body.mass = 1 + graph.getLinks(node.id).length / 3.0;
         },
 

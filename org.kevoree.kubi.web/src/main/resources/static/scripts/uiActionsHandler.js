@@ -14,23 +14,21 @@ var KubiUiActionsHandler = function(){
         //console.log("MenuItem", listItem);
         var funId = $(listItem).attr("function_id");
         var theFunction = KubiKernel.getKubiModel()._functions.get(funId);
-        console.log(theFunction);
+        //console.log(theFunction);
         var parameterTable = $(".parameterTable").first();
         if(theFunction.parameters.array.length > 0) {
             parameterTable.removeAttr("hidden");
             var tbody = parameterTable.find('tbody');
             tbody.children().remove();
             $.each(theFunction.parameters.array, function(key, val){
-                console.log("parameter:", key, val);
-
+                //console.log("parameter:", key, val);
                 if(val.valueType == "BOOLEAN") {
-                    var newParameterLine = $('<tr><td>'+val.name+'</td><td><input type="checkbox" class="functionParameter" parameter_id=""'+val.name+'"></td></tr>');
-                    console.log("ParameterLine", newParameterLine);
+                    var newParameterLine = $('<tr><td>'+val.name+'</td><td><input type="checkbox" class="functionParameter" parameter_id="'+val.name+'"></td></tr>');
+                   // console.log("ParameterLine", newParameterLine);
                     newParameterLine.appendTo(tbody);
                 } else {
                     console.log("Could not fill the parameter Table for parameter type:" + val.valueType, val);
                 }
-
 
             });
         } else {
@@ -57,7 +55,31 @@ var KubiUiActionsHandler = function(){
             console.log("execute " + KubiKernel.getSelectedAction().text());
 
             //selectedNode.data.trigger(factory.createShutdown(), selectedNode.data);
-            var msg = {nodeId:KubiKernel.getSelectedNode().data.id, action:KubiKernel.getSelectedAction().text(), technology:KubiKernel.getSelectedNode().data.technology.name};
+            var msg = {nodeId:KubiKernel.getSelectedNode().data.id};
+            msg.action = KubiKernel.getSelectedAction().text();
+            msg.technology = KubiKernel.getSelectedNode().data.technology.name;
+
+            var funId = KubiKernel.getSelectedAction().attr("function_id");
+            var theFunction = KubiKernel.getKubiModel()._functions.get(funId);
+            console.log("SelectedAction", theFunction);
+            if(theFunction.parameters.array.length > 0) {
+                var paramArray = [];
+                $.each(theFunction.parameters.array, function(key, val){
+                    console.log("Param", val);
+                    var paramVal = {};
+                    paramVal.name = val.name;
+                    paramVal.valueType = val.valueType;
+                    if(val.valueType == "BOOLEAN") {
+                        var input = $(".parameterTable input[type=checkbox][parameter_id="+val.name+"]");
+                        paramVal.value = input.is(':checked');
+                    } else {
+                        console.log("Could not retrieve the value from the form for param", val);
+                    }
+                    paramArray.push(paramVal)
+                });
+                msg.parameters = paramArray;
+            }
+            console.log("sending request:" + msg);
             WebSocketHandler.send(JSON.stringify(msg));
         });
 

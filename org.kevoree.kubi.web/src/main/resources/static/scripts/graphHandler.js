@@ -34,7 +34,7 @@ var KubiGraphHandler = function(){
         //Add nodes
         $.each(KubiKernel.getKubiModel().nodes.array, function (key, val) {
             //console.log("Element in Nodes", val);
-            if (val.metaClassName() == "org.kevoree.kubi.Node") {
+            if (val.metaClassName() == "org.kevoree.kubi.Node" || val.metaClassName() == "org.kevoree.kubi.Gateway") {
                 graph.addNode(val.id, val);
                // console.log("Adding node id:" + val.id, val);
             }
@@ -42,13 +42,13 @@ var KubiGraphHandler = function(){
 
         //add links
         $.each(KubiKernel.getKubiModel().nodes.array, function (key, val) {
-            if (val.metaClassName() == "org.kevoree.kubi.Node") {
+            if (val.metaClassName() == "org.kevoree.kubi.Node" || val.metaClassName() == "org.kevoree.kubi.Gateway") {
                 var node = val;
                 $.each(val.links.array, function (key, val2) {
                    // console.log("Linking "+node.id+" with " +val2.id);
                     graph.addLink(node.id, val2.id);
                 });
-                if(node.id.startsWith("gw_")){
+                if(val.metaClassName() == "org.kevoree.kubi.Gateway"){
                     //console.log("Linking "+node.id+" with 'home'");
                     graph.addLink(node.id, 'home');
                 }
@@ -97,10 +97,6 @@ var KubiGraphHandler = function(){
                 nodeUI.attr('width', 20)
                     .attr('height', 20)
                     .attr('fill', 'black');
-            } else if(modelElem.id.startsWith("gw_")) {
-                nodeUI.attr('width', 15)
-                    .attr('height', 15)
-                    .attr('fill', 'orange');
             } else {
                 if(modelElem != undefined && modelElem.metaClassName != undefined){
                     switch (modelElem.metaClassName()) {
@@ -118,14 +114,13 @@ var KubiGraphHandler = function(){
                          .attr('height', 10)
                          .attr('fill', color);
                          break;
-
-                         case "smartgrid.core.SmartMeter":
-                         var color = currentState != 'Active' ? 'grey' : 'blue';
-                         nodeUI.attr('width', 10)
-                         .attr('height', 10)
-                         .attr('fill', color);
-                         break;
                          */
+
+                         case "org.kevoree.kubi.Gateway":
+                         nodeUI.attr('width', 15)
+                         .attr('height', 15)
+                         .attr('fill', 'orange');
+                         break;
                         default: {
                             nodeUI.attr('width', 10)
                                 .attr('height', 10)

@@ -151,6 +151,9 @@ var KubiGraphHandler = function(){
                 //console.log("this",this);
                 //console.log("Node",node);
 
+                var parameterTable = $(".parameterTable").first();
+                parameterTable.attr("hidden","");
+
                 KubiKernel.setSelectedNode(node);
 
                 document.getElementById("entity_id").innerHTML = modelElem.id;

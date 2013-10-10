@@ -54,18 +54,15 @@ var KubiUiActionsHandler = function(){
         button.click(function() {
             console.log("execute " + KubiKernel.getSelectedAction().text());
 
-            //selectedNode.data.trigger(factory.createShutdown(), selectedNode.data);
             var msg = {nodeId:KubiKernel.getSelectedNode().data.id};
             msg.action = KubiKernel.getSelectedAction().text();
             msg.technology = KubiKernel.getSelectedNode().data.technology.name;
 
             var funId = KubiKernel.getSelectedAction().attr("function_id");
             var theFunction = KubiKernel.getKubiModel()._functions.get(funId);
-            console.log("SelectedAction", theFunction);
             if(theFunction.parameters.array.length > 0) {
                 var paramArray = [];
                 $.each(theFunction.parameters.array, function(key, val){
-                    console.log("Param", val);
                     var paramVal = {};
                     paramVal.name = val.name;
                     paramVal.valueType = val.valueType;
@@ -79,8 +76,12 @@ var KubiUiActionsHandler = function(){
                 });
                 msg.parameters = paramArray;
             }
-            console.log("sending request:" + msg);
-            WebSocketHandler.send(JSON.stringify(msg));
+
+            var request = {};
+            request.messageType = "MESSAGE";
+            request.content = msg;
+
+            WebSocketHandler.send(JSON.stringify(request));
         });
 
 
@@ -100,7 +101,8 @@ var KubiUiActionsHandler = function(){
             initDropdownMenuElements();
             initExecuteAction();
         },
-        initDropdownMenuElements : initDropdownMenuElements
+        initDropdownMenuElements : initDropdownMenuElements,
+        refreshParametersDisplay : displayParameters
     }
 
 }();

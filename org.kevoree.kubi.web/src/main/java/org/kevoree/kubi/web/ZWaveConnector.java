@@ -16,6 +16,7 @@ import lu.snt.helios.extra.zwave.driver.config.Manufacturers;
 import lu.snt.helios.extra.zwave.driver.config.Product;
 
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetInitData;
+import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationCommandHandler;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationNodeInformation;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_transport.ZW_SendData;
 import org.json.JSONArray;
@@ -26,7 +27,6 @@ import org.kevoree.kubi.impl.DefaultKubiFactory;
 import org.kevoree.log.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ZWaveConnector {
 
@@ -91,7 +91,6 @@ public class ZWaveConnector {
                             for(AbstractZwaveEnum function : cc.getFunctions()) {
 
                                 if(!function.getName().contains("REPORT")) {
-                                    if(cc.getName().equals("SWITCH_BINARY") && function.getName().equals("SET")) {
 
                                         Function f = factory.createFunction();
                                         f.setName(cc.getName() + "::" + function.getName());
@@ -100,9 +99,8 @@ public class ZWaveConnector {
                                         s.setFunction(f);
                                         n.addServices(s);
 
-                                        //PLACE HOLDER FOR PREVIOUS IF STATEMENT
-
-                                        Parameter p1 = factory.createParameter();
+                                    if(cc.getName().equals("SWITCH_BINARY") && function.getName().equals("SET")) {
+                                       Parameter p1 = factory.createParameter();
                                         p1.setName("on");
                                         p1.setValueType(ParameterTypes.BOOLEAN);
                                         f.addParameters(p1);
@@ -114,6 +112,20 @@ public class ZWaveConnector {
                         controler.addLinks(n);
                         model.addNodes(n);
                         webSocketHandler.sendModelToClients();
+                    }
+                } else if(msg instanceof ZW_ApplicationCommandHandler) {
+                    ZW_ApplicationCommandHandler typedMessage = (ZW_ApplicationCommandHandler)msg;
+                    try {
+
+                        JSONObject content = new JSONObject();
+                        content.put("technology", "Z-Wave");
+                        content.put("nodeId",typedMessage.getSourceNode());
+                        content.put("function",typedMessage.getCommandClass().getName() + "::" + typedMessage.getCommandFunction().getName());
+                        content.put("raw",typedMessage.toString());
+                        webSocketHandler.sendMessageToClients(content);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 }
             }
@@ -163,16 +175,16 @@ public class ZWaveConnector {
             String cc = msg.getString("action").substring(0, msg.getString("action").lastIndexOf("::"));
             CommandClass commandClass = CommandClass.valueOf(cc);
             String function = msg.getString("action").substring(msg.getString("action").lastIndexOf("::") + 2, msg.getString("action").length());
-            Object parameters = msg.get("parameters");
 
             Log.debug("Have to send " + cc + "->" + function + " to " + nodeId);
 
             ZWCommand request;
-            if(parameters == null) {
+            if(!msg.has("parameters")) {
                 request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function));
             } else {
+                JSONArray pms = msg.getJSONArray("parameters");
                 ArrayList<Object> params = new ArrayList<Object>();
-                JSONArray pms = (JSONArray)parameters;
+
                 for(int i = 0 ; i < pms.length(); i++) {
                     JSONObject param = pms.getJSONObject(i);
                      if(param.getString("valueType").equals("BOOLEAN")) {

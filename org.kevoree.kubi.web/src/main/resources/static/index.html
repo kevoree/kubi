@@ -39,81 +39,15 @@
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li class="active"><a href="javascript:;" class="kubiMenuItem">Home</a></li>
+                <li><a href="javascript:;" class="kubiMenuItem">Network</a></li>
+                <li><a href="javascript:;" class="kubiMenuItem">Administrate</a></li>
             </ul>
         </div>
     </div>
 </div>
 <div class="alert connectionStatus" hidden><h2></h2></div>
-<div class="container">
-    <div class="row">
-        <div class="col-lg-9">
-            <div class="jumbotron">
-                <div id="graphContainer" class="graph"></div>
-            </div>
-        </div>
-
-        <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
-            <div class="well sidebar-nav">
-                <table class="table" width="100%">
-                    <thead>
-                    <tr>
-                        <th>Entity details</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>ID</td>
-                        <td id="entity_id"></td>
-                    </tr>
-                    <tr>
-                        <td>Type</td>
-                        <td id="entity_metaclass">
-                    </tr>
-                    <tr>
-                        <td>Technology</td>
-                        <td id="entity_technology">
-                    </tr>
-                    </tbody>
-                </table>
-
-                <table class="table" width="100%">
-                    <thead>
-                    <tr>
-                        <th>Actions</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <div class="kubiFunctionList"></div>
-                        </td>
-                        <td>
-                            <button id="execute-button" type="button"
-                                    class="btn btn-primary btn-xs action-executor">execute
-                            </button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <table class="table parameterTable" width="100%" hidden>
-                    <thead>
-                    <tr>
-                        <th>Parameters</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
+<div class="container" id="kubiMainContainer">
 </div>
 
 <!--<div id="footer">-->
@@ -123,49 +57,22 @@
 <!--</div>-->
 
 <script src="lib/model/org.kevoree.kubi.model.js.min.js"></script>
-<script src="lib/vivagraph.js"></script>
 <script src="lib/jquery-2.0.3.min.js"></script>
 <script src="lib/bootstrap.js"></script>
 
-
+<script src="scripts/menuHandler.js"></script>
 <script src="scripts/kubiKernel.js"></script>
-<script src="scripts/graphHandler.js"></script>
 <script src="scripts/webSocketHandler.js"></script>
-<script src="scripts/kubiFunctionList.js"></script>
-<script src="scripts/uiActionsHandler.js"></script>
+<script src="scripts/messageHandler.js"></script>
 
-<script> //Startup
+<script>
 
-//Kotlin.modules['org.kevoree.kubi.model.js'];
+KubiMenuHandler.initMenuItems();
+
 KubiKernel.init();
 KubiKernel.setLogLevelToDebug();
 
-KubiFunctionList.init();
-
-KubiGraphHandler.init();
-
-KubiUiActionsHandler.initAll();
-
 WebSocketHandler.init();
-WebSocketHandler.setOnMessage(function(msg){
-    console.log("Model receive from server");
-    KubiKernel.setKubiModel(KubiKernel.getLoader.loadModelFromString(msg.data).get(0));
-    console.log("Model loaded");
-    KubiGraphHandler.refreshModel();
-});
-
-//    var renderer = Viva.Graph.View.renderer(graph,
-//            {
-//                layout: layout,
-//                graphics: graphics,
-//                container: document.getElementById('graphContainer'),
-//                renderLinks: true
-//            });
-
-//Web Socket connection to server
-
-
-
 
 </script>
 

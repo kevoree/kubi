@@ -1,5 +1,7 @@
 package org.kevoree.kubi.web;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.kevoree.log.Log;
 import org.kevoree.modeling.api.events.ModelEvent;
 import org.kevoree.modeling.api.events.ModelTreeListener;
@@ -38,15 +40,50 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     }
 
     public void sendModelToClients() {
-        //TODO incremental update
-        for (WebSocketConnection connection : openConnections) {
-            connection.send(saver.serialize(model));
+        try {
+            JSONObject jsonMessage = new JSONObject();
+            jsonMessage.put("messageType", "MODEL");
+            jsonMessage.put("content", saver.serialize(model));
+            for (WebSocketConnection connection : openConnections) {
+                connection.send(jsonMessage.toString());
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void sendMessageToClients(JSONObject content) {
+
+        try {
+            JSONObject jsonMessage = new JSONObject();
+            jsonMessage.put("messageType", "MESSAGE");
+            jsonMessage.put("content", content);
+
+            for (WebSocketConnection connection : openConnections) {
+                connection.send(jsonMessage.toString());
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void sendPageTemplateToClient(JSONObject content, WebSocketConnection client) {
+
+        try {
+            JSONObject jsonMessage = new JSONObject();
+            jsonMessage.put("messageType", "PAGE_TEMPLATE");
+            jsonMessage.put("content", content);
+            client.send(jsonMessage.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
     public void onOpen(WebSocketConnection connection) {
         openConnections.add(connection);
-        connection.send(saver.serialize(model));
+        sendModelToClients();
+        //connection.send(saver.serialize(model));
     }
 
     public void onClose(WebSocketConnection connection) {
@@ -54,10 +91,30 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     }
 
     public void onMessage(WebSocketConnection connection, String message) {
-        Log.info("rec from client : " + message);
-        mainApp.messageReceivedFromClient(message);
+        try {
 
-        //connection.send(saver.serialize(model));
+            Log.info("rec from client ("+connection.hashCode()+"): " + message);
+            JSONObject msg = new JSONObject(message);
+
+            if(msg.has("messageType")) {
+                String messageType = msg.getString("messageType");
+                if( messageType.equals("MESSAGE")) {
+                    mainApp.messageReceivedFromClient(msg.getJSONObject("content"));
+                } else if(messageType.equals("PAGE_TEMPLATE")) {
+                    sendPageTemplateToClient(PageTemplates.getPageTemplateFor(msg.getString("content")), connection);
+                } else {
+                    Log.warn("Received message with unknown messageType:" + messageType);
+                }
+            } else {
+                Log.warn("Received message with no messageType:" + msg);
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
     }
 
     public KubiModel getModel() {

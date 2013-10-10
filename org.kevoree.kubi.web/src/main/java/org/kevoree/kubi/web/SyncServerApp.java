@@ -66,13 +66,12 @@ public class SyncServerApp {
     }
 
 
-    public void messageReceivedFromClient(String message) {
+    public void messageReceivedFromClient(JSONObject message) {
         try {
 
-
-            JSONObject msg = new JSONObject(message);
-            if(msg.getString("technology").equals("Z-Wave")) {
-                zWaveConnector.sendToNetwork(msg);
+            //Technology routing
+            if(message.getString("technology").equals("Z-Wave")) {
+                zWaveConnector.sendToNetwork(message);
             }
 
 

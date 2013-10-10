@@ -46,8 +46,27 @@ var WebSocketHandler = function(){
             ws.onmessage = onMessageAction;
         } else {
             ws.onmessage = function (msg) {
-                console.log("Default message received action", msg);
+                var parsedMessage = JSON.parse(msg.data);
+                //console.log(parsedMessage.messageType);
+                if(parsedMessage.messageType == "MODEL") {
+                    console.log("Model receive from server");
+                    KubiKernel.setKubiModel(KubiKernel.getLoader.loadModelFromString(parsedMessage.content).get(0));
+                    console.log("Model loaded");
+                    if (typeof KubiGraphHandler != 'undefined') {
+                        KubiGraphHandler.refreshModel();
+                    }
+
+                } else if(parsedMessage.messageType == "MESSAGE") {
+                    KubiMessageHandler.handleMessage(parsedMessage.content);
+                } else if(parsedMessage.messageType == "PAGE_TEMPLATE") {
+                    KubiMenuHandler.applyPage(parsedMessage.content);
+                } else {
+                    console.log("Unknown message type received from server", parsedMessage);
+                }
             };
+
+
+
         }
 
         ws.onerror = function() {

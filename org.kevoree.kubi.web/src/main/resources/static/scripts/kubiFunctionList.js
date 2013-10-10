@@ -42,8 +42,12 @@ var KubiFunctionList = function() {
     var clearList = function() {
         var dropDownMenu = $('.dropdown-menu');
         dropDownMenu.empty();
+
+        KubiKernel.get
+
         //console.log("DopdownLink", $("a#dropdown-link"));
         $("a#dropdown-link").each(function(){this.innerHTML = "Choose...<b class=\"caret\"></b>";});
+
     };
 
 

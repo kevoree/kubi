@@ -1,0 +1,52 @@
+
+
+
+
+div.container-fixed-navbar {
+    padding-top: 60px;
+}
+
+
+
+div.kubi-hero-unit{
+    padding: 10px;
+    margin-bottom: 30px;
+    /*
+    font-size: 18px;
+    font-weight: 200;
+    line-height: 30px;
+    color: inherit;
+    */
+    background-color: #eeeeee;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+.kubi-device {
+    /*
+    min-height: 100px;
+    max-height: 250px;
+    */
+    padding: 5px;
+    height: 250px;
+    background-color: #eeeeee;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    overflow: scroll;
+}
+
+.kubi-device-name {
+    text-align: center;
+    margin: 5px;
+    font-weight: bold;
+}
+
+.kubi-device-icon {
+
+}
+
+.kubi-device-service {
+
+}

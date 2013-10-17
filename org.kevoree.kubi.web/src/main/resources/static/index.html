@@ -4,50 +4,37 @@
     <meta charset="utf-8">
     <title>Kevoree Ubiquitous Model Visualization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
-    <link href="css/sticky-footer-navbar.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/kubi.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+    <!--link href="css/sticky-footer-navbar.css" rel="stylesheet" media="screen"-->
 
-    <style>
-        html, body, svg {
-            width: 100%;
-            height: 100%;
-        }
-        body {
-            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-        }
-            /*TODO ugly hack! better with onLoad refresh */
-        .graph {
-            height: 500px;
-        }
-        .sidebar_contant {
-            height: 500px;
-        }
-    </style>
 </head>
 
 <body>
 
 <div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Kubi explorer</a>
-        </div>
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li class="active"><a href="javascript:;" class="kubiMenuItem">Home</a></li>
-                <li><a href="javascript:;" class="kubiMenuItem">Network</a></li>
-                <li><a href="javascript:;" class="kubiMenuItem">Administrate</a></li>
-            </ul>
+            <a class="brand" href="#">Kubi explorer</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li class="active"><a href="javascript:;" class="kubiMenuItem">Home</a></li>
+                    <li><a href="javascript:;" class="kubiMenuItem">Network</a></li>
+                    <li><a href="javascript:;" class="kubiMenuItem">Administrate</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
         </div>
     </div>
 </div>
+
 <div class="alert connectionStatus" hidden><h2></h2></div>
-<div class="container" id="kubiMainContainer">
+<div class="container container-fixed-navbar" id="kubiMainContainer">
 </div>
 
 <!--<div id="footer">-->
@@ -58,7 +45,7 @@
 
 <script src="lib/model/org.kevoree.kubi.model.js.min.js"></script>
 <script src="lib/jquery-2.0.3.min.js"></script>
-<script src="lib/bootstrap.js"></script>
+<script src="lib/bootstrap.min.js"></script>
 
 <script src="scripts/menuHandler.js"></script>
 <script src="scripts/kubiKernel.js"></script>
@@ -73,6 +60,8 @@ KubiKernel.init();
 KubiKernel.setLogLevelToDebug();
 
 WebSocketHandler.init();
+
+setTimeout(function(){$(".navbar li.active a").click();},500);
 
 </script>
 

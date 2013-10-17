@@ -18,6 +18,8 @@ var KubiMenuHandler = function(){
                 request.messageType = "PAGE_TEMPLATE";
                 request.content = $(this).text();
                 WebSocketHandler.send(JSON.stringify(request));
+                $(".navbar-nav li").removeClass("active");
+                $(this).closest("li").addClass("active");
             });
         },
         applyPage : function(pageTemplate) {

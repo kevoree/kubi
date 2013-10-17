@@ -55,6 +55,9 @@ var WebSocketHandler = function(){
                     if (typeof KubiGraphHandler != 'undefined') {
                         KubiGraphHandler.refreshModel();
                     }
+                    if(typeof  KubiHome != 'undefined') {
+                        KubiHome.modelUpdated();
+                    }
 
                 } else if(parsedMessage.messageType == "MESSAGE") {
                     KubiMessageHandler.handleMessage(parsedMessage.content);

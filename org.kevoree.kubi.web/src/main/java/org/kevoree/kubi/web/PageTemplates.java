@@ -37,11 +37,29 @@ public class PageTemplates {
         StringBuilder content = new StringBuilder();
         try {
 
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(PageTemplates.class.getClassLoader().getResourceAsStream("static/pages/home.html")));
+            String line = br.readLine();
+            while(line != null) {
+                content.append(line);
+                line = br.readLine();
+            }
+
+            links.append("<link rel=\"stylesheet\" href=\"css/bootstrap-switch.css\">");
+
+            scripts.append("<script src=\"lib/bootstrap-switch.min.js\"></script>\n");
+            scripts.append("<script src=\"scripts/home/homePageScripts.js\"></script>\n");
+            scripts.append("<script>\n" +
+                    "            KubiHome.init();\n" +
+                    "            </script>\n");
+
             template.put("links", links.toString());
             template.put("scripts", scripts.toString());
             template.put("content", content.toString());
 
         } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         return template;
@@ -63,21 +81,16 @@ public class PageTemplates {
             }
 
 
-            scripts.append("<script src=\"scripts/graphHandler.js\"></script>\n");
+            scripts.append("<script src=\"scripts/network/graphHandler.js\"></script>\n");
             scripts.append("<script src=\"scripts/kubiFunctionList.js\"></script>\n");
             scripts.append("<script src=\"lib/vivagraph.js\"></script>\n");
-            scripts.append("<script src=\"scripts/uiActionsHandler.js\"></script>\n");
+            scripts.append("<script src=\"scripts/network/uiActionsHandler.js\"></script>\n");
             scripts.append("<script>\n" +
                     "            KubiFunctionList.init();\n" +
                     "            KubiGraphHandler.init();\n" +
                     "            KubiGraphHandler.refreshModel();\n" +
                     "            KubiUiActionsHandler.initAll();\n" +
                     "            </script>\n");
-
-
-
-
-
 
 
             template.put("links", links.toString());

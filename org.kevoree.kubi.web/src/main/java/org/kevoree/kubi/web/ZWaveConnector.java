@@ -9,6 +9,7 @@ import lu.snt.helios.extra.zwave.driver.core.CommandClass;
 import lu.snt.helios.extra.zwave.driver.core.messages.Message;
 import lu.snt.helios.extra.zwave.driver.core.messages.MessageListener;
 import lu.snt.helios.extra.zwave.driver.core.messages.RequestFactory;
+import lu.snt.helios.extra.zwave.driver.core.messages.commands.SwitchBinaryCommandClass;
 import lu.snt.helios.extra.zwave.driver.core.messages.commands.ZWCommand;
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetApiCapabilities;
 import lu.snt.helios.extra.zwave.driver.config.Manufacturer;
@@ -120,8 +121,13 @@ public class ZWaveConnector {
                         JSONObject content = new JSONObject();
                         content.put("technology", "Z-Wave");
                         content.put("nodeId",typedMessage.getSourceNode());
-                        content.put("function",typedMessage.getCommandClass().getName() + "::" + typedMessage.getCommandFunction().getName());
+                        content.put("action",typedMessage.getCommandClass().getName() + "::" + typedMessage.getCommandFunction().getName());
                         content.put("raw",typedMessage.toString());
+
+                        if(typedMessage instanceof SwitchBinaryCommandClass) {
+                            content.put("state",((SwitchBinaryCommandClass)typedMessage).isOn());
+                        }
+
                         webSocketHandler.sendMessageToClients(content);
 
                     } catch (JSONException e) {

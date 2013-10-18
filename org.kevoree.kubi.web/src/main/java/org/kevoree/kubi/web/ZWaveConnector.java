@@ -93,17 +93,23 @@ public class ZWaveConnector {
 
                                 if(!function.getName().contains("REPORT")) {
 
-                                        Function f = factory.createFunction();
-                                        f.setName(cc.getName() + "::" + function.getName());
-                                        model.addFunctions(f);
-                                        Service s = factory.createService();
-                                        s.setFunction(f);
-                                        n.addServices(s);
+                                    Function f = factory.createFunction();
+                                    f.setName(cc.getName() + "::" + function.getName());
+                                    model.addFunctions(f);
+                                    Service s = factory.createService();
+                                    s.setFunction(f);
+                                    n.addServices(s);
 
                                     if(cc.getName().equals("SWITCH_BINARY") && function.getName().equals("SET")) {
-                                       Parameter p1 = factory.createParameter();
+                                        Parameter p1 = factory.createParameter();
                                         p1.setName("on");
                                         p1.setValueType(ParameterTypes.BOOLEAN);
+                                        f.addParameters(p1);
+                                    } else if(cc.getName().equals("BASIC_WINDOW_COVERING") && function.getName().equals("START_LEVEL_CHANGE")) {
+                                        Parameter p1 = factory.createParameter();
+                                        p1.setName("direction");
+                                        p1.setValueType(ParameterTypes.LIST);
+                                        p1.setRange("up,down");
                                         f.addParameters(p1);
                                     }
 
@@ -180,33 +186,56 @@ public class ZWaveConnector {
             String nodeId = msg.getString("nodeId");
             String cc = msg.getString("action").substring(0, msg.getString("action").lastIndexOf("::"));
             CommandClass commandClass = CommandClass.valueOf(cc);
-            String function = msg.getString("action").substring(msg.getString("action").lastIndexOf("::") + 2, msg.getString("action").length());
 
+            String function = msg.getString("action").substring(msg.getString("action").lastIndexOf("::") + 2, msg.getString("action").length());
             Log.debug("Have to send " + cc + "->" + function + " to " + nodeId);
 
-            ZWCommand request;
-            if(!msg.has("parameters")) {
-                request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function));
-            } else {
-                JSONArray pms = msg.getJSONArray("parameters");
-                ArrayList<Object> params = new ArrayList<Object>();
+            ZWCommand request = null;
+            if(commandClass == CommandClass.SWITCH_BINARY) {
+                if(function.equals("GET")) {
+                    request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function));
+                } else if (function.equals("SET")) {
+                    JSONArray pms = msg.getJSONArray("parameters");
+                    ArrayList<Object> params = new ArrayList<Object>();
 
-                for(int i = 0 ; i < pms.length(); i++) {
-                    JSONObject param = pms.getJSONObject(i);
-                     if(param.getString("valueType").equals("BOOLEAN")) {
-                        Boolean b = Boolean.valueOf(param.getString("value"));
-                        System.out.println("Boolean Value" + b);
-                        params.add(b);
-                    } else {
-                         Log.warn("Don't know what to do for param of type " + param.getString("valueType") + " when creating the command ");
-                     }
+                    for(int i = 0 ; i < pms.length(); i++) {
+                        JSONObject param = pms.getJSONObject(i);
+                        if(param.getString("valueType").equals("BOOLEAN")) {
+                            Boolean b = Boolean.valueOf(param.getString("value"));
+                            params.add(b);
+                        } else {
+                            Log.warn("Don't know what to do for param of type " + param.getString("valueType") + " when creating the command ");
+                        }
+                    }
+                    request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function), params.toArray());
+                } else {
+                   Log.warn("Unknown function:" + function);
                 }
+            } else if(commandClass == CommandClass.BASIC_WINDOW_COVERING) {
+                if(function.equals("STOP_LEVEL_CHANGE")) {
+                    request = (ZWCommand)RequestFactory.zwSopMovingBasicWindowCovering(Integer.valueOf(nodeId));
+                } else if(function.equals("START_LEVEL_CHANGE")) {
+                    JSONArray pms = msg.getJSONArray("parameters");
+                    JSONObject param = pms.getJSONObject(0);
+                    if(param.getString("value").equals("up")) {
+                        request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringUp(Integer.valueOf(nodeId));
+                    } else {
+                        request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringDown(Integer.valueOf(nodeId));
+                    }
 
-                request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function), params.toArray());
+                } else {
+                    Log.warn("Unknown function:" + function);
+                }
+            } else {
+                Log.warn("CommandClass of message received unknown: " + commandClass.toString());
             }
-            ZW_SendData resp = (ZW_SendData)manager.sendMessageAndWaitResponse(request);
+            if(request != null) {
+                ZW_SendData resp = (ZW_SendData)manager.sendMessageAndWaitResponse(request);
 
-            Log.debug(resp.toString());
+                Log.debug(resp.toString());
+            }
+
+
 
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

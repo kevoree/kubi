@@ -46,11 +46,13 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="valueType" eType="#//ParameterTypes"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="precision" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloat"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="range" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ParameterTypes">
     <eLiterals name="int"/>
     <eLiterals name="string" value="1"/>
     <eLiterals name="float" value="2"/>
     <eLiterals name="boolean" value="3"/>
+    <eLiterals name="list" value="4"/>
   </eClassifiers>
 </ecore:EPackage>

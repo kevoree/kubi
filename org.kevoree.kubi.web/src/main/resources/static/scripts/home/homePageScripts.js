@@ -8,6 +8,77 @@
 
 var KubiHome = function(){
 
+    var buildUpDownStopControl = function(node, service) {
+
+        var serviceName = service.function.name.substring(0, service.function.name.lastIndexOf("::"));
+
+        var control = $('<div class="btn-group"></div>');
+        var btnUp = $('<a class="btn btn-small" href="javascript:;"><i class="icon-chevron-up"></i></button>');
+        var btnStop = $('<a class="btn btn-small" href="javascript:;"><i class="icon-stop"></i></button>');
+        var btnDown = $('<a class="btn btn-small" href="javascript:;"><i class="icon-chevron-down"></i></button>');
+        btnUp.appendTo(control);
+        btnStop.appendTo(control);
+        btnDown.appendTo(control);
+
+        $(btnUp).on('click', function () {
+            var msg = {nodeId:node.id};
+
+            msg.action = serviceName + "::START_LEVEL_CHANGE";
+            msg.technology = node.technology.name;
+            var paramArray = [];
+            var paramVal = {};
+            paramVal.name = "direction";
+            paramVal.value = "up";
+            paramArray.push(paramVal);
+            msg.parameters = paramArray;
+
+            var request = {};
+            request.messageType = "MESSAGE";
+            request.content = msg;
+
+            WebSocketHandler.send(JSON.stringify(request));
+        });
+
+        $(btnDown).on('click', function () {
+            var msg = {nodeId:node.id};
+
+            msg.action = serviceName + "::START_LEVEL_CHANGE";
+            msg.technology = node.technology.name;
+            var paramArray = [];
+            var paramVal = {};
+            paramVal.name = "direction";
+            paramVal.value = "down";
+            paramArray.push(paramVal);
+            msg.parameters = paramArray;
+
+            var request = {};
+            request.messageType = "MESSAGE";
+            request.content = msg;
+
+            WebSocketHandler.send(JSON.stringify(request));
+        });
+
+
+        $(btnStop).on('click', function () {
+            var msg = {nodeId:node.id};
+
+            msg.action = serviceName + "::STOP_LEVEL_CHANGE";
+            msg.technology = node.technology.name;
+
+            var request = {};
+            request.messageType = "MESSAGE";
+            request.content = msg;
+
+            WebSocketHandler.send(JSON.stringify(request));
+        });
+
+
+
+        return control;
+    };
+
+
+
 
     var buildBooleanControl = function(node, service) {
         var serviceName = service.function.name.substring(0, service.function.name.lastIndexOf("::"));
@@ -15,12 +86,7 @@ var KubiHome = function(){
 
         $(control).bootstrapSwitch(); // $('#toggle-state-switch').bootstrapSwitch('setState', false);
 
-
         $(control).on('switch-change', function (e, data) {
-            var $el = $(data.el)
-                , value = data.value;
-            console.log(e, $el, value);
-
             var msg = {nodeId:node.id};
 
             msg.action = serviceName + "::SET";
@@ -33,7 +99,7 @@ var KubiHome = function(){
                     paramVal.name = val.name;
                     paramVal.valueType = val.valueType;
                     if(val.valueType == "BOOLEAN") {
-                        paramVal.value = value;
+                        paramVal.value = data.value;
                     } else {
                         console.log("Could not retrieve the value from the form for param", val);
                     }
@@ -47,9 +113,6 @@ var KubiHome = function(){
             request.content = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
-
-
-
         });
         return control;
     };
@@ -93,6 +156,12 @@ var KubiHome = function(){
                                 request.content = msg;
                                 updateStatusMessageList.push(request);
                             }
+                        } else if(serviceName == "BASIC_WINDOW_COVERING") {
+                            if(functioneName == "START_LEVEL_CHANGE") {
+                                deviceService = buildUpDownStopControl(kubiNode, service);
+                                deviceService.appendTo(deviceServiceList);
+                                treatedServiceClass.push(serviceName);
+                            }
                         } else {
                             deviceService = $('<div class="kubi-device-service">'+service.function.name+'</div>');
                             deviceService.appendTo(deviceServiceList);
@@ -112,7 +181,6 @@ var KubiHome = function(){
         //request status of devices
         console.debug("UpdateMessageList", updateStatusMessageList);
         updateStatus(updateStatusMessageList);
-
 
     };
 

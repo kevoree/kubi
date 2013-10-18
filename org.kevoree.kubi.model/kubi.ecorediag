@@ -155,6 +155,10 @@
         <element xmi:type="ecore:EAttribute" href="kubi.ecore#//Parameter/unit"/>
         <layoutConstraint xmi:type="notation:Location" xmi:id="_GSpGgTC9EeO_uN4SUONlTQ"/>
       </children>
+      <children xmi:type="notation:Node" xmi:id="_sfCrwDfyEeOWo4GdQMjrDw" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.ecore#//Parameter/range"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_sfCrwTfyEeOWo4GdQMjrDw"/>
+      </children>
       <styles xmi:type="notation:DrawerStyle" xmi:id="_cOnrEjC8EeO_uN4SUONlTQ"/>
       <styles xmi:type="notation:SortingStyle" xmi:id="_cOnrEzC8EeO_uN4SUONlTQ"/>
       <styles xmi:type="notation:FilteringStyle" xmi:id="_cOnrFDC8EeO_uN4SUONlTQ"/>
@@ -187,13 +191,17 @@
         <element xmi:type="ecore:EEnumLiteral" href="kubi.ecore#//ParameterTypes/float"/>
         <layoutConstraint xmi:type="notation:Location" xmi:id="_5pVcoTC8EeO_uN4SUONlTQ"/>
       </children>
+      <children xmi:type="notation:Node" xmi:id="_mtEGETfyEeOWo4GdQMjrDw" type="2006">
+        <element xmi:type="ecore:EEnumLiteral" href="kubi.ecore#//ParameterTypes/list"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_mtEGEjfyEeOWo4GdQMjrDw"/>
+      </children>
       <styles xmi:type="notation:DrawerStyle" xmi:id="_2TBBEjC8EeO_uN4SUONlTQ"/>
       <styles xmi:type="notation:SortingStyle" xmi:id="_2TBBEzC8EeO_uN4SUONlTQ"/>
       <styles xmi:type="notation:FilteringStyle" xmi:id="_2TBBFDC8EeO_uN4SUONlTQ"/>
     </children>
     <styles xmi:type="notation:ShapeStyle" xmi:id="_2S_y8TC8EeO_uN4SUONlTQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
     <element xmi:type="ecore:EEnum" href="kubi.ecore#//ParameterTypes"/>
-    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_2S_y8jC8EeO_uN4SUONlTQ" x="24" y="668"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_2S_y8jC8EeO_uN4SUONlTQ" x="72" y="592"/>
   </children>
   <styles xmi:type="notation:DiagramStyle" xmi:id="_Cjd7gjC8EeO_uN4SUONlTQ"/>
   <element xmi:type="ecore:EPackage" href="kubi.ecore#/"/>

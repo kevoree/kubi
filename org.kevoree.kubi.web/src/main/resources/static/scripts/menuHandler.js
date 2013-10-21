@@ -18,7 +18,7 @@ var KubiMenuHandler = function(){
                 request.messageType = "PAGE_TEMPLATE";
                 request.content = $(this).text();
                 WebSocketHandler.send(JSON.stringify(request));
-                $(".navbar-nav li").removeClass("active");
+                $("ul.nav li").removeClass("active");
                 $(this).closest("li").addClass("active");
             });
         },
@@ -31,7 +31,7 @@ var KubiMenuHandler = function(){
 
             pageContentBody.html($(pageTemplate.content).addClass("kubiRemoveable"));
             head.append($(pageTemplate.links).addClass("kubiRemoveable"));
-            body.append($(pageTemplate.scripts).addClass("ajaxRemovable"));
+            body.append($(pageTemplate.scripts).addClass("kubiRemoveable"));
 
         }
     }

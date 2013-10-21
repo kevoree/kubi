@@ -195,7 +195,7 @@ var KubiHome = function(){
            if(kubiNode.id == message.nodeId) {
                var serviceName = message.action.substring(0, message.action.lastIndexOf("::"));
                if(serviceName == "SWITCH_BINARY") {
-                   $(kubiNode.uiElem).find('#'+serviceName).bootstrapSwitch('setState', message.state);
+                   $(kubiNode.uiElem).find('#'+serviceName).bootstrapSwitch('setState', message.state, true);
                } else {
                    console.warn("privateMessageArrived with unhandled action", serviceName);
                }

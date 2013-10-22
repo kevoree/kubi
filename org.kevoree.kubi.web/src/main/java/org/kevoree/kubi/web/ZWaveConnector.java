@@ -19,7 +19,10 @@ import lu.snt.helios.extra.zwave.driver.config.Product;
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetInitData;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationCommandHandler;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationNodeInformation;
+import lu.snt.helios.extra.zwave.driver.core.messages.zw_controller.ZW_AddNodeToNetwork;
+import lu.snt.helios.extra.zwave.driver.core.messages.zw_controller.ZW_RemoveNodeFromNetwork;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_transport.ZW_SendData;
+import lu.snt.helios.extra.zwave.driver.transport.Callback;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +37,7 @@ public class ZWaveConnector {
     private WebSocketServerHandler webSocketHandler;
     private ZWaveManager manager;
     private KubiFactory factory = new DefaultKubiFactory();
+    //private KubiModel currentModel = factory.createKubiModel();
 
     public WebSocketServerHandler getWebSocketHandler() {
         return webSocketHandler;
@@ -182,59 +186,145 @@ public class ZWaveConnector {
 
         try {
 
+            String action = msg.getString("action");
+            String actionClass = action.substring(0, action.lastIndexOf("::"));
+            String function = action.substring(action.lastIndexOf("::") + 2, action.length());
 
-            String nodeId = msg.getString("nodeId");
-            String cc = msg.getString("action").substring(0, msg.getString("action").lastIndexOf("::"));
-            CommandClass commandClass = CommandClass.valueOf(cc);
 
-            String function = msg.getString("action").substring(msg.getString("action").lastIndexOf("::") + 2, msg.getString("action").length());
-            Log.debug("Have to send " + cc + "->" + function + " to " + nodeId);
+            if(actionClass.equals("ADMIN")) {
+                if(function.equals("START_DEVICE_ADDITION_DISCOVERY")) {
 
-            ZWCommand request = null;
-            if(commandClass == CommandClass.SWITCH_BINARY) {
-                if(function.equals("GET")) {
-                    request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function));
-                } else if (function.equals("SET")) {
-                    JSONArray pms = msg.getJSONArray("parameters");
-                    ArrayList<Object> params = new ArrayList<Object>();
+                    final Message message = RequestFactory.zwAddAnyNodeToNetwork(false);
+                    boolean acknowledged = manager.sendMessageWithCallback(message, new Callback(){
+                        public void messageReceived(Message m) {
+                            ZW_AddNodeToNetwork addMessage = (ZW_AddNodeToNetwork)m;
+                            Log.debug(addMessage.toString());
+                            switch(addMessage.getStatus()) {
+                                case ADD_NODE_STATUS_DONE:
+                                case ADD_NODE_STATUS_PROTOCOL_DONE:
 
-                    for(int i = 0 ; i < pms.length(); i++) {
-                        JSONObject param = pms.getJSONObject(i);
-                        if(param.getString("valueType").equals("BOOLEAN")) {
-                            Boolean b = Boolean.valueOf(param.getString("value"));
-                            params.add(b);
-                        } else {
-                            Log.warn("Don't know what to do for param of type " + param.getString("valueType") + " when creating the command ");
+                                    manager.removeCallback(message);
+                                    Log.debug("New device added.");
+                                    boolean acknowledged = manager.sendMessageAndWaitAck(RequestFactory.zwStopAddingNodeToNetwork());
+                                    manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(addMessage.getSourceNodeId()));
+                                    if(acknowledged) {
+                                        Log.debug("Process completed");
+                                    } else {
+                                        Log.debug("Could not stop the inclusion process.");
+                                    }
+                                    break;
+                            }
                         }
-                    }
-                    request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function), params.toArray());
-                } else {
-                   Log.warn("Unknown function:" + function);
-                }
-            } else if(commandClass == CommandClass.BASIC_WINDOW_COVERING) {
-                if(function.equals("STOP_LEVEL_CHANGE")) {
-                    request = (ZWCommand)RequestFactory.zwSopMovingBasicWindowCovering(Integer.valueOf(nodeId));
-                } else if(function.equals("START_LEVEL_CHANGE")) {
-                    JSONArray pms = msg.getJSONArray("parameters");
-                    JSONObject param = pms.getJSONObject(0);
-                    if(param.getString("value").equals("up")) {
-                        request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringUp(Integer.valueOf(nodeId));
+                    });
+                    if(acknowledged) {
+                        Log.debug("Ready to include new device.");
                     } else {
-                        request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringDown(Integer.valueOf(nodeId));
+                        Log.debug("Inclusion of new device aborted.");
                     }
 
+                } else if(function.equals("START_DEVICE_REMOVAL_DISCOVERY")) {
+
+                    final Message message = RequestFactory.zwRemoveAnyNodeFromNetwork();
+                    boolean acknowledged = manager.sendMessageWithCallback(message, new Callback(){
+                        public void messageReceived(Message m) {
+                            ZW_RemoveNodeFromNetwork removeMessage = (ZW_RemoveNodeFromNetwork)m;
+                            Log.debug(removeMessage.toString());
+                            switch(removeMessage.getStatus()) {
+                                case REMOVE_NODE_STATUS_DONE:
+                                    manager.removeCallback(message);
+                                    webSocketHandler.getModel().removeNodes(webSocketHandler.getModel().findNodesByID(""+removeMessage.getSourceNodeId()));
+                                    webSocketHandler.sendModelToClients();
+                                    Log.debug("Device Removed.");
+                                    boolean acknowledged = manager.sendMessageAndWaitAck(RequestFactory.zwStopRemovingNodeFromNetwork());
+                                    if(acknowledged) {
+                                        Log.debug("Process completed");
+
+                                    } else {
+                                        Log.debug("Could not stop the removal process.");
+                                    }
+                                    break;
+                                default:{
+                                    Log.debug(removeMessage.toString());
+                                }
+                            }
+                        }
+                    });
+                    if(acknowledged) {
+                        Log.debug("Ready to remove device.");
+                    } else {
+                        Log.debug("Removal of device aborted.");
+                    }
+                } else if(function.equals("REMOVE_ALL_DEVICES")) {
+                    final Message message = RequestFactory.zwSetDefault();
+                    boolean acknowledged = manager.sendMessageWithCallback(message, new Callback(){
+                        public void messageReceived(Message m) {
+                            manager.removeCallback(message);
+                            Log.debug("Reset completed");
+                        }
+                    });
+
+                    Log.debug((acknowledged?"Factory Reset Succeeded": "Factory Reset Failed"));
+
                 } else {
-                    Log.warn("Unknown function:" + function);
+                    Log.warn("Received and ADMIN message with function:" + function + "! Dunno what to do !");
                 }
             } else {
-                Log.warn("CommandClass of message received unknown: " + commandClass.toString());
-            }
-            if(request != null) {
-                ZW_SendData resp = (ZW_SendData)manager.sendMessageAndWaitResponse(request);
 
-                Log.debug(resp.toString());
-            }
 
+                CommandClass commandClass = CommandClass.valueOf(actionClass);
+
+                String nodeId = msg.getString("nodeId");
+
+                Log.debug("Have to send " + actionClass + "->" + function + " to " + nodeId);
+
+                ZWCommand request = null;
+                if(commandClass == CommandClass.SWITCH_BINARY) {
+                    if(function.equals("GET")) {
+                        request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function));
+                    } else if (function.equals("SET")) {
+                        JSONArray pms = msg.getJSONArray("parameters");
+                        ArrayList<Object> params = new ArrayList<Object>();
+
+                        for(int i = 0 ; i < pms.length(); i++) {
+                            JSONObject param = pms.getJSONObject(i);
+                            if(param.getString("valueType").equals("BOOLEAN")) {
+                                Boolean b = Boolean.valueOf(param.getString("value"));
+                                params.add(b);
+                            } else {
+                                Log.warn("Don't know what to do for param of type " + param.getString("valueType") + " when creating the command ");
+                            }
+                        }
+                        request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function), params.toArray());
+                    } else {
+                        Log.warn("Unknown function:" + function);
+                    }
+                } else if(commandClass == CommandClass.BASIC_WINDOW_COVERING) {
+                    if(function.equals("STOP_LEVEL_CHANGE")) {
+                        request = (ZWCommand)RequestFactory.zwSopMovingBasicWindowCovering(Integer.valueOf(nodeId));
+                    } else if(function.equals("START_LEVEL_CHANGE")) {
+                        JSONArray pms = msg.getJSONArray("parameters");
+                        JSONObject param = pms.getJSONObject(0);
+                        if(param.getString("value").equals("up")) {
+                            request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringUp(Integer.valueOf(nodeId));
+                        } else {
+                            request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringDown(Integer.valueOf(nodeId));
+                        }
+
+                    } else {
+                        Log.warn("Unknown function:" + function);
+                    }
+                } else {
+                    Log.warn("CommandClass of message received unknown: " + commandClass.toString());
+                }
+                if(request != null) {
+                    ZW_SendData resp = (ZW_SendData)manager.sendMessageAndWaitResponse(request);
+
+                    Log.debug(resp.toString());
+                }
+
+
+
+            }
 
 
         } catch (JSONException e) {

@@ -68,8 +68,6 @@ var WebSocketHandler = function(){
                 }
             };
 
-
-
         }
 
         ws.onerror = function() {

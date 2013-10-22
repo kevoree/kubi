@@ -112,11 +112,27 @@ public class PageTemplates {
         StringBuilder content = new StringBuilder();
         try {
 
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(PageTemplates.class.getClassLoader().getResourceAsStream("static/pages/administration.html")));
+            String line = br.readLine();
+            while(line != null) {
+                content.append(line);
+                line = br.readLine();
+            }
+
+
+            scripts.append("<script src=\"scripts/admin/adminPageScripts.js\"></script>\n");
+            scripts.append("<script>\n" +
+                    "            KubiAdminPage.init();" +
+                    "       </script>\n");
+
             template.put("links", links.toString());
             template.put("scripts", scripts.toString());
             template.put("content", content.toString());
 
         } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         return template;

@@ -70,7 +70,7 @@ public class SyncServerApp {
         try {
 
             //Technology routing
-            if(message.getString("technology").equals("Z-Wave")) {
+            if(message.getString("technology").equals("Z-Wave") || message.getString("technology").equals("ALL")) {
                 zWaveConnector.sendToNetwork(message);
             }
 

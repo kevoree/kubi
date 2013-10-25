@@ -300,7 +300,7 @@ public class ZWaveConnector {
                     }
                 } else if(commandClass == CommandClass.BASIC_WINDOW_COVERING) {
                     if(function.equals("STOP_LEVEL_CHANGE")) {
-                        request = (ZWCommand)RequestFactory.zwSopMovingBasicWindowCovering(Integer.valueOf(nodeId));
+                        request = (ZWCommand)RequestFactory.zwStopMovingBasicWindowCovering(Integer.valueOf(nodeId));
                     } else if(function.equals("START_LEVEL_CHANGE")) {
                         JSONArray pms = msg.getJSONArray("parameters");
                         JSONObject param = pms.getJSONObject(0);

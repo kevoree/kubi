@@ -9,6 +9,7 @@ import lu.snt.helios.extra.zwave.driver.core.CommandClass;
 import lu.snt.helios.extra.zwave.driver.core.messages.Message;
 import lu.snt.helios.extra.zwave.driver.core.messages.MessageListener;
 import lu.snt.helios.extra.zwave.driver.core.messages.RequestFactory;
+import lu.snt.helios.extra.zwave.driver.core.messages.commands.AssociationCommandClass;
 import lu.snt.helios.extra.zwave.driver.core.messages.commands.SwitchBinaryCommandClass;
 import lu.snt.helios.extra.zwave.driver.core.messages.commands.ZWCommand;
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetApiCapabilities;
@@ -62,7 +63,7 @@ public class ZWaveConnector {
         Log.info("Collecting the SerialAPICapabilities");
         Serial_GetApiCapabilities response = (Serial_GetApiCapabilities) manager.sendMessageAndWaitResponse(RequestFactory.serialApiGetCapabilities()); // Capabilities of the API
 
-        Log.debug("Received" + response.toString());
+        Log.debug("Received " + response.toString());
 
         final KubiModel model = webSocketHandler.getModel();
         final Technology zWave = factory.createTechnology();
@@ -150,9 +151,13 @@ public class ZWaveConnector {
 
         Log.info("Collecting the Initial Data of the Z-Wave Network");
         Serial_GetInitData response2 = (Serial_GetInitData)manager.sendMessageAndWaitResponse(RequestFactory.serialApiGetInitData());
+        Log.trace("Response received to collection of initial data");
         for(int nodeId : response2.getNodeLlist()) {
-            if(nodeId != 0 && nodeId != 1)
+            if(nodeId != 0 && nodeId != 1) {
+                Log.trace("Asking NodeInfos for node:" + nodeId);
                 manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(nodeId));
+                Log.trace("Response received to collection of data for node:" + nodeId);
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -198,21 +203,45 @@ public class ZWaveConnector {
                     boolean acknowledged = manager.sendMessageWithCallback(message, new Callback(){
                         public void messageReceived(Message m) {
                             ZW_AddNodeToNetwork addMessage = (ZW_AddNodeToNetwork)m;
-                            Log.debug(addMessage.toString());
+                            //Log.debug(addMessage.toString());
                             switch(addMessage.getStatus()) {
                                 case ADD_NODE_STATUS_DONE:
                                 case ADD_NODE_STATUS_PROTOCOL_DONE:
 
                                     manager.removeCallback(message);
-                                    Log.debug("New device added.");
+                                    Log.info("New device added. Sending Stop");
                                     boolean acknowledged = manager.sendMessageAndWaitAck(RequestFactory.zwStopAddingNodeToNetwork());
-                                    manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(addMessage.getSourceNodeId()));
+                                    Log.info("Stop Acknowledged");
+
+                                    AssociationCommandClass response = (AssociationCommandClass)manager.sendMessageAndWaitResponse(RequestFactory.zwGetAssociationGroups(addMessage.getSourceNodeId()));
+                                    Log.debug("Got grouping report. Has " + response.getNumberOfGroups() + " groups.");
+                                    for(int i = response.getNumberOfGroups(); i > 0; i--) {
+                                        Log.debug("Asking group details for group {} on node {}",i, addMessage.getSourceNodeId());
+                                        AssociationCommandClass groupDetails = (AssociationCommandClass)manager.sendMessageAndWaitResponse(RequestFactory.zwGetAssociations(addMessage.getSourceNodeId(), i));
+                                        Log.debug("Group {} details:{}",i, groupDetails);
+                                        if(groupDetails.getMaxNodeSupported() == 1) {
+                                            if(!groupDetails.getAssociatedNodes().contains(1)) {
+                                                Log.info("Associating Controller (id:1) to group:"+ i +" of node:" + addMessage.getSourceNodeId());
+                                                m = RequestFactory.zwAddAssociations(addMessage.getSourceNodeId(), i, ((byte)1 & 0xFF));
+                                                manager.sendMessageAndWaitResponse(m);
+                                                Log.debug("Completed");
+                                            } else {
+                                                Log.info("Controller already associated.");
+                                            }
+                                            break;
+                                        }
+                                    }
+
                                     if(acknowledged) {
                                         Log.debug("Process completed");
                                     } else {
                                         Log.debug("Could not stop the inclusion process.");
                                     }
+                                    manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(addMessage.getSourceNodeId()));
                                     break;
+                                default:{
+                                    Log.debug(addMessage.toString());
+                                }
                             }
                         }
                     });
@@ -228,7 +257,7 @@ public class ZWaveConnector {
                     boolean acknowledged = manager.sendMessageWithCallback(message, new Callback(){
                         public void messageReceived(Message m) {
                             ZW_RemoveNodeFromNetwork removeMessage = (ZW_RemoveNodeFromNetwork)m;
-                            Log.debug(removeMessage.toString());
+                            //Log.debug(removeMessage.toString());
                             switch(removeMessage.getStatus()) {
                                 case REMOVE_NODE_STATUS_DONE:
                                     manager.removeCallback(message);
@@ -281,6 +310,9 @@ public class ZWaveConnector {
                 if(commandClass == CommandClass.SWITCH_BINARY) {
                     if(function.equals("GET")) {
                         request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function));
+                        Message resp = manager.sendMessageAndWaitResponse(request);
+                        Log.trace("Response received from Z-Wave:" + resp);
+                        Log.debug(resp.toString());
                     } else if (function.equals("SET")) {
                         JSONArray pms = msg.getJSONArray("parameters");
                         ArrayList<Object> params = new ArrayList<Object>();
@@ -295,12 +327,14 @@ public class ZWaveConnector {
                             }
                         }
                         request = new ZWCommand(Integer.valueOf(nodeId), commandClass, commandClass.getFunctionByName(function), params.toArray());
+                        manager.sendMessageAndWaitAck(request);
                     } else {
                         Log.warn("Unknown function:" + function);
                     }
                 } else if(commandClass == CommandClass.BASIC_WINDOW_COVERING) {
                     if(function.equals("STOP_LEVEL_CHANGE")) {
                         request = (ZWCommand)RequestFactory.zwStopMovingBasicWindowCovering(Integer.valueOf(nodeId));
+                        manager.sendMessageAndWaitAck(request);
                     } else if(function.equals("START_LEVEL_CHANGE")) {
                         JSONArray pms = msg.getJSONArray("parameters");
                         JSONObject param = pms.getJSONObject(0);
@@ -309,23 +343,15 @@ public class ZWaveConnector {
                         } else {
                             request = (ZWCommand)RequestFactory.zwStartMovingBasicWindowCoveringDown(Integer.valueOf(nodeId));
                         }
-
+                        manager.sendMessageAndWaitAck(request);
                     } else {
                         Log.warn("Unknown function:" + function);
                     }
                 } else {
                     Log.warn("CommandClass of message received unknown: " + commandClass.toString());
                 }
-                if(request != null) {
-                    ZW_SendData resp = (ZW_SendData)manager.sendMessageAndWaitResponse(request);
-
-                    Log.debug(resp.toString());
-                }
-
-
 
             }
-
 
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

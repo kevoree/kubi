@@ -26,7 +26,7 @@ public class SyncServerApp {
 
     public void start() {
         try {
-            Log.DEBUG();
+
 
             File baseStaticDir = null;
             File staticDirFromRoot = new File("org.kevoree.kubi.web/src/main/resources/static");
@@ -85,6 +85,7 @@ public class SyncServerApp {
 
 
     public static void main(String[] args) {
+        Log.TRACE();
         final SyncServerApp app = new SyncServerApp();
         app.start();
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

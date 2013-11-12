@@ -60,7 +60,6 @@ var KubiAdminPage = function(){
 
 
     return {
-
         init : function() {
             initAddDeviceButton();
             initRemoveDeviceButton();

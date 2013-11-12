@@ -2,8 +2,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.kevoree.kubi.model.js</artifactId>
-    <name>Kevoree :: Ubiquitous :: Model :: JS</name>
+    <artifactId>org.kevoree.kubi.store.model.js</artifactId>
+    <name>Kevoree :: Ubiquitous :: Store :: Model :: JS</name>
     <version>1-SNAPSHOT</version>
 
     <parent>
@@ -35,10 +35,11 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <ecore>${basedir}/../org.kevoree.kubi.model/kubi.ecore</ecore>
-                            <packagePrefix>org.kevoree</packagePrefix>
+                            <ecore>${basedir}/../org.kevoree.kubi.store.model/kubi.store.ecore</ecore>
+                            <packagePrefix>org.kevoree.kubi</packagePrefix>
                             <js>true</js>
                             <events>true</events>
+                            <persistence>true</persistence>
                         </configuration>
                     </execution>
                 </executions>

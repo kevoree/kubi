@@ -125,8 +125,8 @@ var KubiHome = function(){
         $.each(KubiKernel.getKubiModel().nodes.array, function(key,kubiNode) {
 
             var deviceUi = $('<div class="span2 kubi-device"></div>');
-            var deviceName = $('<div class="kubi-device-name">'+kubiNode.id+'</div>');
-            var devicePic = $('<div class="kubi-device-icon"><img src="img/Fibaro-WallPlug.png" /></div>');
+            var deviceName = $('<div class="kubi-device-name">'+kubiNode.name+'</div>');
+            var devicePic = $('<div class="kubi-device-icon"><img src="'+kubiNode.picture+'" /></div>');
             var deviceServiceList = $('<div class="kubi-device-serviceList"></div>');
 
 
@@ -134,11 +134,11 @@ var KubiHome = function(){
                 var treatedServiceClass = new Array();
 
                 $.each(kubiNode.services.array, function(key,service) {
-                    console.debug("TreatedService",treatedServiceClass);
+                    //console.debug("TreatedService",treatedServiceClass);
                     var serviceName = service.function.name.substring(0, service.function.name.lastIndexOf("::"));
                     var functioneName = service.function.name.substring(service.function.name.lastIndexOf("::") + 2, service.function.name.length);
-                    console.debug("ServiceName",serviceName);
-                    console.debug("inArray",$.inArray(serviceName, treatedServiceClass));
+                    //console.debug("ServiceName",serviceName);
+                    //console.debug("inArray",$.inArray(serviceName, treatedServiceClass));
                     //if($.inArray(serviceName, treatedServiceClass) == -1) {
                         var deviceService;
                         //console.log("SwitchBinary ??",serviceName.equals("SWITCH_BINARY"));
@@ -163,8 +163,7 @@ var KubiHome = function(){
                                 treatedServiceClass.push(serviceName);
                             }
                         } else {
-                            deviceService = $('<div class="kubi-device-service">'+service.function.name+'</div>');
-                            deviceService.appendTo(deviceServiceList);
+                            console.debug("Service ignored:" + service.function.name);
                         }
                     //}
                 });

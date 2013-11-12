@@ -40,8 +40,14 @@ var WebSocketHandler = function(){
             statusBar.children().remove();
             $('<h4>Connection to server lost !</h4>').appendTo(statusBar);
             statusBar.removeAttr("hidden");
-            window.setTimeout(reconnect,2000);
+            window.setTimeout(reconnect,4000);
         };
+
+        ws.onerror = function() {
+            console.log("WebSocket Error !");
+            window.setTimeout(reconnect,4000);
+        };
+
         if(onMessageAction != undefined) {
             ws.onmessage = onMessageAction;
         } else {
@@ -67,14 +73,8 @@ var WebSocketHandler = function(){
                     console.log("Unknown message type received from server", parsedMessage);
                 }
             };
-
         }
-
-        ws.onerror = function() {
-            console.log("WebSocket Error !");
-            window.setTimeout(reconnect,2000);
-        }
-    }
+    };
 
     return {
         init : init,

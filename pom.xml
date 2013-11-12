@@ -33,7 +33,7 @@
     <properties>
         <kevoree.version>${project.version}</kevoree.version>
         <kotlin.version>0.6.602</kotlin.version>
-        <kmf.version>1.6.0</kmf.version>
+        <kmf.version>1.9.1-SNAPSHOT</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -145,6 +145,8 @@
     <modules>
         <module>org.kevoree.kubi.model</module>
         <module>org.kevoree.kubi.model.js</module>
+        <module>org.kevoree.kubi.store.model</module>
+        <module>org.kevoree.kubi.store.model.js</module>
         <module>org.kevoree.kubi.web</module>
     </modules>
 
@@ -158,5 +160,20 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>kevoree.oss.snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>kevoree.oss.snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 </project>

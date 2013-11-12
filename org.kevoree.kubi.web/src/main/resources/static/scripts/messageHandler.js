@@ -28,10 +28,6 @@ var KubiMessageHandler = function(){
 
             console.debug("MessageReceivedFromServer", message);
 
-
-
-
-
         }
     }
 

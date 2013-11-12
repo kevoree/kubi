@@ -26,7 +26,7 @@ public class SyncServerApp {
 
     public void start() {
         try {
-
+            //Log.TRACE();
 
             File baseStaticDir = null;
             File staticDirFromRoot = new File("org.kevoree.kubi.web/src/main/resources/static");
@@ -50,8 +50,7 @@ public class SyncServerApp {
             webServer.start();
             Log.info("Server running at " + webServer.getUri());
 
-            zWaveConnector = new ZWaveConnector();
-            zWaveConnector.setWebSocketHandler(modelAtRuntimeHandler);
+            zWaveConnector = new ZWaveConnector(modelAtRuntimeHandler);
             zWaveConnector.start();
             zWaveConnector.init();
 
@@ -85,7 +84,7 @@ public class SyncServerApp {
 
 
     public static void main(String[] args) {
-        Log.TRACE();
+
         final SyncServerApp app = new SyncServerApp();
         app.start();
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmi:id="_v-wXIEq6EeOK8bweiBzIfQ" type="EcoreTools" measurementUnit="Pixel">
+  <children xmi:type="notation:Node" xmi:id="_wCMssEq6EeOK8bweiBzIfQ" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_wCNTwEq6EeOK8bweiBzIfQ" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_wCNTwUq6EeOK8bweiBzIfQ" type="5001">
+      <styles xmi:type="notation:DrawerStyle" xmi:id="_wCNTwkq6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_wCNTw0q6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_wCNTxEq6EeOK8bweiBzIfQ"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_wCN60Eq6EeOK8bweiBzIfQ" type="5002">
+      <styles xmi:type="notation:DrawerStyle" xmi:id="_wCN60Uq6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_wCN60kq6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_wCN600q6EeOK8bweiBzIfQ"/>
+    </children>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_wCMssUq6EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
+    <element xmi:type="ecore:EClass" href="kubi.store.ecore#//KubiStore"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_wCMsskq6EeOK8bweiBzIfQ" x="456" y="44"/>
+  </children>
+  <children xmi:type="notation:Node" xmi:id="__t1fIEq6EeOK8bweiBzIfQ" type="1001">
+    <children xmi:type="notation:Node" xmi:id="__t2GMEq6EeOK8bweiBzIfQ" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="__t2GMUq6EeOK8bweiBzIfQ" type="5001">
+      <children xmi:type="notation:Node" xmi:id="_HrrfcEq7EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Manufacturer/id"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_HrrfcUq7EeOK8bweiBzIfQ"/>
+      </children>
+      <children xmi:type="notation:Node" xmi:id="_IR2uoEq7EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Manufacturer/name"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_IR2uoUq7EeOK8bweiBzIfQ"/>
+      </children>
+      <styles xmi:type="notation:DrawerStyle" xmi:id="__t2GMkq6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="__t2GM0q6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="__t2GNEq6EeOK8bweiBzIfQ"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="__t2GNUq6EeOK8bweiBzIfQ" type="5002">
+      <styles xmi:type="notation:DrawerStyle" xmi:id="__t2tQEq6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="__t2tQUq6EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="__t2tQkq6EeOK8bweiBzIfQ"/>
+    </children>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="__t1fIUq6EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
+    <element xmi:type="ecore:EClass" href="kubi.store.ecore#//Manufacturer"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="__t1fIkq6EeOK8bweiBzIfQ" x="132" y="128"/>
+  </children>
+  <children xmi:type="notation:Node" xmi:id="_A0VNIEq7EeOK8bweiBzIfQ" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_A0WbQEq7EeOK8bweiBzIfQ" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_A0WbQUq7EeOK8bweiBzIfQ" type="5001">
+      <children xmi:type="notation:Node" xmi:id="_J9KZ4Eq7EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Technology/name"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_J9KZ4Uq7EeOK8bweiBzIfQ"/>
+      </children>
+      <styles xmi:type="notation:DrawerStyle" xmi:id="_A0WbQkq7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_A0WbQ0q7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_A0WbREq7EeOK8bweiBzIfQ"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_A0WbRUq7EeOK8bweiBzIfQ" type="5002">
+      <styles xmi:type="notation:DrawerStyle" xmi:id="_A0WbRkq7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_A0WbR0q7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_A0WbSEq7EeOK8bweiBzIfQ"/>
+    </children>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_A0VNIUq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
+    <element xmi:type="ecore:EClass" href="kubi.store.ecore#//Technology"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_A0VNIkq7EeOK8bweiBzIfQ" x="352" y="160"/>
+  </children>
+  <children xmi:type="notation:Node" xmi:id="_CE_jwEq7EeOK8bweiBzIfQ" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_CE_jw0q7EeOK8bweiBzIfQ" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_CFAK0Eq7EeOK8bweiBzIfQ" type="5001">
+      <children xmi:type="notation:Node" xmi:id="_LTbpQEq7EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Product/id"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_LTbpQUq7EeOK8bweiBzIfQ"/>
+      </children>
+      <children xmi:type="notation:Node" xmi:id="_9z3QUEq7EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Product/typeid"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_9z3QUUq7EeOK8bweiBzIfQ"/>
+      </children>
+      <children xmi:type="notation:Node" xmi:id="_DIgZwEq8EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Product/name"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_DIgZwUq8EeOK8bweiBzIfQ"/>
+      </children>
+      <children xmi:type="notation:Node" xmi:id="_D_pdIEq8EeOK8bweiBzIfQ" type="2001">
+        <element xmi:type="ecore:EAttribute" href="kubi.store.ecore#//Product/imgAddress"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_D_pdIUq8EeOK8bweiBzIfQ"/>
+      </children>
+      <styles xmi:type="notation:DrawerStyle" xmi:id="_CFAK0Uq7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_CFAK0kq7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_CFAK00q7EeOK8bweiBzIfQ"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_CFAK1Eq7EeOK8bweiBzIfQ" type="5002">
+      <styles xmi:type="notation:DrawerStyle" xmi:id="_CFAK1Uq7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_CFAK1kq7EeOK8bweiBzIfQ"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_CFAK10q7EeOK8bweiBzIfQ"/>
+    </children>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_CE_jwUq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
+    <element xmi:type="ecore:EClass" href="kubi.store.ecore#//Product"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_CE_jwkq7EeOK8bweiBzIfQ" x="608" y="200"/>
+  </children>
+  <styles xmi:type="notation:DiagramStyle" xmi:id="_v-wXIUq6EeOK8bweiBzIfQ"/>
+  <element xmi:type="ecore:EPackage" href="kubi.store.ecore#/"/>
+  <edges xmi:type="notation:Edge" xmi:id="_hrPYwEq7EeOK8bweiBzIfQ" type="3002" source="_wCMssEq6EeOK8bweiBzIfQ" target="__t1fIEq6EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_hrP_0Eq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_hrP_0Uq7EeOK8bweiBzIfQ" x="-10" y="-10"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_hrP_0kq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_hrP_00q7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_hrPYwUq7EeOK8bweiBzIfQ" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_hrPYwkq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//KubiStore/manufacturers"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_hrPYw0q7EeOK8bweiBzIfQ" points="[-6, 2, 244, -76]$[-248, 73, 2, -5]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_hrScEEq7EeOK8bweiBzIfQ" id="(0.06862745098039216,0.2857142857142857)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_hrScEUq7EeOK8bweiBzIfQ" id="(0.803921568627451,0.09230769230769231)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_jWNFwEq7EeOK8bweiBzIfQ" type="3002" source="_wCMssEq6EeOK8bweiBzIfQ" target="_A0VNIEq7EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_jWNs0Eq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_jWNs0Uq7EeOK8bweiBzIfQ" x="1" y="27"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_jWNs0kq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_jWNs00q7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_jWNFwUq7EeOK8bweiBzIfQ" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_jWNFwkq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//KubiStore/technologies"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_jWNFw0q7EeOK8bweiBzIfQ" points="[-25, 20, 68, -54]$[-91, 64, 2, -10]"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_jWRXMEq7EeOK8bweiBzIfQ" id="(0.5784313725490197,0.22448979591836735)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_kmqoEEq7EeOK8bweiBzIfQ" type="3002" source="_wCMssEq6EeOK8bweiBzIfQ" target="_CE_jwEq7EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_kmr2MEq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_kmr2MUq7EeOK8bweiBzIfQ" x="-10" y="-10"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_kmr2Mkq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_kmr2M0q7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_kmqoEUq7EeOK8bweiBzIfQ" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_kmqoEkq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//KubiStore/products"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_kmqoE0q7EeOK8bweiBzIfQ" points="[12, 14, -52, -60]$[65, 68, 1, -6]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_kmuScEq7EeOK8bweiBzIfQ" id="(0.8823529411764706,0.6190476190476191)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_kmuScUq7EeOK8bweiBzIfQ" id="(0.16666666666666666,0.14285714285714285)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_ps7XQEq7EeOK8bweiBzIfQ" type="3002" source="_CE_jwEq7EeOK8bweiBzIfQ" target="_A0VNIEq7EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_ps7-UEq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_ps7-UUq7EeOK8bweiBzIfQ" x="-10" y="-10"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_ps8lYEq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_ps8lYUq7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_ps7XQUq7EeOK8bweiBzIfQ" routing="Rectilinear" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_ps7XQkq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//Product/technology"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_ps7XQ0q7EeOK8bweiBzIfQ" points="[-50, 5, 208, 54]$[-234, -44, 24, 5]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_34feEEq7EeOK8bweiBzIfQ" id="(0.5,0.5)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_34feEUq7EeOK8bweiBzIfQ" id="(0.7647058823529411,0.14285714285714285)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_rPiZgEq7EeOK8bweiBzIfQ" type="3002" source="_A0VNIEq7EeOK8bweiBzIfQ" target="_CE_jwEq7EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_rPjAkEq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_rPjAkUq7EeOK8bweiBzIfQ" x="-10" y="-10"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_rPjnoEq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_rPjnoUq7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_rPiZgUq7EeOK8bweiBzIfQ" routing="Rectilinear" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_rPiZgkq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//Technology/products"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_rPiZg0q7EeOK8bweiBzIfQ" points="[24, 5, -234, -44]$[208, 54, -50, 5]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_rPlc0Eq7EeOK8bweiBzIfQ" id="(0.7647058823529411,0.14285714285714285)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_0toEkEq7EeOK8bweiBzIfQ" id="(0.5,0.5)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_s6Z_4Eq7EeOK8bweiBzIfQ" type="3002" source="_CE_jwEq7EeOK8bweiBzIfQ" target="__t1fIEq6EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_s6Z_5Eq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_s6am8Eq7EeOK8bweiBzIfQ" x="-10" y="-10"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_s6am8Uq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_s6am8kq7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_s6Z_4Uq7EeOK8bweiBzIfQ" routing="Rectilinear" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_s6Z_4kq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//Product/manufacturer"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_s6Z_40q7EeOK8bweiBzIfQ" points="[66, 24, 495, 136]$[66, 153, 495, 265]$[-565, 153, -136, 265]$[-565, -89, -136, 23]$[-479, -89, -50, 23]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_QCyYcEt4EeOouonVzPwTSQ" id="(0.029411764705882353,0.7551020408163265)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_QCyYcUt4EeOouonVzPwTSQ" id="(0.5,0.5)"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_txpw8Eq7EeOK8bweiBzIfQ" type="3002" source="__t1fIEq6EeOK8bweiBzIfQ" target="_CE_jwEq7EeOK8bweiBzIfQ">
+    <children xmi:type="notation:Node" xmi:id="_txqYAEq7EeOK8bweiBzIfQ" type="4011">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_txqYAUq7EeOK8bweiBzIfQ" x="-10" y="-10"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_txqYAkq7EeOK8bweiBzIfQ" type="4012">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_txqYA0q7EeOK8bweiBzIfQ" x="10" y="10"/>
+    </children>
+    <styles xmi:type="notation:ConnectorStyle" xmi:id="_txpw8Uq7EeOK8bweiBzIfQ" routing="Rectilinear" lineColor="4210752"/>
+    <styles xmi:type="notation:FontStyle" xmi:id="_txpw8kq7EeOK8bweiBzIfQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10"/>
+    <element xmi:type="ecore:EReference" href="kubi.store.ecore#//Manufacturer/products"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_txpw80q7EeOK8bweiBzIfQ" points="[-50, 23, -479, -89]$[-136, 23, -565, -89]$[-136, 265, -565, 153]$[495, 265, 66, 153]$[495, 136, 66, 24]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_5Hx7sEq7EeOK8bweiBzIfQ" id="(0.5,0.5)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_5Hx7sUq7EeOK8bweiBzIfQ" id="(0.029411764705882353,0.7551020408163265)"/>
+  </edges>
+</notation:Diagram>

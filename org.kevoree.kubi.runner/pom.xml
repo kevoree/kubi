@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>org.kevoree.kubi.root</artifactId>
+        <groupId>org.kevoree.kubi</groupId>
+        <version>1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>org.kevoree.kubi.runner</artifactId>
+    <name>Kubi :: Runner</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.kevoree.watchdog</groupId>
+                <artifactId>org.kevoree.watchdog.mavenrunner</artifactId>
+                <version>0.18-SNAPSHOT</version>
+                <configuration>
+                    <bootstrapModel>${basedir}/models/KubiDefaultBootstrap.1.kevs</bootstrapModel>
+                    <kevoreeVersion>LATEST</kevoreeVersion>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -121,6 +121,8 @@ public class OpenZWave {
             serializer.serializeToStream(store, new FileOutputStream(new File("src/main/resources/static/baseStore.json")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
 

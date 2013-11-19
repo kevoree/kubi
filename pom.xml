@@ -5,7 +5,7 @@
     <artifactId>org.kevoree.kubi.root</artifactId>
     <packaging>pom</packaging>
     <version>1-SNAPSHOT</version>
-    <name>Kevoree :: Ubiquitous :: Root</name>
+    <name>Kubi :: Root</name>
     <url>https://github.com/kevoree/kubi</url>
     <description>Ubiquitous Kevoree</description>
 
@@ -31,11 +31,32 @@
     </parent>
 
     <properties>
-        <kevoree.version>${project.version}</kevoree.version>
+        <kevoree.version>2.1-SNAPSHOT</kevoree.version>
         <kotlin.version>0.6.602</kotlin.version>
         <kmf.version>1.9.1-SNAPSHOT</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    
+    <modules>
+        <module>org.kevoree.kubi.model</module>
+        <module>org.kevoree.kubi.model.js</module>
+        <module>org.kevoree.kubi.store.model</module>
+        <module>org.kevoree.kubi.store.model.js</module>
+        <module>org.kevoree.kubi.framework</module>
+        <module>org.kevoree.kubi.controller</module>
+        <module>org.kevoree.kubi.driver.zwave</module>
+        <module>org.kevoree.kubi.frontend.web</module>
+        <module>org.kevoree.kubi.store.web</module>
+        <module>org.kevoree.kubi.runner</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kevoree.log</groupId>
+            <artifactId>org.kevoree.log</artifactId>
+            <version>1</version>
+        </dependency>
+    </dependencies>
 
     <developers>
         <developer>
@@ -142,13 +163,6 @@
         </plugins>
     </build>
 
-    <modules>
-        <module>org.kevoree.kubi.model</module>
-        <module>org.kevoree.kubi.model.js</module>
-        <module>org.kevoree.kubi.store.model</module>
-        <module>org.kevoree.kubi.store.model.js</module>
-        <module>org.kevoree.kubi.web</module>
-    </modules>
 
     <distributionManagement>
         <repository>

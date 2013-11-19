@@ -126,7 +126,7 @@
     </children>
     <styles xmi:type="notation:ShapeStyle" xmi:id="_ClZOJDC8EeO_uN4SUONlTQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
     <element xmi:type="ecore:EClass" href="kubi.ecore#//Function"/>
-    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ClZOJTC8EeO_uN4SUONlTQ" x="584" y="164"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ClZOJTC8EeO_uN4SUONlTQ" x="632" y="152"/>
   </children>
   <children xmi:type="notation:Node" xmi:id="_ZWpYYDC8EeO_uN4SUONlTQ" type="1001">
     <children xmi:type="notation:Node" xmi:id="_ZWpYYzC8EeO_uN4SUONlTQ" type="4001"/>
@@ -182,7 +182,7 @@
     </children>
     <styles xmi:type="notation:ShapeStyle" xmi:id="_cOnEATC8EeO_uN4SUONlTQ" fontColor="4210752" fontName="Lucida Grande" fontHeight="10" fillColor="13761016" lineColor="8421504"/>
     <element xmi:type="ecore:EClass" href="kubi.ecore#//Parameter"/>
-    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_cOnEAjC8EeO_uN4SUONlTQ" x="808" y="112"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_cOnEAjC8EeO_uN4SUONlTQ" x="860" y="72"/>
   </children>
   <children xmi:type="notation:Node" xmi:id="_2S_y8DC8EeO_uN4SUONlTQ" type="1005">
     <children xmi:type="notation:Node" xmi:id="_2TBBEDC8EeO_uN4SUONlTQ" type="4010"/>

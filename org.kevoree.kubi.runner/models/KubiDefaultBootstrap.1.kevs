@@ -1,0 +1,36 @@
+ {
+addRepo "http://repo.maven.apache.org/maven2"
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/2.0.6-SNAPSHOT'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.defaultChannels/2.0.6-SNAPSHOT'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.jexxus/2.0.6-SNAPSHOT'
+merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.web/1-SNAPSHOT'
+merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.driver.zwave/1-SNAPSHOT'
+merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.controller/1-SNAPSHOT'
+merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.store.web/1-SNAPSHOT'
+addNode node0:JavaSENode
+ {
+  addComponent store@node0 : StoreComponent {}
+  addComponent controller@node0 : DefaultKubiController {}
+  addComponent kubiFrontend@node0 : KubiWebFrontend {}
+  addComponent zwaveDriver@node0 : ZWaveDriver {}
+
+  addChannel viewsToController : defMSG {}
+  addChannel controllerToViews : defMSG {}
+  addChannel driversToController : defMSG {}
+  addChannel controllerToDrivers : defMSG {}
+
+  bind controller.fromViews@node0 => viewsToController
+  bind controller.fromDrivers@node0 => driversToController
+  bind controller.toViews@node0 => controllerToViews
+  bind controller.toDrivers@node0 => controllerToDrivers
+
+  bind zwaveDriver.toDevices@node0 => controllerToDrivers
+  bind zwaveDriver.fromDevices@node0 => driversToController
+  bind kubiFrontend.fromController@node0 => controllerToViews
+  bind kubiFrontend.toController@node0 => viewsToController
+
+}
+
+addGroup sync:BasicGroup
+addToGroup sync node0
+}

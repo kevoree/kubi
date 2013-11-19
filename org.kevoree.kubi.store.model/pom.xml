@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.kevoree.kubi.store.model</artifactId>
-    <name>Kevoree :: Ubiquitous :: Store :: Model</name>
+    <name>Kubi :: Store :: Model</name>
     <version>1-SNAPSHOT</version>
 
     <parent>
@@ -30,6 +30,7 @@
             <version>20090211</version>
         </dependency>
     </dependencies>
+
 
     <build>
         <plugins>

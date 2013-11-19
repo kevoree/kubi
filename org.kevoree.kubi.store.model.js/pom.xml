@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.kevoree.kubi.store.model.js</artifactId>
-    <name>Kevoree :: Ubiquitous :: Store :: Model :: JS</name>
+    <name>Kubi :: Store :: Model :: JS</name>
     <version>1-SNAPSHOT</version>
 
     <parent>

@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.kevoree.kubi.model</artifactId>
-    <name>Kevoree :: Ubiquitous :: Model</name>
+    <name>Kubi :: Model</name>
     <version>1-SNAPSHOT</version>
 
     <parent>

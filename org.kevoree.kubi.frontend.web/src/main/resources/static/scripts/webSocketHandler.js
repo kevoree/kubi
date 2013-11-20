@@ -54,10 +54,17 @@ var WebSocketHandler = function(){
             ws.onmessage = function (msg) {
                 var parsedMessage = JSON.parse(msg.data);
                 //console.log(parsedMessage.messageType);
-                if(parsedMessage.messageType == "MODEL") {
-                    console.log("Model receive from server");
-                    KubiKernel.setKubiModel(KubiKernel.getLoader.loadModelFromString(parsedMessage.content).get(0));
-                    console.log("Model loaded");
+                if(parsedMessage.CLASS == "MODEL") {
+                    if(parsedMessage.ACTION == "UPDATE") {
+                        console.log("Model Update receive from server");
+                        var seq = new module.org.kevoree.kubi.traces.DefaultTraceSequence();
+                        seq.populateFromString(parsedMessage.CONTENT);
+                        seq.applyOn(KubiKernel.getKubiModel());
+                    } else if(parsedMessage.ACTION == "INIT") {
+                        console.log("Model Init receive from server");
+                        var loader = new module.org.kevoree.kubi.loader.JSONModelLoader();
+                        KubiKernel.setKubiModel(loader.loadModelFromString(parsedMessage.CONTENT).get(0));
+                    }
                     if (typeof KubiGraphHandler != 'undefined') {
                         KubiGraphHandler.refreshModel();
                     }
@@ -65,10 +72,12 @@ var WebSocketHandler = function(){
                         KubiHome.modelUpdated();
                     }
 
-                } else if(parsedMessage.messageType == "MESSAGE") {
-                    KubiMessageHandler.handleMessage(parsedMessage.content);
-                } else if(parsedMessage.messageType == "PAGE_TEMPLATE") {
-                    KubiMenuHandler.applyPage(parsedMessage.content);
+                } else if(parsedMessage.CLASS == "ACTION") {
+                    KubiMessageHandler.handleMessage(parsedMessage.CONTENT);
+                } else if(parsedMessage.CLASS == "PAGE_TEMPLATE") {
+                    if(parsedMessage.ACTION == "REPORT") {
+                        KubiMenuHandler.applyPage(parsedMessage.CONTENT);
+                    }
                 } else {
                     console.log("Unknown message type received from server", parsedMessage);
                 }

@@ -36,7 +36,7 @@
         <kmf.version>1.9.1-SNAPSHOT</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <modules>
         <module>org.kevoree.kubi.model</module>
         <module>org.kevoree.kubi.model.js</module>
@@ -55,6 +55,11 @@
             <groupId>org.kevoree.log</groupId>
             <artifactId>org.kevoree.log</artifactId>
             <version>1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
         </dependency>
     </dependencies>
 

@@ -15,8 +15,9 @@ var KubiMenuHandler = function(){
         initMenuItems : function() {
             $('.kubiMenuItem').click(function() {
                 var request = {};
-                request.messageType = "PAGE_TEMPLATE";
-                request.content = $(this).text();
+                request.CLASS = "PAGE_TEMPLATE";
+                request.ACTION = "GET";
+                request.CONTENT = $(this).text();
                 WebSocketHandler.send(JSON.stringify(request));
                 $("ul.nav li").removeClass("active");
                 $(this).closest("li").addClass("active");
@@ -29,9 +30,9 @@ var KubiMenuHandler = function(){
             var body = $('body');
             var head = $('head');
 
-            pageContentBody.html($(pageTemplate.content).addClass("kubiRemoveable"));
-            head.append($(pageTemplate.links).addClass("kubiRemoveable"));
-            body.append($(pageTemplate.scripts).addClass("kubiRemoveable"));
+            pageContentBody.html($(pageTemplate.CONTENT).addClass("kubiRemoveable"));
+            head.append($(pageTemplate.LINKS).addClass("kubiRemoveable"));
+            body.append($(pageTemplate.SCRIPTS).addClass("kubiRemoveable"));
 
         }
     }

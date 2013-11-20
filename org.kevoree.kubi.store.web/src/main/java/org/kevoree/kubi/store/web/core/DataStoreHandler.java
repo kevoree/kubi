@@ -32,7 +32,7 @@ public class DataStoreHandler implements HttpHandler {
     public void handleHttpRequest(HttpRequest httpRequest, HttpResponse httpResponse, HttpControl httpControl) throws Exception {
         if(httpRequest.method().equalsIgnoreCase("get") || httpRequest.method().equalsIgnoreCase("post")) {
             JSONObject request = new JSONObject(httpRequest.body());
-            Log.debug("Request.toString:" + request.toString());
+            Log.trace("Request.toString:" + request.toString());
 
             if(!request.has("method")) {
                 Log.error("Request received with no datastore method!");
@@ -40,7 +40,7 @@ public class DataStoreHandler implements HttpHandler {
             } else {
                 if(request.getString("method").equals("get")) {
                     String content = mainStore.getDatastore().get(request.getString("segment"), request.getString("key"));
-                    Log.debug("Get Content:" + content);
+                    Log.trace("Get Content:" + content);
                     if(content == null) {
                         Log.trace("Return 404");
                         httpResponse.status(404).header("Content-Type","text/plain").content("Found nothing in the store for key:" + request.getString("key")).end();

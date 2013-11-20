@@ -16,7 +16,7 @@ import org.kevoree.log.Log;
  */
 public class ZwaveJsonizer {
 
-
+/*
     public static JSONObject toJSON(Message zWaveMessage) {
 
         if(zWaveMessage instanceof ZW_ApplicationCommandHandler) {
@@ -44,5 +44,6 @@ public class ZwaveJsonizer {
         }
         return null;
     }
+    */
 
 }

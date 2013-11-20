@@ -14,9 +14,9 @@ import org.webbitserver.WebServers;
 import org.webbitserver.handler.StaticFileHandler;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.Enumeration;
+import java.util.concurrent.Executors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,11 +29,14 @@ public class KubiWebStoreMain {
     private WebServer webServer;
     //private KubiStore mainStore;
     private StoreFactory factory = new DefaultStoreFactory();
-    private LevelDbDataStore localDatastore = new LevelDbDataStore();
+    private LevelDbDataStore localDatastore;
 
     public KubiWebStoreMain() {
         Log.TRACE();
         Log.debug("Building the store");
+        String location = new File("").getAbsolutePath() + File.separator + "target";
+        localDatastore = new LevelDbDataStore(location);
+        Log.info("[KubiStore] Base Storage location : " + location);
         factory.setDatastore(localDatastore);
         initDatastore();
     }
@@ -94,15 +97,14 @@ public class KubiWebStoreMain {
             }
         }
 
-        if(baseStaticDir ==  null) {
-            webServer = WebServers.createWebServer(8082)
-                    .add("/datastore", new DataStoreHandler(factory))
-                    .add(new EmbedHandler(store, "static"));
-        } else {
+        webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8082), URI.create("http://localhost:8082"))
+                .add("/datastore", new DataStoreHandler(factory));
 
-            webServer = WebServers.createWebServer(8082)
-                    .add("/datastore", new DataStoreHandler(factory))
-                    .add(new StaticFileHandler(baseStaticDir));
+
+        if(baseStaticDir ==  null) {
+            webServer.add(new EmbedHandler(store, "static"));
+        } else {
+            webServer.add(new StaticFileHandler(baseStaticDir));
         }
 
         webServer.start();

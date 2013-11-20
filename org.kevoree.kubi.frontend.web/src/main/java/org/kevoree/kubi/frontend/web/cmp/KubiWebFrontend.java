@@ -1,11 +1,22 @@
 package org.kevoree.kubi.frontend.web.cmp;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
-import org.kevoree.kubi.frontend.web.core.SyncServerApp;
+import org.kevoree.framework.MessagePort;
+import org.kevoree.kubi.frontend.web.core.EmbedHandler;
 import org.kevoree.kubi.frontend.web.core.ViewListener;
+import org.kevoree.kubi.frontend.web.core.WebSocketServerHandler;
+import org.kevoree.kubi.trace.DefaultTraceSequence;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.trace.TraceSequence;
+import org.webbitserver.WebServer;
+import org.webbitserver.WebServers;
+
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.concurrent.Executors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,26 +40,37 @@ import org.kevoree.log.Log;
 @ComponentType
 public class KubiWebFrontend extends AbstractComponentType implements ViewListener {
 
-    private Log localLog;
 
-    private SyncServerApp app;
+    //private SyncServerApp app;
+    private WebSocketServerHandler modelAtRuntimeHandler;
+    private WebServer webServer;
 
 
     public KubiWebFrontend() {
-        localLog = Log.getLog("KubiWebFrontend");
-        app = new SyncServerApp(this);
-        app.addViewListener(this);
+        modelAtRuntimeHandler = new WebSocketServerHandler(KubiWebFrontend.this);
+
+        webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8081), URI.create("http://localhost:8081"))
+                .add("/ws", modelAtRuntimeHandler)
+                        //.add(new StaticFileHandler(baseStaticDir));
+                .add(new EmbedHandler(KubiWebFrontend.this, "static"));
     }
 
     @Start
     public void startComponent() {
         setLogLevel();
-        app.start();
+        //app.start();
+        Executors.newSingleThreadExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                webServer.start();
+                Log.info("[KubiWebFrontend] Server running at " + webServer.getUri());
+            }
+        });
     }
 
     @Stop
     public void stopComponent() {
-        app.stop();
+        webServer.stop();
     }
 
     @Update
@@ -80,7 +102,54 @@ public class KubiWebFrontend extends AbstractComponentType implements ViewListen
 
     @Port(name="fromController")
     public void viewUpdate(Object message) {
-        Log.debug("View Update required");
+
+        Log.debug("[KubiWebFrontend] Received a message from a driver:" + message);
+
+        if(message instanceof JSONObject) {
+            handleControllerMessage((JSONObject)message);
+        } else if(message instanceof String) {
+            try {
+                JSONObject jsonMessage = new JSONObject((String)message);
+                handleControllerMessage(jsonMessage);
+            } catch (JSONException e) {
+                Log.error("[KubiWebFrontend] Could not parse the String 'fromDrivers' as JSON Object");
+            }
+        } else {
+            Log.warn("[KubiWebFrontend] Received a message on 'fromDrivers' port of strange type:" + message.getClass());
+        }
+
+
     }
+
+
+    private void handleControllerMessage(JSONObject controllerMessage) {
+        if(!controllerMessage.has("CLASS") || !controllerMessage.has("ACTION")) {
+            Log.error("[KubiWebFontend][handleControllerMessage] Could not handle the message cause it missed CLASS or ACTION attribute: " + controllerMessage.toString());
+            return; // MESSAGE CAN NOT BE HANDLED
+        }
+        try {
+            String actionClass = controllerMessage.getString("CLASS");
+            String action = controllerMessage.getString("ACTION");
+            if(actionClass.equals("MODEL")) {
+                if(action.equals("UPDATE")) {
+                    modelAtRuntimeHandler.updateModel(controllerMessage);
+                    Log.debug("[KubiWebFrontend] Forward ModelUpdate to webClients");
+                } else {
+                    Log.warn("[KubiWebFontend] Unknown message ACTION:" + actionClass);
+                }
+            } else {
+                Log.warn("[KubiWebFontend] Unknown message CLASS:" + actionClass);
+            }
+        } catch (JSONException e) {
+            Log.error("[KubiWebFontend]",e);
+        }
+    }
+
+
+    public void messageReceivedFromWebClients(JSONObject message) {
+        Log.warn("[KubiWebFrontend] Message Received! " + message.toString());
+    }
+
+
 }
 

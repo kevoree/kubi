@@ -23,12 +23,16 @@ import lu.snt.helios.extra.zwave.driver.core.messages.zw_memory.ZW_MemoryGetId;
 import lu.snt.helios.extra.zwave.driver.transport.Callback;
 import org.json.*;
 import org.kevoree.kubi.*;
+import org.kevoree.kubi.compare.DefaultModelCompare;
 import org.kevoree.kubi.framework.ProductsStoreManager;
 import org.kevoree.kubi.impl.DefaultKubiFactory;
 import org.kevoree.kubi.serializer.JSONModelSerializer;
 import org.kevoree.kubi.store.Manufacturer;
 import org.kevoree.kubi.store.Product;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.trace.TraceSequence;
+import org.kevoree.modeling.api.util.ModelTracker;
+
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 
@@ -39,6 +43,7 @@ public class ZWaveConnector {
     private Technology zWaveTech;
     private Node controllerNode;
     private KubiModel zWaveKubiModel;
+    private ModelTracker tracker = new ModelTracker(new DefaultModelCompare());
     private ArrayList<ZWaveListener> listeners;
     private JSONModelSerializer kubiModelJsonSerializer = new JSONModelSerializer();
 
@@ -46,9 +51,6 @@ public class ZWaveConnector {
         listeners = new ArrayList<ZWaveListener>();
 
         zWaveKubiModel = kubiFactory.createKubiModel();
-        zWaveTech = kubiFactory.createTechnology();
-        zWaveTech.setName("Z-Wave");
-        zWaveKubiModel.addTechnologies(zWaveTech);
     }
 
     public void addZwaveListener(ZWaveListener lst) {
@@ -59,11 +61,13 @@ public class ZWaveConnector {
         listeners.remove(lst);
     }
 
+    /*
     private void fireMessageReceived(Message zwaveMessage) {
         //TODO: ThreadPool
         JSONObject jsonMsg = ZwaveJsonizer.toJSON(zwaveMessage);
-       fireMessage(jsonMsg);
+        fireMessage(jsonMsg);
     }
+    */
 
     private void fireMessage(JSONObject zwaveMessage) {
         for(ZWaveListener lst : listeners) {
@@ -78,9 +82,19 @@ public class ZWaveConnector {
         //manager.setLogLevel(Log.LEVEL_TRACE);
         manager.open();
         Log.info("ZWave connection ready.");
+
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             public void run() {
+                tracker.reset();
+                tracker.track(zWaveKubiModel);
+                zWaveTech = kubiFactory.createTechnology();
+                zWaveTech.setName("Z-Wave");
+                zWaveKubiModel.addTechnologies(zWaveTech);
+                TraceSequence seq = tracker.getTraceSequence();
+                tracker.untrack();
+                sendModelUpdate(seq);
                 initControllerAndModel();
+                init();
             }
         });
     }
@@ -93,6 +107,9 @@ public class ZWaveConnector {
         Log.trace("[START]Collecting HomeID and NodeID");
         ZW_MemoryGetId idsResponse = (ZW_MemoryGetId)manager.sendMessageAndWaitResponse(RequestFactory.zwMemoryGetId()); // HomeId and NodeId of the serial gateway
         Log.trace("[STOP]Collecting HomeID and NodeID");
+
+        tracker.reset();
+        tracker.track(zWaveKubiModel);
 
         controllerNode = kubiFactory.createGateway();
 
@@ -120,15 +137,25 @@ public class ZWaveConnector {
         Log.trace("[STOP]Adding node to Kubi model");
 
         Log.trace("[START]Sending model to clients");
-        try {
-            fireMessage(new JSONObject(kubiModelJsonSerializer.serialize(zWaveKubiModel)));
-        } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        TraceSequence seq = tracker.getTraceSequence();
+        tracker.untrack();
+        sendModelUpdate(seq);
         Log.trace("[STOP]Sending model to clients");
 
         Log.debug("Controller added to model. Sending to clients.");
 
+    }
+
+    private void sendModelUpdate(TraceSequence seq) {
+        try {
+            JSONObject modelUpdate = new JSONObject();
+            modelUpdate.put("CLASS","MODEL");
+            modelUpdate.put("ACTION","UPDATE");
+            modelUpdate.put("CONTENT",seq.exportToString());
+            fireMessage(modelUpdate);
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
 
@@ -143,7 +170,8 @@ public class ZWaveConnector {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 } else {
-                    fireMessageReceived(msg);
+                    //fireMessageReceived(msg);
+                    Log.warn("Message Ignored:" + msg);
                 }
             }
         };
@@ -171,6 +199,9 @@ public class ZWaveConnector {
 
     private void updateNodeInformation(ZW_ApplicationNodeInformation nodeInfos) throws JSONException {
         if(nodeInfos.hasRequestSucceeded()) {
+
+            tracker.reset();
+            tracker.track(zWaveKubiModel);
 
             Log.info("[Message Listener] Information updated for node " + nodeInfos.getNodeId());
             Log.info("[Message Listener] List of Commands for node " + nodeInfos.getNodeId() + ": " + String.format("%s", nodeInfos.getCommandClasses()));
@@ -230,8 +261,13 @@ public class ZWaveConnector {
             controllerNode.addLinks(n);
             Log.debug("Adding to model");
             zWaveKubiModel.addNodes(n);
+
+            TraceSequence seq = tracker.getTraceSequence();
+            tracker.untrack();
+            sendModelUpdate(seq);
+
             Log.debug("Sending to clients");
-            fireMessage(new JSONObject(kubiModelJsonSerializer.serialize(zWaveKubiModel)));
+            //fireMessage(new JSONObject(kubiModelJsonSerializer.serialize(zWaveKubiModel)));
         }
     }
 

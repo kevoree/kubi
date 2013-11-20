@@ -35,19 +35,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.kevoree.kubi</groupId>
-            <artifactId>org.kevoree.kubi.api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.webbitserver</groupId>
             <artifactId>webbit</artifactId>
             <version>0.4.15</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20090211</version>
         </dependency>
     </dependencies>
 

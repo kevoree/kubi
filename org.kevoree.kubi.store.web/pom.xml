@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.kevoree.kubi.store.web</artifactId>
-    <name>Kevoree :: Ubiquitous :: Store :: Web</name>
+    <name>Kubi :: Store :: Web</name>
     <version>1-SNAPSHOT</version>
 
     <parent>
@@ -43,11 +43,6 @@
             <groupId>org.webbitserver</groupId>
             <artifactId>webbit</artifactId>
             <version>0.4.15</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20090211</version>
         </dependency>
     </dependencies>
 

@@ -55,9 +55,9 @@ public class PageTemplates {
                     "            KubiHome.init();\n" +
                     "            </script>\n");
 
-            template.put("links", links.toString());
-            template.put("scripts", scripts.toString());
-            template.put("content", content.toString());
+            template.put("LINKS", links.toString());
+            template.put("SCRIPTS", scripts.toString());
+            template.put("CONTENT", content.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -95,9 +95,9 @@ public class PageTemplates {
                     "            </script>\n");
 
 
-            template.put("links", links.toString());
-            template.put("scripts", scripts.toString());
-            template.put("content", content.toString());
+            template.put("LINKS", links.toString());
+            template.put("SCRIPTS", scripts.toString());
+            template.put("CONTENT", content.toString());
 
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -128,9 +128,9 @@ public class PageTemplates {
                     "            KubiAdminPage.init();" +
                     "       </script>\n");
 
-            template.put("links", links.toString());
-            template.put("scripts", scripts.toString());
-            template.put("content", content.toString());
+            template.put("LINKS", links.toString());
+            template.put("SCRIPTS", scripts.toString());
+            template.put("CONTENT", content.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

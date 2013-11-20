@@ -9,10 +9,10 @@ merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.controller/1-SNAPSHOT'
 merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.store.web/1-SNAPSHOT'
 addNode node0:JavaSENode
  {
-  addComponent store@node0 : StoreComponent {}
-  addComponent controller@node0 : DefaultKubiController {}
-  addComponent kubiFrontend@node0 : KubiWebFrontend {}
-  addComponent zwaveDriver@node0 : ZWaveDriver {}
+  addComponent store@node0 : StoreComponent {logLevel = "DEBUG"}
+  addComponent controller@node0 : DefaultKubiController {logLevel = "DEBUG"}
+  addComponent kubiFrontend@node0 : KubiWebFrontend {logLevel = "DEBUG"}
+  addComponent zwaveDriver@node0 : ZWaveDriver {logLevel = "DEBUG"}
 
   addChannel viewsToController : defMSG {}
   addChannel controllerToViews : defMSG {}

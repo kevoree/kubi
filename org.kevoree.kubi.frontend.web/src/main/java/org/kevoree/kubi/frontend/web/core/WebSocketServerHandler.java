@@ -3,10 +3,13 @@ package org.kevoree.kubi.frontend.web.core;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.kevoree.kubi.KubiModel;
+import org.kevoree.kubi.frontend.web.cmp.KubiWebFrontend;
 import org.kevoree.kubi.impl.DefaultKubiFactory;
 import org.kevoree.kubi.loader.JSONModelLoader;
 import org.kevoree.kubi.serializer.JSONModelSerializer;
+import org.kevoree.kubi.trace.DefaultTraceSequence;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.trace.TraceSequence;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 
@@ -23,24 +26,26 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
 
     private KubiModel model = null;
     private JSONModelSerializer saver = new JSONModelSerializer();
-    private JSONModelLoader loader = new JSONModelLoader();
+    //private JSONModelLoader loader = new JSONModelLoader();
     private DefaultKubiFactory factory = new DefaultKubiFactory();
     private List<WebSocketConnection> openConnections = new ArrayList<WebSocketConnection>();
-    private SyncServerApp mainApp;
+    private KubiWebFrontend component;
 
 
-    public WebSocketServerHandler(SyncServerApp app) {
-        mainApp = app;
+    public WebSocketServerHandler(KubiWebFrontend component) {
+        this.component = component;
         Log.set(Log.LEVEL_DEBUG);
         //init default Model
         model = factory.createKubiModel();
     }
 
+
     public void sendModelToClients() {
         try {
             JSONObject jsonMessage = new JSONObject();
-            jsonMessage.put("messageType", "MODEL");
-            jsonMessage.put("content", saver.serialize(model));
+            jsonMessage.put("CLASS", "MODEL");
+            jsonMessage.put("ACTION", "INIT");
+            jsonMessage.put("CONTENT", saver.serialize(model));
             for (WebSocketConnection connection : openConnections) {
                 connection.send(jsonMessage.toString());
             }
@@ -49,18 +54,22 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
         }
     }
 
-    public void sendMessageToClients(JSONObject content) {
 
+    public void updateModel(JSONObject content) {
         try {
-            JSONObject jsonMessage = new JSONObject();
-            jsonMessage.put("messageType", "MESSAGE");
-            jsonMessage.put("content", content);
-
-            for (WebSocketConnection connection : openConnections) {
-                connection.send(jsonMessage.toString());
-            }
+            TraceSequence seq = new DefaultTraceSequence();
+            seq.populateFromString(content.getString("CONTENT"));
+            seq.applyOn(model);
+            Log.debug("[KubiWebFrontend] Forward ModelUpdate to webClients");
+            sendMessageToClients(content);
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void sendMessageToClients(JSONObject content) {
+        for (WebSocketConnection connection : openConnections) {
+            connection.send(content.toString());
         }
     }
 
@@ -68,8 +77,9 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
 
         try {
             JSONObject jsonMessage = new JSONObject();
-            jsonMessage.put("messageType", "PAGE_TEMPLATE");
-            jsonMessage.put("content", content);
+            jsonMessage.put("CLASS", "PAGE_TEMPLATE");
+            jsonMessage.put("ACTION", "REPORT");
+            jsonMessage.put("CONTENT", content);
             client.send(jsonMessage.toString());
 
         } catch (JSONException e) {
@@ -93,14 +103,17 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
             Log.info("rec from client ("+connection.hashCode()+"): " + message);
             JSONObject msg = new JSONObject(message);
 
-            if(msg.has("messageType")) {
-                String messageType = msg.getString("messageType");
-                if( messageType.equals("MESSAGE")) {
-                    mainApp.messageReceivedFromClient(msg.getJSONObject("content"));
-                } else if(messageType.equals("PAGE_TEMPLATE")) {
-                    sendPageTemplateToClient(PageTemplates.getPageTemplateFor(msg.getString("content")), connection);
+            if(msg.has("CLASS")) {
+                String messageClass = msg.getString("CLASS");
+                String messageAction = msg.getString("ACTION");
+                if( messageClass.equals("PAGE_TEMPLATE")) {
+                    if(messageAction.equals("GET")) {
+                        sendPageTemplateToClient(PageTemplates.getPageTemplateFor(msg.getString("CONTENT")), connection);
+                    }
+                } else if(messageClass.equals("ACTION")) {
+                    component.messageReceivedFromWebClients(msg.getJSONObject("CONTENT"));
                 } else {
-                    Log.warn("Received message with unknown messageType:" + messageType);
+                    Log.warn("Received message with unknown messageType:" + messageClass);
                 }
             } else {
                 Log.warn("Received message with no messageType:" + msg);
@@ -114,8 +127,5 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
 
     }
 
-    public KubiModel getModel() {
-        return model;
-    }
 
 }

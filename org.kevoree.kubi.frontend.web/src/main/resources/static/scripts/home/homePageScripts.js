@@ -140,31 +140,31 @@ var KubiHome = function(){
                     //console.debug("ServiceName",serviceName);
                     //console.debug("inArray",$.inArray(serviceName, treatedServiceClass));
                     //if($.inArray(serviceName, treatedServiceClass) == -1) {
-                        var deviceService;
-                        //console.log("SwitchBinary ??",serviceName.equals("SWITCH_BINARY"));
-                        if(serviceName == "SWITCH_BINARY") {
-                            if(functioneName == "SET") {
-                                deviceService = buildBooleanControl(kubiNode, service);
-                                deviceService.appendTo(deviceServiceList);
-                                treatedServiceClass.push(serviceName);
-                            } else {
-                                var msg = {nodeId:kubiNode.id};
-                                msg.action = serviceName + "::GET";
-                                msg.technology = kubiNode.technology.name;
-                                var request = {};
-                                request.messageType = "MESSAGE";
-                                request.content = msg;
-                                updateStatusMessageList.push(request);
-                            }
-                        } else if(serviceName == "BASIC_WINDOW_COVERING") {
-                            if(functioneName == "START_LEVEL_CHANGE") {
-                                deviceService = buildUpDownStopControl(kubiNode, service);
-                                deviceService.appendTo(deviceServiceList);
-                                treatedServiceClass.push(serviceName);
-                            }
+                    var deviceService;
+                    //console.log("SwitchBinary ??",serviceName.equals("SWITCH_BINARY"));
+                    if(serviceName == "SWITCH_BINARY") {
+                        if(functioneName == "SET") {
+                            deviceService = buildBooleanControl(kubiNode, service);
+                            deviceService.appendTo(deviceServiceList);
+                            treatedServiceClass.push(serviceName);
                         } else {
-                            console.debug("Service ignored:" + service.function.name);
+                            var msg = {nodeId:kubiNode.id};
+                            msg.action = serviceName + "::GET";
+                            msg.technology = kubiNode.technology.name;
+                            var request = {};
+                            request.messageType = "MESSAGE";
+                            request.content = msg;
+                            updateStatusMessageList.push(request);
                         }
+                    } else if(serviceName == "BASIC_WINDOW_COVERING") {
+                        if(functioneName == "START_LEVEL_CHANGE") {
+                            deviceService = buildUpDownStopControl(kubiNode, service);
+                            deviceService.appendTo(deviceServiceList);
+                            treatedServiceClass.push(serviceName);
+                        }
+                    } else {
+                        console.debug("Service ignored:" + service.function.name);
+                    }
                     //}
                 });
             }
@@ -191,15 +191,15 @@ var KubiHome = function(){
     var privateMessageArrived = function(message) {
         console.debug("MessageReceived", message);
         $.each(KubiKernel.getKubiModel().nodes.array, function(key,kubiNode) {
-           if(kubiNode.id == message.nodeId) {
-               var serviceName = message.action.substring(0, message.action.lastIndexOf("::"));
-               if(serviceName == "SWITCH_BINARY") {
-                   $(kubiNode.uiElem).find('#'+serviceName).bootstrapSwitch('setState', message.state, true);
-               } else {
-                   console.warn("privateMessageArrived with unhandled action", serviceName);
-               }
+            if(kubiNode.id == message.nodeId) {
+                var serviceName = message.action.substring(0, message.action.lastIndexOf("::"));
+                if(serviceName == "SWITCH_BINARY") {
+                    $(kubiNode.uiElem).find('#'+serviceName).bootstrapSwitch('setState', message.state, true);
+                } else {
+                    console.warn("privateMessageArrived with unhandled action", serviceName);
+                }
 
-           }
+            }
         });
     };
 

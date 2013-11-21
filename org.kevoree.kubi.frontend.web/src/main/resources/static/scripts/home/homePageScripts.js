@@ -33,8 +33,10 @@ var KubiHome = function(){
             msg.parameters = paramArray;
 
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+
+            request.CLASS = "ACTION";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });
@@ -52,8 +54,10 @@ var KubiHome = function(){
             msg.parameters = paramArray;
 
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+
+            request.CLASS = "ACTION";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });
@@ -66,8 +70,9 @@ var KubiHome = function(){
             msg.technology = node.technology.name;
 
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+            request.CLASS = "ACTION";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });
@@ -103,14 +108,16 @@ var KubiHome = function(){
                     } else {
                         console.log("Could not retrieve the value from the form for param", val);
                     }
-                    paramArray.push(paramVal)
+                    console.debug("parameter:" + paramVal);
+                    paramArray.push(paramVal);
                 });
                 msg.parameters = paramArray;
             }
 
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+            request.CLASS = "ACTION";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });

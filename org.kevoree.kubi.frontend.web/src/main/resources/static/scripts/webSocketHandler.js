@@ -57,7 +57,7 @@ var WebSocketHandler = function(){
                 if(parsedMessage.CLASS == "MODEL") {
                     if(parsedMessage.ACTION == "UPDATE") {
                         console.log("Model Update receive from server");
-                        var seq = new module.org.kevoree.kubi.traces.DefaultTraceSequence();
+                        var seq = new module.org.kevoree.kubi.trace.DefaultTraceSequence();
                         seq.populateFromString(parsedMessage.CONTENT);
                         seq.applyOn(KubiKernel.getKubiModel());
                     } else if(parsedMessage.ACTION == "INIT") {

@@ -148,6 +148,9 @@ public class KubiWebFrontend extends AbstractComponentType implements ViewListen
 
     public void messageReceivedFromWebClients(JSONObject message) {
         Log.warn("[KubiWebFrontend] Message Received! " + message.toString());
+        if(isPortBinded("toController")) {
+            getPortByName("toController", MessagePort.class).process(message);
+        }
     }
 
 

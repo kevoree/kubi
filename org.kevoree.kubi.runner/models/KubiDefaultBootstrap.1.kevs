@@ -6,13 +6,11 @@ merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.jexxus/2.0.
 merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.web/1-SNAPSHOT'
 merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.driver.zwave/1-SNAPSHOT'
 merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.controller/1-SNAPSHOT'
-merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.store.web/1-SNAPSHOT'
 addNode node0:JavaSENode
  {
-  addComponent store@node0 : StoreComponent {logLevel = "DEBUG"}
   addComponent controller@node0 : DefaultKubiController {logLevel = "DEBUG"}
-  addComponent kubiFrontend@node0 : KubiWebFrontend {logLevel = "DEBUG"}
-  addComponent zwaveDriver@node0 : ZWaveDriver {logLevel = "DEBUG"}
+  addComponent kubiFrontend@node0 : KubiWebFrontend {logLevel = "WARN"}
+  addComponent zwaveDriver@node0 : ZWaveDriver {logLevel = "TRACE"}
 
   addChannel viewsToController : defMSG {}
   addChannel controllerToViews : defMSG {}

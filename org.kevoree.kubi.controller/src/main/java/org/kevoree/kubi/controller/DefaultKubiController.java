@@ -16,6 +16,7 @@ import org.kevoree.kubi.trace.DefaultTraceSequence;
 import org.kevoree.log.Log;
 import org.kevoree.modeling.api.KMFContainer;
 import org.kevoree.modeling.api.compare.ModelCompare;
+import org.kevoree.modeling.api.trace.ModelTrace;
 import org.kevoree.modeling.api.trace.TraceSequence;
 import org.kevoree.modeling.api.util.ModelTracker;
 
@@ -92,11 +93,11 @@ public class DefaultKubiController extends AbstractComponentType {
         Log.debug("[KubiController] Received a message from a view:" + msg);
 
         if(msg instanceof JSONObject) {
-
+            handleViewMessage((JSONObject)msg);
         } else if(msg instanceof String) {
             try {
                 JSONObject jsonMessage = new JSONObject((String)msg);
-
+                handleViewMessage(jsonMessage);
             } catch (JSONException e) {
                 Log.error("[KubiController] Could not parse the String 'fromViews' as JSON Object");
             }
@@ -138,13 +139,11 @@ public class DefaultKubiController extends AbstractComponentType {
 
                     TraceSequence seq = new DefaultTraceSequence();
                     seq.populateFromString(driverMessage.getString("CONTENT"));
-                    //Log.debug("[KubiController] Model before merge: " + kubiModelSerializer.serialize(currentKubiModel));
-                    //Log.debug("[KubiController] MergeTrace:" +  seq.exportToString());
+
                     if(seq.applyOn(currentKubiModel)) {
                         if(isPortBinded("toViews")) {
                             getPortByName("toViews", MessagePort.class).process(driverMessage);
                         }
-                        //Log.debug("[KubiController] Model after merge: " + kubiModelSerializer.serialize(currentKubiModel));
                     }
 
                 } else {
@@ -157,6 +156,13 @@ public class DefaultKubiController extends AbstractComponentType {
             Log.error("[KubiController]",e);
         }
 
+    }
+
+
+    private void handleViewMessage(JSONObject viewMessage) {
+        if(isPortBinded("toDrivers")) {
+            getPortByName("toDrivers", MessagePort.class).process(viewMessage);
+        }
     }
 
 

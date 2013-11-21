@@ -32,11 +32,9 @@ import org.kevoree.log.Log;
 @ComponentType
 public class ZWaveDriver extends AbstractComponentType implements ZWaveListener{
 
-    private Log localLog;
     private ZWaveConnector connector;
 
     public ZWaveDriver() {
-        localLog = Log.getLog("ZWaveDriver");
         connector = new ZWaveConnector();
         connector.addZwaveListener(this);
     }
@@ -73,7 +71,9 @@ public class ZWaveDriver extends AbstractComponentType implements ZWaveListener{
     }
 
     public void messageReceived(JSONObject msg) {
-        getPortByName("fromDevices", MessagePort.class).process(msg);
+        if(isPortBinded("fromDevices")) {
+            getPortByName("fromDevices", MessagePort.class).process(msg);
+        }
     }
 
     private void setLogLevel() {

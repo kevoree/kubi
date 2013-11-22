@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.framework.MessagePort;
-import org.kevoree.framework.service.handler.ModelListenerAdapter;
 import org.kevoree.kubi.KubiFactory;
 import org.kevoree.kubi.KubiModel;
 import org.kevoree.kubi.compare.DefaultModelCompare;
@@ -14,9 +13,6 @@ import org.kevoree.kubi.loader.JSONModelLoader;
 import org.kevoree.kubi.serializer.JSONModelSerializer;
 import org.kevoree.kubi.trace.DefaultTraceSequence;
 import org.kevoree.log.Log;
-import org.kevoree.modeling.api.KMFContainer;
-import org.kevoree.modeling.api.compare.ModelCompare;
-import org.kevoree.modeling.api.trace.ModelTrace;
 import org.kevoree.modeling.api.trace.TraceSequence;
 import org.kevoree.modeling.api.util.ModelTracker;
 

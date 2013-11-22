@@ -25,8 +25,9 @@ var KubiAdminPage = function(){
             */
 
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+            request.CLASS = "ADMIN";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });
@@ -38,8 +39,9 @@ var KubiAdminPage = function(){
             msg.action = "ADMIN::START_DEVICE_REMOVAL_DISCOVERY";
             msg.technology = "ALL";
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+            request.CLASS = "ADMIN";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });
@@ -51,8 +53,9 @@ var KubiAdminPage = function(){
             msg.action = "ADMIN::REMOVE_ALL_DEVICES";
             msg.technology = "ALL";
             var request = {};
-            request.messageType = "MESSAGE";
-            request.content = msg;
+            request.CLASS = "ADMIN";
+            request.ACTION = msg.action;
+            request.CONTENT = msg;
 
             WebSocketHandler.send(JSON.stringify(request));
         });

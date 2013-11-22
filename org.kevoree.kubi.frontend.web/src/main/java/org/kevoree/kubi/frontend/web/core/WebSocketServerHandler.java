@@ -110,7 +110,7 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
                     if(messageAction.equals("GET")) {
                         sendPageTemplateToClient(PageTemplates.getPageTemplateFor(msg.getString("CONTENT")), connection);
                     }
-                } else if(messageClass.equals("ACTION")) {
+                } else if(messageClass.equals("ACTION") || messageClass.equals("ADMIN")) {
                     component.messageReceivedFromWebClients(msg);
                 } else {
                     Log.warn("Received message with unknown messageType:" + messageClass);

@@ -92,7 +92,7 @@ var WebSocketHandler = function(){
             ws.onmessage = action;
         },
         send : function(msg) {
-            console.log("Sendin message", msg);
+            console.log("Sending message", msg);
             ws.send(msg);
         }
     };

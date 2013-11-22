@@ -159,8 +159,9 @@ var KubiHome = function(){
                             msg.action = serviceName + "::GET";
                             msg.technology = kubiNode.technology.name;
                             var request = {};
-                            request.messageType = "MESSAGE";
-                            request.content = msg;
+                            request.CLASS = "ACTION";
+                            request.ACTION = msg.action;
+                            request.CONTENT = msg;
                             updateStatusMessageList.push(request);
                         }
                     } else if(serviceName == "BASIC_WINDOW_COVERING") {

@@ -137,6 +137,15 @@ public class OpenZWave {
         p.setTechnology(mainStore.findTechnologiesByID("Z-Wave"));
         p.setName("Micro Smart Switch(2nd ed.)");
         mainStore.addProducts(p);
+
+
+        Product p2 = factory.createProduct();
+        p2.setId("1001");
+        p2.setTypeid("0301");
+        p2.setManufacturer(mainStore.findManufacturersByID("010f"));
+        p2.setTechnology(mainStore.findTechnologiesByID("Z-Wave"));
+        p2.setName("Roller Shutter 2");
+        mainStore.addProducts(p2);
     }
 
 }

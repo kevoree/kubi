@@ -186,7 +186,7 @@ public class ZWaveConnector {
                 Log.trace("Response received to collection of data for node:" + nodeId);
             }
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -319,6 +319,7 @@ public class ZWaveConnector {
                                                     Log.info("Associating Controller (id:1) to group:"+ i +" of node:" + addMessage.getSourceNodeId());
                                                     m = RequestFactory.zwAddAssociations(addMessage.getSourceNodeId(), i, ((byte)1 & 0xFF));
                                                     manager.sendMessageAndWaitResponse(m);
+
                                                     Log.debug("Completed");
                                                 } else {
                                                     Log.info("Controller already associated.");
@@ -328,6 +329,7 @@ public class ZWaveConnector {
                                         }
 
                                         if(acknowledged) {
+                                            manager.sendMessageAndWaitResponse(RequestFactory.zwRequestNodeInfo(addMessage.getSourceNodeId()));
                                             Log.debug("Process completed");
                                         } else {
                                             Log.debug("Could not stop the inclusion process.");

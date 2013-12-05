@@ -17,7 +17,7 @@
             <plugin>
                 <groupId>org.kevoree.watchdog</groupId>
                 <artifactId>org.kevoree.watchdog.mavenrunner</artifactId>
-                <version>0.18-SNAPSHOT</version>
+                <version>0.19</version>
                 <configuration>
                     <bootstrapModel>${basedir}/models/KubiDefaultBootstrap.1.kevs</bootstrapModel>
                     <kevoreeVersion>LATEST</kevoreeVersion>

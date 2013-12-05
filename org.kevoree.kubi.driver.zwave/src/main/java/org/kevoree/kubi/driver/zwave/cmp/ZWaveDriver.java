@@ -2,9 +2,13 @@ package org.kevoree.kubi.driver.zwave.cmp;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
-import org.kevoree.framework.AbstractComponentType;
-import org.kevoree.framework.MessagePort;
+import org.kevoree.api.Callback;
+import org.kevoree.api.ModelService;
+import org.kevoree.api.Port;
+import org.kevoree.api.handler.ModelListener;
+import org.kevoree.kubi.KubiModel;
 import org.kevoree.kubi.driver.zwave.core.ZWaveConnector;
 import org.kevoree.kubi.driver.zwave.core.ZWaveListener;
 import org.kevoree.log.Log;
@@ -16,33 +20,83 @@ import org.kevoree.log.Log;
  * Time: 11:38
  */
 
-@Provides({
-        @ProvidedPort(name = "toDevices", type = PortType.MESSAGE)
-})
-
-@Requires({
-        @RequiredPort(name = "fromDevices", type = PortType.MESSAGE, optional = true)
-})
-
-@DictionaryType({
-        @DictionaryAttribute(name="logLevel", vals = {"DEBUG", "INFO", "ERROR", "TRACE", "OFF", "WARN"}, optional = true, defaultValue = "WARN")
-})
-
-
 @ComponentType
-public class ZWaveDriver extends AbstractComponentType implements ZWaveListener{
+@Library(name = "Kubi")
+public class ZWaveDriver implements ZWaveListener{
+
+    @Param(defaultValue = "WARN")
+    private String logLevel;
+
+    @Output
+    private Port fromDevices;
+
+    @Output
+    private Port getInitialModel;
+
+    @KevoreeInject
+    private ModelService kevoreeModelService;
 
     private ZWaveConnector connector;
+    private ModelListener modelListener;
 
     public ZWaveDriver() {
+        initModelListener();
         connector = new ZWaveConnector();
         connector.addZwaveListener(this);
     }
 
+    private void initModelListener() {
+        modelListener = new ModelListener() {
+            @Override
+            public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
+                return true;
+            }
+
+            @Override
+            public boolean initUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
+                return true;
+            }
+
+            @Override
+            public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
+                return true;
+            }
+
+            @Override
+            public void modelUpdated() {
+                getInitialModel.call(null, new Callback() {
+                    public void run(Object model) {
+                        if(model != null) {
+                            if(model instanceof KubiModel) {
+                                kevoreeModelService.unregisterModelListener(modelListener);
+                                connector.start((KubiModel)model);
+                            } else {
+                                Log.error("Could not start ZWave driver cause initial model was of type:" + model.getClass());
+                            }
+                        }else {
+                            Log.error("Model received is null !");
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void preRollback(ContainerRoot currentModel, ContainerRoot proposedModel) {
+
+            }
+
+            @Override
+            public void postRollback(ContainerRoot currentModel, ContainerRoot proposedModel) {
+
+            }
+        };
+    }
+
+
     @Start
     public void startComponent() {
         setLogLevel();
-        connector.start();
+        kevoreeModelService.registerModelListener(modelListener);
     }
 
     @Stop
@@ -55,7 +109,7 @@ public class ZWaveDriver extends AbstractComponentType implements ZWaveListener{
         setLogLevel();
     }
 
-    @Port(name="toDevices")
+    @Input
     public void toDevices(Object msg) {
         if(msg instanceof JSONObject) {
             connector.sendToNetwork((JSONObject)msg);
@@ -71,25 +125,18 @@ public class ZWaveDriver extends AbstractComponentType implements ZWaveListener{
     }
 
     public void messageReceived(JSONObject msg) {
-        if(isPortBinded("fromDevices")) {
-            getPortByName("fromDevices", MessagePort.class).process(msg);
-        }
+        fromDevices.call(msg);
     }
 
     private void setLogLevel() {
-        String logLevelVal = (String)getDictionary().get("logLevel");
-        if ("DEBUG".equals(logLevelVal)) {
-            Log.DEBUG();
-        } else if ("WARN".equals(logLevelVal)) {
-            Log.WARN();
-        } else if ("INFO".equals(logLevelVal)) {
-            Log.INFO();
-        } else if ("ERROR".equals(logLevelVal)) {
-            Log.ERROR();
-        } else if ("TRACE".equals(logLevelVal)) {
-            Log.TRACE();
-        } else {
-            Log.NONE();
+        switch(logLevel) {
+            case "WARN" : Log.WARN();break;
+            case "DEBUG" : Log.DEBUG();break;
+            case "TRACE" : Log.TRACE();break;
+            case "ERROR" : Log.ERROR();break;
+            case "INFO" : Log.INFO();break;
+            case "NONE" : Log.NONE();break;
+            default:Log.WARN();
         }
     }
 

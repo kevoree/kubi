@@ -1,34 +1,47 @@
- {
-addRepo "http://repo.maven.apache.org/maven2"
-merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/2.0.6-SNAPSHOT'
-merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.defaultChannels/2.0.6-SNAPSHOT'
-merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.jexxus/2.0.6-SNAPSHOT'
-merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.web/1-SNAPSHOT'
-merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.driver.zwave/1-SNAPSHOT'
-merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.controller/1-SNAPSHOT'
-addNode node0:JavaSENode
- {
-  addComponent controller@node0 : DefaultKubiController {logLevel = "DEBUG"}
-  addComponent kubiFrontend@node0 : KubiWebFrontend {logLevel = "WARN"}
-  addComponent zwaveDriver@node0 : ZWaveDriver {logLevel = "TRACE"}
+repo "http://oss.sonatype.org/content/groups/public/"
+include mvn:org.kevoree.library.java:org.kevoree.library.java.channels:3.0.0-SNAPSHOT
+include mvn:org.kevoree.kubi:org.kevoree.kubi.web:1-SNAPSHOT
+include mvn:org.kevoree.kubi:org.kevoree.kubi.controller:1-SNAPSHOT
+include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:3.0.0-SNAPSHOT
+include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:3.0.0-SNAPSHOT
+include mvn:org.kevoree.kubi:org.kevoree.kubi.driver.zwave:1-SNAPSHOT
 
-  addChannel viewsToController : defMSG {}
-  addChannel controllerToViews : defMSG {}
-  addChannel driversToController : defMSG {}
-  addChannel controllerToDrivers : defMSG {}
+add node0 : JavaNode/3.0.0-SNAPSHOT
+add sync : WSGroup/3.0.0-SNAPSHOT
+attach node0 sync
 
-  bind controller.fromViews@node0 => viewsToController
-  bind controller.fromDrivers@node0 => driversToController
-  bind controller.toViews@node0 => controllerToViews
-  bind controller.toDrivers@node0 => controllerToDrivers
+add node0.webFrontend : KubiWebFrontend/1-SNAPSHOT
+add node0.controller : DefaultKubiController/1-SNAPSHOT
+add node0.zWaveDriver : ZWaveDriver/1-SNAPSHOT
 
-  bind zwaveDriver.toDevices@node0 => controllerToDrivers
-  bind zwaveDriver.fromDevices@node0 => driversToController
-  bind kubiFrontend.fromController@node0 => controllerToViews
-  bind kubiFrontend.toController@node0 => viewsToController
+add AsyncBroa333 : AsyncBroadcast/3.0.0-SNAPSHOT
+add AsyncBroa298 : AsyncBroadcast/3.0.0-SNAPSHOT
+add AsyncBroa287 : AsyncBroadcast/3.0.0-SNAPSHOT
+add AsyncBroa262 : AsyncBroadcast/3.0.0-SNAPSHOT
+add initialModelChannel : AsyncBroadcast/3.0.0-SNAPSHOT
 
-}
+bind node0.controller.toViews AsyncBroa298
+bind node0.controller.toDrivers AsyncBroa262
+bind node0.controller.fromDrivers AsyncBroa287
+bind node0.webFrontend.fromController AsyncBroa298
+bind node0.webFrontend.toConroller AsyncBroa333
+bind node0.zWaveDriver.fromDevices AsyncBroa287
+bind node0.controller.fromViews AsyncBroa333
+bind node0.zWaveDriver.toDevices AsyncBroa262
+bind node0.controller.getInitialModel initialModelChannel
+bind node0.zWaveDriver.getInitialModel initialModelChannel
+bind node0.webFrontend.getInitialModel initialModelChannel
 
-addGroup sync:BasicGroup
-addToGroup sync node0
-}
+set node0.started = "true"
+set node0.webFrontend.started = "true"
+set node0.zWaveDriver.started = "true"
+set node0.controller.started = "true"
+set node0.webFrontend.logLevel = "TRACE"
+set node0.zWaveDriver.logLevel = "TRACE"
+set node0.controller.logLevel = "TRACE"
+set AsyncBroa333.started = "true"
+set AsyncBroa298.started = "true"
+set AsyncBroa287.started = "true"
+set AsyncBroa262.started = "true"
+set sync.port/node0 = "9000"
+set sync.started = "true"

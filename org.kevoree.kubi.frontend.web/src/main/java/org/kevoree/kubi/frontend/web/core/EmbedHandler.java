@@ -1,6 +1,6 @@
 package org.kevoree.kubi.frontend.web.core;
 
-import org.kevoree.framework.AbstractComponentType;
+import org.kevoree.kubi.frontend.web.cmp.KubiWebFrontend;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 
 public class EmbedHandler extends AbstractResourceHandler {
 
-    private AbstractComponentType origin;
+    private KubiWebFrontend origin;
     private String baseFolder;
 
     public EmbedHandler(Executor ioThread, TemplateEngine templateEngine) {
@@ -25,7 +25,7 @@ public class EmbedHandler extends AbstractResourceHandler {
         super(ioThread);
     }
 
-    public EmbedHandler(AbstractComponentType origin, String baseFolder) {
+    public EmbedHandler(KubiWebFrontend origin, String baseFolder) {
         super(Executors.newFixedThreadPool(4));
         this.origin = origin;
         this.baseFolder = baseFolder;

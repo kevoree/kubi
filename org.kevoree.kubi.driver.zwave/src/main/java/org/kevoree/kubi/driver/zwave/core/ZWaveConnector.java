@@ -35,6 +35,7 @@ import org.kevoree.modeling.api.util.ModelTracker;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 public class ZWaveConnector {
 
@@ -51,8 +52,6 @@ public class ZWaveConnector {
     public ZWaveConnector() {
         Log.TRACE();
         listeners = new ArrayList<ZWaveListener>();
-
-        zWaveKubiModel = kubiFactory.createKubiModel();
     }
 
     public void addZwaveListener(ZWaveListener lst) {
@@ -77,7 +76,8 @@ public class ZWaveConnector {
         }
     }
 
-    public void start() {
+    public void start(KubiModel initialModel) {
+        zWaveKubiModel = initialModel;
         String aeonLabsKeyPort = "serial:///dev/tty.SLAB_USBtoUART";
         Log.info("Initiating Z-Wave Manager to " + aeonLabsKeyPort);
         manager = new ZWaveManager(aeonLabsKeyPort);
@@ -102,50 +102,26 @@ public class ZWaveConnector {
     }
 
     private void initControllerAndModel() {
-        Log.info("Collecting the SerialAPICapabilities");
         Serial_GetApiCapabilities response = (Serial_GetApiCapabilities) manager.sendMessageAndWaitResponse(RequestFactory.serialApiGetCapabilities()); // Capabilities of the API
-        Log.debug("Received " + response.toString());
-
-        Log.trace("[START]Collecting HomeID and NodeID");
         ZW_MemoryGetId idsResponse = (ZW_MemoryGetId)manager.sendMessageAndWaitResponse(RequestFactory.zwMemoryGetId()); // HomeId and NodeId of the serial gateway
-        Log.trace("[STOP]Collecting HomeID and NodeID");
+
+        Manufacturer manufacturer = ProductsStoreManager.getInstance().getManufacturerById(String.format("%02x%02x", response.getManufacturerId_msb(), response.getManufacturerId_lsb()));
+        Product product = ProductsStoreManager.getInstance().getProductById(manufacturer, String.format("%02x%02x%02x%02x", response.getProductType_msb(), response.getProductType_lsb(), response.getProductId_msb(), response.getProductId_lsb()));
 
         tracker.reset();
         tracker.track(zWaveKubiModel);
 
         controllerNode = kubiFactory.createGateway();
-
-        Manufacturer manufacturer = ProductsStoreManager.getInstance().getManufacturerById(String.format("%02x%02x", response.getManufacturerId_msb(), response.getManufacturerId_lsb()));
-        Product product = ProductsStoreManager.getInstance().getProductById(manufacturer, String.format("%02x%02x%02x%02x", response.getProductType_msb(), response.getProductType_lsb(), response.getProductId_msb(), response.getProductId_lsb()));
-
-
-        //Manufacturer manufacturer = Manufacturers.getManufacturer(response.getManufacturerId_msb(), response.getManufacturerId_lsb());
-        //Product product = manufacturer.getProduct(String.format("%02x%02x", response.getProductType_msb(), response.getProductType_lsb()), String.format("%02x%02x", response.getProductId_msb(), response.getProductId_lsb()));
-        Log.trace("[START]Setting brand of controller");
         controllerNode.setBrand(manufacturer.getName());
-        Log.trace("[STOP]Setting brand of controller: " + manufacturer.getName());
-
         controllerNode.setName(product.getName());
-
-        Log.trace("[START]Setting IDs of controller");
         controllerNode.setId("" + idsResponse.getHomeId() + ":" + idsResponse.getNodeId());
-        Log.trace("[STOP]Setting IDs of controller");
-
         controllerNode.setPicture(ProductsStoreManager.getInstance().getProductStoreAddress()+"/img/"+String.format("%02x%02x", response.getManufacturerId_msb(), response.getManufacturerId_lsb())+"/"+String.format("%02x%02x%02x%02x", response.getProductType_msb(), response.getProductType_lsb(), response.getProductId_msb(), response.getProductId_lsb())+".png");
 
-
-        Log.trace("[START]Adding node to Kubi model");
         zWaveKubiModel.addNodes(controllerNode);
-        Log.trace("[STOP]Adding node to Kubi model");
 
-        Log.trace("[START]Sending model to clients");
         TraceSequence seq = tracker.getTraceSequence();
         tracker.untrack();
         sendModelUpdate(seq);
-        Log.trace("[STOP]Sending model to clients");
-
-        Log.debug("Controller added to model. Sending to clients.");
-
     }
 
     private void sendModelUpdate(TraceSequence seq) {
@@ -154,6 +130,7 @@ public class ZWaveConnector {
             modelUpdate.put("CLASS","MODEL");
             modelUpdate.put("ACTION","UPDATE");
             modelUpdate.put("CONTENT",seq.exportToString());
+            Log.trace("Sending model update:" + seq.exportToString());
             fireMessage(modelUpdate);
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -167,10 +144,8 @@ public class ZWaveConnector {
             public void messageReceived(Message msg) {
                 if(msg instanceof ZW_ApplicationNodeInformation) {
                     updateNodeInformation((ZW_ApplicationNodeInformation)msg);
-
                 } else {
-                    //fireMessageReceived(msg);
-                    Log.warn("Message Ignored:" + msg);
+                    Log.debug("Message Ignored:" + msg);
                 }
             }
         };
@@ -195,86 +170,80 @@ public class ZWaveConnector {
     }
 
 
+    private Semaphore nodeUpdateSema = new Semaphore(1);
 
     private void updateNodeInformation(ZW_ApplicationNodeInformation nodeInfos) {
-        if(nodeInfos.hasRequestSucceeded()) {
+        try {
+            if(nodeInfos.hasRequestSucceeded()) {
+                nodeUpdateSema.acquire();
+                tracker.reset();
+                tracker.track(zWaveKubiModel);
 
-            tracker.reset();
-            tracker.track(zWaveKubiModel);
+                Log.info("[Message Listener] Information updated for node " + nodeInfos.getNodeId());
+                Log.info("[Message Listener] List of Commands for node " + nodeInfos.getNodeId() + ": " + String.format("%s", nodeInfos.getCommandClasses()));
 
-            Log.info("[Message Listener] Information updated for node " + nodeInfos.getNodeId());
-            Log.info("[Message Listener] List of Commands for node " + nodeInfos.getNodeId() + ": " + String.format("%s", nodeInfos.getCommandClasses()));
+                Log.debug("Looking for Product Information");
+                ManufacturerSpecificCommandClass manufacturerInfos = (ManufacturerSpecificCommandClass)manager.sendMessageAndWaitResponse(RequestFactory.zwGetManufacturerSpecificInfos(nodeInfos.getNodeId()));
+                Manufacturer manufacturer = ProductsStoreManager.getInstance().getManufacturerById(manufacturerInfos.getManufacturer());
+                Product product = ProductsStoreManager.getInstance().getProductById(manufacturer, manufacturerInfos.getProductType() + manufacturerInfos.getProductId());
 
-            Log.debug("Looking for Product Information");
-            ManufacturerSpecificCommandClass manufacturerInfos = (ManufacturerSpecificCommandClass)manager.sendMessageAndWaitResponse(RequestFactory.zwGetManufacturerSpecificInfos(nodeInfos.getNodeId()));
-            Manufacturer manufacturer = ProductsStoreManager.getInstance().getManufacturerById(manufacturerInfos.getManufacturer());
-            Product product = ProductsStoreManager.getInstance().getProductById(manufacturer, manufacturerInfos.getProductType() + manufacturerInfos.getProductId());
+                Node n = kubiFactory.createNode();
+                n.setId("" + nodeInfos.getNodeId());
+                zWaveKubiModel.addNodes(n);
+                n.setTechnology(zWaveTech);
 
-            Log.debug("Manufacturer: " + manufacturer.getName());
-            Log.debug("Product: " + product.getName());
+                if(manufacturer != null) {
+                    n.setBrand(manufacturer.getName());
+                } else {
+                    Log.warn("No manufacturer found in Product store for id:" + manufacturerInfos.getManufacturer());
+                }
 
-            Log.debug("Creating KubiNode");
-            Node n = kubiFactory.createNode();
-            Log.debug("Setting ID");
-            n.setId("" + nodeInfos.getNodeId());
-            Log.debug("Adding to model here");
-            zWaveKubiModel.addNodes(n);
-            Log.debug("Setting Technology");
-            n.setTechnology(zWaveTech);
-            Log.debug("Setting Brand");
-            if(manufacturer != null) {
-                n.setBrand(manufacturer.getName());
-            } else {
-                Log.warn("No manufacturer found in Product store for id:" + manufacturerInfos.getManufacturer());
-            }
-            Log.debug("Setting ProductName");
-            if(product != null) {
-                n.setName(product.getName() + "(" + nodeInfos.getNodeId() + ")");
-            } else {
-                n.setName("(" + nodeInfos.getNodeId() + ")");
-                Log.warn("No Product found in store for manufacturer "+manufacturerInfos.getManufacturer()+" with id:" + manufacturerInfos.getProductType() + manufacturerInfos.getProductId());
-            }
-            Log.debug("Setting Picture");
-            n.setPicture(ProductsStoreManager.getInstance().getProductStoreAddress()+"/img/"+manufacturerInfos.getManufacturer()+"/"+manufacturerInfos.getProductType() + manufacturerInfos.getProductId()+".png");
+                if(product != null) {
+                    n.setName(product.getName() + "(" + nodeInfos.getNodeId() + ")");
+                } else {
+                    n.setName("(" + nodeInfos.getNodeId() + ")");
+                    Log.warn("No Product found in store for manufacturer "+manufacturerInfos.getManufacturer()+" with id:" + manufacturerInfos.getProductType() + manufacturerInfos.getProductId());
+                }
+                n.setPicture(ProductsStoreManager.getInstance().getProductStoreAddress()+"/img/"+manufacturerInfos.getManufacturer()+"/"+manufacturerInfos.getProductType() + manufacturerInfos.getProductId()+".png");
 
-            Log.debug("Setting its Command-Class");
-            for(CommandClass cc : nodeInfos.getCommandClasses()) {
-                for(AbstractZwaveEnum function : cc.getFunctions()) {
+                for(CommandClass cc : nodeInfos.getCommandClasses()) {
+                    for(AbstractZwaveEnum function : cc.getFunctions()) {
 
-                    if(!function.getName().contains("REPORT")) {
+                        if(!function.getName().contains("REPORT")) {
 
-                        Function f = kubiFactory.createFunction();
-                        f.setName(cc.getName() + "::" + function.getName());
-                        zWaveKubiModel.addFunctions(f);
-                        Service s = kubiFactory.createService();
-                        s.setFunction(f);
-                        n.addServices(s);
+                            Function f = kubiFactory.createFunction();
+                            f.setName(cc.getName() + "::" + function.getName());
+                            zWaveKubiModel.addFunctions(f);
+                            Service s = kubiFactory.createService();
+                            s.setFunction(f);
+                            n.addServices(s);
 
-                        if(cc.getName().equals("SWITCH_BINARY") && function.getName().equals("SET")) {
-                            Parameter p1 = kubiFactory.createParameter();
-                            p1.setName("on");
-                            p1.setValueType(ParameterTypes.BOOLEAN);
-                            f.addParameters(p1);
-                        } else if(cc.getName().equals("BASIC_WINDOW_COVERING") && function.getName().equals("START_LEVEL_CHANGE")) {
-                            Parameter p1 = kubiFactory.createParameter();
-                            p1.setName("direction");
-                            p1.setValueType(ParameterTypes.LIST);
-                            p1.setRange("up,down");
-                            f.addParameters(p1);
+                            if(cc.getName().equals("SWITCH_BINARY") && function.getName().equals("SET")) {
+                                Parameter p1 = kubiFactory.createParameter();
+                                p1.setName("on");
+                                p1.setValueType("BOOLEAN");
+                                f.addParameters(p1);
+
+                            } else if(cc.getName().equals("BASIC_WINDOW_COVERING") && function.getName().equals("START_LEVEL_CHANGE")) {
+                                Parameter p1 = kubiFactory.createParameter();
+                                p1.setName("direction");
+                                p1.setValueType("LIST");
+                                p1.setRange("up,down");
+                                f.addParameters(p1);
+                            }
                         }
                     }
                 }
+                controllerNode.addLinks(n);
+
+                TraceSequence seq = tracker.getTraceSequence();
+                tracker.untrack();
+                sendModelUpdate(seq);
+                nodeUpdateSema.release();
+                //fireMessage(new JSONObject(kubiModelJsonSerializer.serialize(zWaveKubiModel)));
             }
-            Log.debug("Adding Links");
-            controllerNode.addLinks(n);
-
-            TraceSequence seq = tracker.getTraceSequence();
-            tracker.untrack();
-            Log.debug("Sending to clients");
-            Log.debug("Adding node" + seq.toString());
-            sendModelUpdate(seq);
-
-            //fireMessage(new JSONObject(kubiModelJsonSerializer.serialize(zWaveKubiModel)));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -464,12 +433,11 @@ public class ZWaveConnector {
 
 
     public void stop() {
-        Log.info("ZWave connection closing");
-        manager.stop();
-        Log.info("ZWave connection closed.");
+        if(manager != null) {
+            Log.info("ZWave connection closing");
+            manager.stop();
+            Log.info("ZWave connection closed.");
+        }
     }
-
-
-
 
 }

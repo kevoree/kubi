@@ -1,7 +1,6 @@
 package org.kevoree.kubi.store.web.cmp;
 
 import org.kevoree.annotation.*;
-import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.kubi.store.web.core.KubiWebStoreMain;
 import org.kevoree.log.Log;
 
@@ -12,15 +11,15 @@ import org.kevoree.log.Log;
  * Time: 11:30
  */
 
-
-@DictionaryType({
-        @DictionaryAttribute(name="logLevel", vals = {"DEBUG", "INFO", "ERROR", "TRACE", "OFF", "WARN"}, optional = true, defaultValue = "WARN")
-})
-
 @ComponentType
-public class StoreComponent extends AbstractComponentType {
+@Library(name = "Kubi")
+public class StoreComponent {
 
     private KubiWebStoreMain app;
+
+    @Param(defaultValue = "WARN")
+    private String logLevel;
+
 
     @Start
     public void startComponent() {
@@ -41,16 +40,15 @@ public class StoreComponent extends AbstractComponentType {
     }
 
     private void setLogLevel() {
-        String logLevelVal = (String)getDictionary().get("logLevel");
-        if ("DEBUG".equals(logLevelVal)) {
+        if ("DEBUG".equals(logLevel)) {
             Log.DEBUG();
-        } else if ("WARN".equals(logLevelVal)) {
+        } else if ("WARN".equals(logLevel)) {
             Log.WARN();
-        } else if ("INFO".equals(logLevelVal)) {
+        } else if ("INFO".equals(logLevel)) {
             Log.INFO();
-        } else if ("ERROR".equals(logLevelVal)) {
+        } else if ("ERROR".equals(logLevel)) {
             Log.ERROR();
-        } else if ("TRACE".equals(logLevelVal)) {
+        } else if ("TRACE".equals(logLevel)) {
             Log.TRACE();
         } else {
             Log.NONE();

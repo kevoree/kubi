@@ -127,7 +127,7 @@ var KubiHome = function(){
 
     var initHomePage = function(){
         var container = $("div.row-fluid");
-        var updateStatusMessageList = new Array();
+        //var updateStatusMessageList = new Array();
 
         $.each(KubiKernel.getKubiModel().nodes.array, function(key,kubiNode) {
 
@@ -162,7 +162,7 @@ var KubiHome = function(){
                             request.CLASS = "ACTION";
                             request.ACTION = msg.action;
                             request.CONTENT = msg;
-                            updateStatusMessageList.push(request);
+                           // updateStatusMessageList.push(request);
                         }
                     } else if(serviceName == "BASIC_WINDOW_COVERING") {
                         if(functioneName == "START_LEVEL_CHANGE") {
@@ -186,8 +186,8 @@ var KubiHome = function(){
         });
 
         //request status of devices
-        console.debug("UpdateMessageList", updateStatusMessageList);
-        updateStatus(updateStatusMessageList);
+        //console.debug("UpdateMessageList", updateStatusMessageList);
+        //updateStatus(updateStatusMessageList);
 
     };
 
@@ -211,11 +211,13 @@ var KubiHome = function(){
         });
     };
 
+    /*
     var updateStatus = function(messageList) {
         $.each(messageList, function(key, message){
             WebSocketHandler.send(JSON.stringify(message));
         });
     };
+    */
 
     return {
         init : initHomePage,

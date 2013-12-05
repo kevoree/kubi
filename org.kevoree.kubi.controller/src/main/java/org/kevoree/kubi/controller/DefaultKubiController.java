@@ -3,18 +3,15 @@ package org.kevoree.kubi.controller;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.kevoree.annotation.*;
-import org.kevoree.framework.AbstractComponentType;
-import org.kevoree.framework.MessagePort;
+import org.kevoree.api.Port;
 import org.kevoree.kubi.KubiFactory;
 import org.kevoree.kubi.KubiModel;
-import org.kevoree.kubi.compare.DefaultModelCompare;
+import org.kevoree.kubi.cloner.DefaultModelCloner;
 import org.kevoree.kubi.impl.DefaultKubiFactory;
-import org.kevoree.kubi.loader.JSONModelLoader;
-import org.kevoree.kubi.serializer.JSONModelSerializer;
 import org.kevoree.kubi.trace.DefaultTraceSequence;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.ModelCloner;
 import org.kevoree.modeling.api.trace.TraceSequence;
-import org.kevoree.modeling.api.util.ModelTracker;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,32 +20,29 @@ import org.kevoree.modeling.api.util.ModelTracker;
  * Time: 11:34
  */
 
-@Requires({
-        @RequiredPort(name = "toDrivers", type = PortType.MESSAGE, optional = true),
-        @RequiredPort(name = "toViews", type = PortType.MESSAGE, optional = true)
-})
-
-@Provides({
-        @ProvidedPort(name = "fromDrivers", type = PortType.MESSAGE),
-        @ProvidedPort(name = "fromViews", type = PortType.MESSAGE)
-})
-
-@DictionaryType({
-        @DictionaryAttribute(name="logLevel", vals = {"DEBUG", "INFO", "ERROR", "TRACE", "OFF", "WARN"}, optional = true, defaultValue = "WARN")
-})
-
 @ComponentType
-public class DefaultKubiController extends AbstractComponentType {
+@Library(name = "Kubi")
+public class DefaultKubiController {
 
+    @Param(defaultValue = "WARN")
+    private String logLevel;
+
+    //Ports
+    @Output(optional = true)
+    protected Port toDrivers;
+
+    @Output(optional = true)
+    protected Port toViews;
+
+    private KubiModel baseKubiModel;
     private KubiModel currentKubiModel;
-    private JSONModelLoader kubiModelLoader = new JSONModelLoader();
-    private JSONModelSerializer kubiModelSerializer = new JSONModelSerializer();
-    private DefaultModelCompare modelComparator = new DefaultModelCompare();
-    private ModelTracker tracker;
 
     public DefaultKubiController() {
         KubiFactory factory = new DefaultKubiFactory();
-        currentKubiModel = factory.createKubiModel();
+        ModelCloner cloner = new DefaultModelCloner();
+        baseKubiModel = factory.createKubiModel();
+
+        currentKubiModel = cloner.clone(baseKubiModel, false);
     }
 
     @Start
@@ -65,29 +59,24 @@ public class DefaultKubiController extends AbstractComponentType {
         setLogLevel();
     }
 
-    private void setLogLevel() {
-        String logLevelVal = (String)getDictionary().get("logLevel");
-        if ("DEBUG".equals(logLevelVal)) {
-            Log.DEBUG();
-        } else if ("WARN".equals(logLevelVal)) {
-            Log.WARN();
-        } else if ("INFO".equals(logLevelVal)) {
-            Log.INFO();
-        } else if ("ERROR".equals(logLevelVal)) {
-            Log.ERROR();
-        } else if ("TRACE".equals(logLevelVal)) {
-            Log.TRACE();
+    @Input
+    public void fromDrivers(Object msg) {
+        if(msg instanceof JSONObject) {
+            handleDriverMessage((JSONObject)msg);
+        } else if(msg instanceof String) {
+            try {
+                JSONObject jsonMessage = new JSONObject((String)msg);
+                handleDriverMessage(jsonMessage);
+            } catch (JSONException e) {
+                Log.error("[KubiController] Could not parse the String 'fromDrivers' as JSON Object");
+            }
         } else {
-            Log.NONE();
+            Log.warn("[KubiController] Received a message on 'fromDrivers' port of strange type:" + msg.getClass());
         }
     }
 
-
-    @Port(name="fromViews")
-    public void messageFromViews(Object msg) {
-
-        Log.debug("[KubiController] Received a message from a view:" + msg);
-
+    @Input
+    public void fromViews(Object msg) {
         if(msg instanceof JSONObject) {
             handleViewMessage((JSONObject)msg);
         } else if(msg instanceof String) {
@@ -102,24 +91,23 @@ public class DefaultKubiController extends AbstractComponentType {
         }
     }
 
-    @Port(name="fromDrivers")
-    public void messageFromDrivers(Object msg) {
+    @Input
+    public KubiModel getInitialModel(Object o) {
+        return baseKubiModel;
+    }
 
-        Log.debug("[KubiController] Received a message from a driver" + msg);
-
-        if(msg instanceof JSONObject) {
-            handleDriverMessage((JSONObject)msg);
-        } else if(msg instanceof String) {
-            try {
-                JSONObject jsonMessage = new JSONObject((String)msg);
-                handleDriverMessage(jsonMessage);
-            } catch (JSONException e) {
-                Log.error("[KubiController] Could not parse the String 'fromDrivers' as JSON Object");
-            }
-        } else {
-            Log.warn("[KubiController] Received a message on 'fromDrivers' port of strange type:" + msg.getClass());
+    private void setLogLevel() {
+        switch(logLevel) {
+            case "WARN" : Log.WARN();break;
+            case "DEBUG" : Log.DEBUG();break;
+            case "TRACE" : Log.TRACE();break;
+            case "ERROR" : Log.ERROR();break;
+            case "INFO" : Log.INFO();break;
+            case "NONE" : Log.NONE();break;
+            default:Log.WARN();
         }
     }
+
 
     private void handleDriverMessage(JSONObject driverMessage) {
 
@@ -135,11 +123,9 @@ public class DefaultKubiController extends AbstractComponentType {
 
                     TraceSequence seq = new DefaultTraceSequence();
                     seq.populateFromString(driverMessage.getString("CONTENT"));
-
+                    Log.trace("Applying trace in controler:" + seq.exportToString());
                     if(seq.applyOn(currentKubiModel)) {
-                        if(isPortBinded("toViews")) {
-                            getPortByName("toViews", MessagePort.class).process(driverMessage);
-                        }
+                        toViews.call(driverMessage);
                     }
 
                 } else {
@@ -156,9 +142,7 @@ public class DefaultKubiController extends AbstractComponentType {
 
 
     private void handleViewMessage(JSONObject viewMessage) {
-        if(isPortBinded("toDrivers")) {
-            getPortByName("toDrivers", MessagePort.class).process(viewMessage);
-        }
+        toDrivers.call(viewMessage);
     }
 
 

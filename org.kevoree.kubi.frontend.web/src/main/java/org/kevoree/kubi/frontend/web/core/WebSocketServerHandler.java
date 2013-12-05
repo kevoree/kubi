@@ -14,6 +14,7 @@ import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,15 +29,15 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     private JSONModelSerializer saver = new JSONModelSerializer();
     //private JSONModelLoader loader = new JSONModelLoader();
     private DefaultKubiFactory factory = new DefaultKubiFactory();
-    private List<WebSocketConnection> openConnections = new ArrayList<WebSocketConnection>();
+    private final List<WebSocketConnection> openConnections = Collections.synchronizedList(new ArrayList<WebSocketConnection>());
     private KubiWebFrontend component;
 
 
-    public WebSocketServerHandler(KubiWebFrontend component) {
+    public WebSocketServerHandler(KubiWebFrontend component, KubiModel model) {
         this.component = component;
         Log.set(Log.LEVEL_DEBUG);
         //init default Model
-        model = factory.createKubiModel();
+        this.model = model;
     }
 
 
@@ -61,6 +62,7 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
             seq.populateFromString(content.getString("CONTENT"));
             seq.applyOn(model);
             Log.debug("[KubiWebFrontend] Forward ModelUpdate to webClients");
+            Log.trace("[KubiFrontend] Sending ModelTrace to clients:" + seq.exportToString());
             sendMessageToClients(content);
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -68,8 +70,10 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     }
 
     public void sendMessageToClients(JSONObject content) {
-        for (WebSocketConnection connection : openConnections) {
-            connection.send(content.toString());
+        synchronized (openConnections) {
+            for (WebSocketConnection connection : openConnections) {
+                connection.send(content.toString());
+            }
         }
     }
 
@@ -88,7 +92,9 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
     }
 
     public void onOpen(WebSocketConnection connection) {
-        openConnections.add(connection);
+        synchronized (openConnections) {
+            openConnections.add(connection);
+        }
         sendModelToClients();
         //connection.send(saver.serialize(model));
     }

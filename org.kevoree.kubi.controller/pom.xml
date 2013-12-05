@@ -15,20 +15,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.kevoree.tools</groupId>
-            <artifactId>org.kevoree.tools.javase.framework</artifactId>
+            <groupId>org.kevoree</groupId>
+            <artifactId>org.kevoree.annotation.api</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.kevoree.tools</groupId>
-            <artifactId>org.kevoree.tools.annotation.api</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
+        <!--
         <dependency>
             <groupId>org.kevoree.corelibrary.javase</groupId>
             <artifactId>org.kevoree.library.javase.javaseNode</artifactId>
             <version>2.0.6-SNAPSHOT</version>
         </dependency>
+        -->
         <dependency>
             <groupId>org.kevoree.kubi</groupId>
             <artifactId>org.kevoree.kubi.model</artifactId>
@@ -40,14 +37,9 @@
         <plugins>
             <plugin>
                 <groupId>org.kevoree.tools</groupId>
-                <artifactId>org.kevoree.tools.annotation.mavenplugin</artifactId>
+                <artifactId>org.kevoree.tools.mavenplugin</artifactId>
                 <version>${kevoree.version}</version>
                 <extensions>true</extensions>
-                <configuration>
-                    <libraries>
-                        <library>JavaSE</library>
-                    </libraries>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>

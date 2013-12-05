@@ -1,17 +1,16 @@
- {
-addRepo "http://repo.maven.apache.org/maven2"
-merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/2.0.6-SNAPSHOT'
-merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.jexxus/2.0.6-SNAPSHOT'
-merge 'mvn:org.kevoree.kubi/org.kevoree.kubi.store.web/1-SNAPSHOT'
-addNode node0:JavaSENode
- {
-  addComponent store@node0 : StoreComponent {logLevel = "WARN"}
-}
+repo "http://oss.sonatype.org/content/groups/public/"
+include mvn:org.kevoree.kubi:org.kevoree.kubi.store.web:1-SNAPSHOT
+include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:3.0.0-SNAPSHOT
+include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:3.0.0-SNAPSHOT
+add node0 : JavaNode/3.0.0-SNAPSHOT
+set node0.started = "true"
+add node0.StoreComp462 : StoreComponent/1-SNAPSHOT
+set node0.StoreComp462.logLevel = "WARN"
+set node0.StoreComp462.started = "true"
+add sync : WSGroup/3.0.0-SNAPSHOT
+set sync.port/node0 = "9001"
+set sync.started = "true"
+attach node0 sync
 
-addGroup sync:BasicGroup
-addToGroup sync node0
-
-updateDictionary sync{port="8001",ip="0.0.0.0"}@node0
 
 
-}

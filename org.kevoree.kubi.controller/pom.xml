@@ -19,13 +19,6 @@
             <artifactId>org.kevoree.annotation.api</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.kevoree.corelibrary.javase</groupId>
-            <artifactId>org.kevoree.library.javase.javaseNode</artifactId>
-            <version>2.0.6-SNAPSHOT</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.kevoree.kubi</groupId>
             <artifactId>org.kevoree.kubi.model</artifactId>

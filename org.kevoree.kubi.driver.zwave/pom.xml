@@ -39,13 +39,6 @@
             <artifactId>org.kevoree.api</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.kevoree.corelibrary.javase</groupId>
-            <artifactId>org.kevoree.library.javase.javaseNode</artifactId>
-            <version>2.0.6-SNAPSHOT</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>lu.snt.helios.extra.zwave</groupId>
             <artifactId>lu.snt.helios.extra.zwave.driver</artifactId>

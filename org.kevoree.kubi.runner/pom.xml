@@ -15,13 +15,9 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.kevoree.watchdog</groupId>
-                <artifactId>org.kevoree.watchdog.mavenrunner</artifactId>
-                <version>0.19</version>
-                <configuration>
-                    <bootstrapModel>${basedir}/models/KubiDefaultBootstrap.1.kevs</bootstrapModel>
-                    <kevoreeVersion>LATEST</kevoreeVersion>
-                </configuration>
+                <groupId>org.kevoree.tools</groupId>
+                <artifactId>org.kevoree.tools.mavenplugin</artifactId>
+                <version>${kevoree.version}</version>
             </plugin>
         </plugins>
     </build>

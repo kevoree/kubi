@@ -135,7 +135,7 @@ public class KubiWebFrontend implements ViewListener {
 
     public void messageReceivedFromWebClients(JSONObject message) {
         Log.warn("[KubiWebFrontend] Message Received! " + message.toString());
-        toConroller.call(message);
+        toConroller.send(message);
     }
 
     private void initModelListener() {
@@ -157,28 +157,30 @@ public class KubiWebFrontend implements ViewListener {
 
             @Override
             public void modelUpdated() {
-                getInitialModel.call(null, new Callback() {
-                    public void run(Object model) {
+                getInitialModel.call(null, new Callback<KubiModel>() {
+                    @Override
+                    public void onSuccess(KubiModel model) {
                         if(model != null) {
-                            if(model instanceof KubiModel) {
-                                kevoreeModelService.unregisterModelListener(modelListener);
+                            kevoreeModelService.unregisterModelListener(modelListener);
 
-                                modelAtRuntimeHandler = new WebSocketServerHandler(KubiWebFrontend.this, (KubiModel)model);
+                            modelAtRuntimeHandler = new WebSocketServerHandler(KubiWebFrontend.this, model);
 
-                                webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8081), URI.create("http://localhost:8081"))
-                                        .add("/ws", modelAtRuntimeHandler)
-                                                //.add(new StaticFileHandler(baseStaticDir));
-                                        .add(new EmbedHandler(KubiWebFrontend.this, "static"));
+                            webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8081), URI.create("http://localhost:8081"))
+                                    .add("/ws", modelAtRuntimeHandler)
+                                            //.add(new StaticFileHandler(baseStaticDir));
+                                    .add(new EmbedHandler(KubiWebFrontend.this, "static"));
 
 
-                                webServer.start();
-                                Log.info("[KubiWebFrontend] Server running at " + webServer.getUri());
-                            } else {
-                                Log.error("Could not start ZWave driver cause initial model was of type:" + model.getClass());
-                            }
+                            webServer.start();
+                            Log.info("[KubiWebFrontend] Server running at " + webServer.getUri());
                         }else {
                             Log.error("Model received is null !");
                         }
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.error("An error occured while calling getInitialModelPort:" + throwable.getMessage());
                     }
                 });
             }

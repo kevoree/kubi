@@ -125,7 +125,7 @@ public class DefaultKubiController {
                     seq.populateFromString(driverMessage.getString("CONTENT"));
                     Log.trace("Applying trace in controler:" + seq.exportToString());
                     if(seq.applyOn(currentKubiModel)) {
-                        toViews.call(driverMessage);
+                        toViews.send(driverMessage);
                     }
 
                 } else {
@@ -142,7 +142,7 @@ public class DefaultKubiController {
 
 
     private void handleViewMessage(JSONObject viewMessage) {
-        toDrivers.call(viewMessage);
+        toDrivers.send(viewMessage);
     }
 
 

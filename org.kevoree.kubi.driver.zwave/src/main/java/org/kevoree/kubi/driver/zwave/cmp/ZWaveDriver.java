@@ -64,19 +64,23 @@ public class ZWaveDriver implements ZWaveListener{
 
             @Override
             public void modelUpdated() {
-                getInitialModel.call(null, new Callback() {
-                    public void run(Object model) {
+                getInitialModel.call(null, new Callback<KubiModel>() {
+                    @Override
+                    public void onSuccess(KubiModel model) {
                         if(model != null) {
-                            if(model instanceof KubiModel) {
-                                kevoreeModelService.unregisterModelListener(modelListener);
-                                connector.start((KubiModel)model);
-                            } else {
-                                Log.error("Could not start ZWave driver cause initial model was of type:" + model.getClass());
-                            }
+                            kevoreeModelService.unregisterModelListener(modelListener);
+                            connector.start(model);
                         }else {
                             Log.error("Model received is null !");
                         }
                     }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.error("An exception occured while calling the getInitialModelPort:" + throwable.getMessage());
+
+                    }
+
                 });
             }
 
@@ -125,7 +129,7 @@ public class ZWaveDriver implements ZWaveListener{
     }
 
     public void messageReceived(JSONObject msg) {
-        fromDevices.call(msg);
+        fromDevices.send(msg);
     }
 
     private void setLogLevel() {

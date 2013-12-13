@@ -1,13 +1,15 @@
 repo "http://oss.sonatype.org/content/groups/public/"
 include mvn:org.kevoree.kubi:org.kevoree.kubi.store.web:1-SNAPSHOT
-include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:3.0.0-SNAPSHOT
-include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:3.0.0-SNAPSHOT
-add node0 : JavaNode/3.0.0-SNAPSHOT
+include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:3.0.2
+include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:3.0.2
+include mvn:org.kevoree.modeling:org.kevoree.modeling.microframework.datastores.leveldb/1.9.3
+add node0 : JavaNode
 set node0.started = "true"
+set node0.debug = "true"
 add node0.StoreComp462 : StoreComponent/1-SNAPSHOT
 set node0.StoreComp462.logLevel = "WARN"
 set node0.StoreComp462.started = "true"
-add sync : WSGroup/3.0.0-SNAPSHOT
+add sync : WSGroup
 set sync.port/node0 = "9001"
 set sync.started = "true"
 attach node0 sync

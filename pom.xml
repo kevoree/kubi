@@ -31,9 +31,9 @@
     </parent>
 
     <properties>
-        <kevoree.version>3.0.5-SNAPSHOT</kevoree.version>
+        <kevoree.version>3.1.0</kevoree.version>
         <kotlin.version>0.6.602</kotlin.version>
-        <kmf.version>1.9.4-SNAPSHOT</kmf.version>
+        <kmf.version>1.9.4</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

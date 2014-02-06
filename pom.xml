@@ -31,9 +31,9 @@
     </parent>
 
     <properties>
-        <kevoree.version>3.1.0</kevoree.version>
+        <kevoree.version>3.2.3</kevoree.version>
         <kotlin.version>0.6.602</kotlin.version>
-        <kmf.version>1.9.4</kmf.version>
+        <kmf.version>1.9.11</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -185,6 +185,10 @@
             <id>kevoree.oss.snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
+        <repository>
+            <id>kevoree.oss.release</id>
+            <url>http://oss.sonatype.org/content/repositories/releases</url>
+        </repository>
     </repositories>
 
 
@@ -192,6 +196,10 @@
         <pluginRepository>
             <id>kevoree.oss.snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>kevoree.oss.release</id>
+            <url>http://oss.sonatype.org/content/repositories/releases</url>
         </pluginRepository>
     </pluginRepositories>
 

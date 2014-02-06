@@ -19,6 +19,12 @@ import java.io.BufferedReader
 
 
 open class HttpDataStore(val masterAddress : String) : org.kevoree.modeling.api.persistence.DataStore {
+    override fun getSegmentKeys(segment: String): Set<String> {
+        throw UnsupportedOperationException()
+    }
+    override fun getSegments(): Set<String> {
+        throw UnsupportedOperationException()
+    }
 
     val url = URL(masterAddress);
 
@@ -74,4 +80,3 @@ open class HttpDataStore(val masterAddress : String) : org.kevoree.modeling.api.
     }
 
 }
-

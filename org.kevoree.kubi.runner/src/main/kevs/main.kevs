@@ -1,9 +1,9 @@
 repo "http://oss.sonatype.org/content/groups/public/"
-include mvn:org.kevoree.library.java:org.kevoree.library.java.channels:3.1.0
+include mvn:org.kevoree.library.java:org.kevoree.library.java.channels:3.1.5
 include mvn:org.kevoree.kubi:org.kevoree.kubi.web:1-SNAPSHOT
 include mvn:org.kevoree.kubi:org.kevoree.kubi.controller:1-SNAPSHOT
-include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:3.1.0
-include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:3.1.0
+include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:3.1.5
+include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:3.1.5
 include mvn:org.kevoree.kubi:org.kevoree.kubi.driver.zwave:1-SNAPSHOT
 
 add node0 : JavaNode

@@ -45,6 +45,7 @@
                             <packagePrefix>org.kevoree.kubi</packagePrefix>
                             <events>true</events>
                             <persistence>true</persistence>
+                            <timeAware>false</timeAware>
                         </configuration>
                     </execution>
                 </executions>

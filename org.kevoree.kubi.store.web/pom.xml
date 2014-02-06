@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.kevoree.modeling</groupId>
             <artifactId>org.kevoree.modeling.microframework.datastores.leveldb</artifactId>
-            <version>1.9.3</version>
+            <version>${kmf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kevoree.kubi</groupId>
@@ -78,18 +78,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--
-            <plugin>
-                <groupId>org.kevoree.watchdog</groupId>
-                <artifactId>org.kevoree.watchdog.mavenrunner</artifactId>
-                <version>0.19</version>
-                <configuration>
-                    <pingPort>9998</pingPort>
-                    <bootstrapModel>src/main/kevs/KubiDefaultBootstrap.1.kevs</bootstrapModel>
-                    <kevoreeVersion>LATEST</kevoreeVersion>
-                </configuration>
-            </plugin>
-            -->
         </plugins>
     </build>
 

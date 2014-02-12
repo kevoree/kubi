@@ -118,7 +118,8 @@ public class OpenZWave {
 
         try {
             ModelSerializer serializer = new JSONModelSerializer();
-            serializer.serializeToStream(store, new FileOutputStream(new File("src/main/resources/static/baseStore.json")));
+            serializer.serializeToStream(store, new FileOutputStream(new File("" +
+                    "org.kevoree.kubi.store.importer/src/main/resources/static/baseStore.json")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IOException e) {

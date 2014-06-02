@@ -118,12 +118,14 @@ public class KubiWebFrontend implements ViewListener {
             String actionClass = controllerMessage.getString("CLASS");
             String action = controllerMessage.getString("ACTION");
             if(actionClass.equals("MODEL")) {
-                if(action.equals("UPDATE")) {
+                if (action.equals("UPDATE")) {
                     modelAtRuntimeHandler.updateModel(controllerMessage);
                     Log.debug("[KubiWebFrontend] Forward ModelUpdate to webClients");
                 } else {
                     Log.warn("[KubiWebFontend] Unknown message ACTION:" + actionClass);
                 }
+            } else if (actionClass.equals("REPORT")) {
+                modelAtRuntimeHandler.sendMessageToClients(controllerMessage);
             } else {
                 Log.warn("[KubiWebFontend] Unknown message CLASS:" + actionClass);
             }

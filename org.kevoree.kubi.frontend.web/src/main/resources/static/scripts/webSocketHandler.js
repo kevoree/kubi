@@ -55,12 +55,12 @@ var WebSocketHandler = function(){
                 var parsedMessage = JSON.parse(msg.data);
                 //console.log(parsedMessage.messageType);
                 if(parsedMessage.CLASS == "MODEL") {
-                    if(parsedMessage.ACTION == "UPDATE") {
+                    if (parsedMessage.ACTION == "UPDATE") {
                         console.log("Model Update receive from server");
                         var seq = new module.org.kevoree.kubi.trace.DefaultTraceSequence();
                         seq.populateFromString(parsedMessage.CONTENT);
                         seq.applyOn(KubiKernel.getKubiModel());
-                    } else if(parsedMessage.ACTION == "INIT") {
+                    } else if (parsedMessage.ACTION == "INIT") {
                         console.log("Model Init receive from server");
                         var loader = new module.org.kevoree.kubi.loader.JSONModelLoader();
                         KubiKernel.setKubiModel(loader.loadModelFromString(parsedMessage.CONTENT).get(0));
@@ -68,16 +68,19 @@ var WebSocketHandler = function(){
                     if (typeof KubiGraphHandler != 'undefined') {
                         KubiGraphHandler.refreshModel();
                     }
-                    if(typeof  KubiHome != 'undefined') {
+                    if (typeof  KubiHome != 'undefined') {
                         KubiHome.modelUpdated();
                     }
-
+                } else if(parsedMessage.CLASS == "REPORT") {
+                    KubiMessageHandler.handleMessage(parsedMessage);
                 } else if(parsedMessage.CLASS == "ACTION") {
                     KubiMessageHandler.handleMessage(parsedMessage.CONTENT);
                 } else if(parsedMessage.CLASS == "PAGE_TEMPLATE") {
                     if(parsedMessage.ACTION == "REPORT") {
                         KubiMenuHandler.applyPage(parsedMessage.CONTENT);
                     }
+
+
                 } else {
                     console.log("Unknown message type received from server", parsedMessage);
                 }

@@ -50,6 +50,11 @@ public class PageTemplates {
             links.append("<link rel=\"stylesheet\" href=\"css/bootstrap-switch.css\">");
 
             scripts.append("<script src=\"lib/bootstrap-switch.min.js\"></script>\n");
+
+            //<!-- My Script High Chart-->
+            scripts.append("<script src=\"scripts/home/gauge-solid.js\"></script>\n");
+            //<!-- My Script High Chart-->
+
             scripts.append("<script src=\"scripts/home/homePageScripts.js\"></script>\n");
             scripts.append("<script>\n" +
                     "            KubiHome.init();\n" +

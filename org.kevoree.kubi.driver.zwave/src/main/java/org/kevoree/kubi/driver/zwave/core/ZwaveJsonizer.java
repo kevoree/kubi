@@ -16,7 +16,7 @@ import org.kevoree.log.Log;
  */
 public class ZwaveJsonizer {
 
-/*
+
     public static JSONObject toJSON(Message zWaveMessage) {
 
         if(zWaveMessage instanceof ZW_ApplicationCommandHandler) {
@@ -25,8 +25,9 @@ public class ZwaveJsonizer {
 
                 JSONObject content = new JSONObject();
                 content.put("technology", "Z-Wave");
+                content.put("CLASS", "REPORT");
                 content.put("nodeId",typedMessage.getSourceNode());
-                content.put("action",typedMessage.getCommandClass().getName() + "::" + typedMessage.getCommandFunction().getName());
+                content.put("ACTION",typedMessage.getCommandClass().getName() + "::" + typedMessage.getCommandFunction().getName());
                 content.put("raw",typedMessage.toString());
 
                 if(typedMessage instanceof SwitchBinaryCommandClass) {
@@ -44,6 +45,6 @@ public class ZwaveJsonizer {
         }
         return null;
     }
-    */
+
 
 }

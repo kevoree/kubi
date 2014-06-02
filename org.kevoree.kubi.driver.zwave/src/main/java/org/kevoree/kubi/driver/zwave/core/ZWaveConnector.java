@@ -16,6 +16,7 @@ import lu.snt.helios.extra.zwave.driver.core.messages.commands.ZWCommand;
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetApiCapabilities;
 
 import lu.snt.helios.extra.zwave.driver.core.messages.serial.Serial_GetInitData;
+import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationCommandHandler;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_common.ZW_ApplicationNodeInformation;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_controller.ZW_AddNodeToNetwork;
 import lu.snt.helios.extra.zwave.driver.core.messages.zw_controller.ZW_RemoveNodeFromNetwork;
@@ -143,7 +144,11 @@ public class ZWaveConnector {
         MessageListener lst = new MessageListener() {
             public void messageReceived(Message msg) {
                 if(msg instanceof ZW_ApplicationNodeInformation) {
-                    updateNodeInformation((ZW_ApplicationNodeInformation)msg);
+                    updateNodeInformation((ZW_ApplicationNodeInformation) msg);
+
+                } else if (msg instanceof ZW_ApplicationCommandHandler) {
+                    fireMessage(ZwaveJsonizer.toJSON(msg));
+
                 } else {
                     Log.debug("Message Ignored:" + msg);
                 }

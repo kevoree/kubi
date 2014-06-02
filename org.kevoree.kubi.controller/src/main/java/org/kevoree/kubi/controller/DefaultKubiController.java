@@ -119,18 +119,20 @@ public class DefaultKubiController {
             String actionClass = driverMessage.getString("CLASS");
             String action = driverMessage.getString("ACTION");
             if(actionClass.equals("MODEL")) {
-                if(action.equals("UPDATE")) {
+                if (action.equals("UPDATE")) {
 
                     TraceSequence seq = new DefaultTraceSequence();
                     seq.populateFromString(driverMessage.getString("CONTENT"));
                     Log.trace("Applying trace in controler:" + seq.exportToString());
-                    if(seq.applyOn(currentKubiModel)) {
+                    if (seq.applyOn(currentKubiModel)) {
                         toViews.send(driverMessage);
                     }
 
                 } else {
                     Log.warn("[KubiController] Unknown message ACTION:" + actionClass);
                 }
+            } else if (actionClass.equals("REPORT")) {
+                toViews.send(driverMessage);
             } else {
                 Log.warn("[KubiController] Unknown message CLASS:" + actionClass);
             }

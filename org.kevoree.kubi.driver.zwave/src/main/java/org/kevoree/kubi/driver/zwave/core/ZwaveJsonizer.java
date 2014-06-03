@@ -28,12 +28,30 @@ public class ZwaveJsonizer {
                 content.put("CLASS", "REPORT");
                 content.put("nodeId",typedMessage.getSourceNode());
                 content.put("ACTION",typedMessage.getCommandClass().getName() + "::" + typedMessage.getCommandFunction().getName());
-                content.put("raw",typedMessage.toString());
+
+                String str = typedMessage.toString();
+                content.put("raw",str);
+
+                /* precision:0.100000, scale:BTU/h, value:0 */
+                int deb = str.indexOf("precision:")+10;
+                String valuePrecision = str.substring( deb, str.indexOf(",", deb) );
+                double consumptionPrecision = new Double(valuePrecision);
+                /* The terms power and energy are frequently confused.
+                 * The BTU is most often used as a measure of power (as BTU/h)
+                 * So we convert to watt that is also a measure of power (Joules/s)
+                 * Watts*hour (Joules)
+                 */
+                //1 Btu/hour = 1 055.0559 joule/hour
+                //1 Btu/hour = O.29307107 joule/second => Watts
+                String value = str.substring( str.indexOf("value:")+6, str.indexOf("]"));
+                double consumptionWatts = new Double(value) * consumptionPrecision;
+                /*double wattsPerHours = SteadyStateConsumption / timeToReachSteadyState */;
+                /*double wattsHours = (SteadyStateConsumption * timeToReachSteadyState) + (SteadyStateConsumption * duration) */;
+                content.put("dataInstant", consumptionWatts);
 
                 if(typedMessage instanceof SwitchBinaryCommandClass) {
                     content.put("state",((SwitchBinaryCommandClass)typedMessage).isOn());
                 }
-
                return content;
 
             } catch (JSONException e) {
@@ -45,6 +63,4 @@ public class ZwaveJsonizer {
         }
         return null;
     }
-
-
 }

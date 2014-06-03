@@ -63,7 +63,7 @@ $(function () {
     $('#container-snap').highcharts( Highcharts.merge(gaugeOptions, {
         yAxis: {
             min: 0,
-            max: 200,
+            max: 2500,
             title: {
                 text: 'real-time power'
             }
@@ -80,10 +80,10 @@ $(function () {
                 format: '<div style="text-align:center"><span style="font-size:25px;color:' +
                     ( (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') +
                     '">{y}</span><br/>' +
-                    '<span style="font-size:12px;color:silver">kiloWatts per hour</span></div>'
+                    '<span style="font-size:12px;color:silver">Watts</span></div>'
             },
             tooltip: {
-                valueSuffix: 'kW/h'
+                valueSuffix: 'Watts'
             }
         }]
 
@@ -93,7 +93,7 @@ $(function () {
     $('#container-rpm').highcharts(Highcharts.merge(gaugeOptions, {
         yAxis: {
             min: 0,
-            max: 5,
+            max: 1,
             title: {
                 text: 'RPM'
             }
@@ -115,26 +115,11 @@ $(function () {
     }));
 
     // Bring life to the dials
-    setInterval(function () {
-        // Speed
-        var chart = $('#container-snap').highcharts();
-        if (chart) {
-            var point = chart.series[0].points[0],
-                newVal,
-                inc = Math.round((Math.random() - 0.5) * 100);
-
-            newVal = point.y + inc;
-            if (newVal < 0 || newVal > 200) {
-                newVal = point.y - inc;
-            }
-
-            point.update(newVal);
-        }
-
+/*    setInterval(function () {
         // RPM
         chart = $('#container-rpm').highcharts();
         if (chart) {
-            var point = chart.series[0].points[0],
+            var point = chart.series[0].points[0];
                 newVal,
                 inc = Math.random() - 0.5;
 
@@ -143,9 +128,9 @@ $(function () {
                 newVal = point.y - inc;
             }
 
-            point.update(newVal);
+            point.update(precisionConsumption);
         }
-    }, 2000);
-
+    }, 1000);
+*/
 });
 

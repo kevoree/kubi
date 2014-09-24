@@ -7,6 +7,7 @@
  */
 
 var instantaneousConsumption = 0;
+var recurrentConsumption = 0;
 
 var KubiMessageHandler = function(){
 
@@ -20,25 +21,25 @@ var KubiMessageHandler = function(){
                     tbody.children().last.remove();
                 }
                 instantaneousConsumption = Math.round(message.dataInstant * 100)/100;
+                recurrentConsumption = Math.round(message.dataRec * 100)/100;
 
                 $('<span class="ticket">Message Received from node'+message.nodeId+' : '+instantaneousConsumption+'</span>').prependTo(tbody);
 
-                var chart = $('#container-snap').highcharts();
-                if (chart) {
-                    var point = chart.series[0].points[0];
+                var chartsnap = $('#container-snap').highcharts();
+                if (chartsnap) {
+                    var point = chartsnap.series[0].points[0];
                     point.update(instantaneousConsumption);
-                }
-/*              var precisionConsumption = message.dataPrecision;
-                var chart = $('#container-rpm').highcharts();
-                if (chart) {
-                    var point = chart.series[0].points[0];
-                    point.update(instantaneousConsumption);
-                }
-*/            }
+                };
+
+                var chartrpm = $('#container-rpm').highcharts();
+                if (chartrpm) {
+                    var point = chartrpm.series[0].points[0];
+                    point.update(recurrentConsumption);
+                };
+            }
             if(typeof  KubiHome != 'undefined') {
                 KubiHome.messageArrived(message);
             }
-
             console.debug("MessageReceivedFromServer", message);
 
         }

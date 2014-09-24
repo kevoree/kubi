@@ -75,7 +75,7 @@ $(function () {
 
         series: [{
             name: 'real-time power',
-            data: [80],
+            data: [0],
             dataLabels: {
                 format: '<div style="text-align:center"><span style="font-size:25px;color:' +
                     ( (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') +
@@ -101,7 +101,7 @@ $(function () {
 
         series: [{
             name: 'RPM',
-            data: [1],
+            data: [0],
             dataLabels: {
                 format: '<div style="text-align:center"><span style="font-size:25px;color:' +
                     ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y:.1f}</span><br/>' +

@@ -32,22 +32,29 @@ public class ZwaveJsonizer {
                 String str = typedMessage.toString();
                 content.put("raw",str);
 
-                /* precision:0.100000, scale:BTU/h, value:0 */
-                int deb = str.indexOf("precision:")+10;
-                String valuePrecision = str.substring( deb, str.indexOf(",", deb) );
-                double consumptionPrecision = new Double(valuePrecision);
                 /* The terms power and energy are frequently confused.
                  * The BTU is most often used as a measure of power (as BTU/h)
                  * So we convert to watt that is also a measure of power (Joules/s)
                  * Watts*hour (Joules)
-                 */
+                 * */
                 //1 Btu/hour = 1 055.0559 joule/hour
                 //1 Btu/hour = O.29307107 joule/second => Watts
+                 /* precision:0.100000, scale:BTU/h, value:0 */
+                int deb = str.indexOf("precision:")+10;
+                String valuePrecision = str.substring( deb, str.indexOf(",", deb) );
+                double consumptionPrecision = new Double(valuePrecision);
+                //
                 String value = str.substring( str.indexOf("value:")+6, str.indexOf("]"));
                 double consumptionWatts = new Double(value) * consumptionPrecision;
                 /*double wattsPerHours = SteadyStateConsumption / timeToReachSteadyState */;
-                /*double wattsHours = (SteadyStateConsumption * timeToReachSteadyState) + (SteadyStateConsumption * duration) */;
-                content.put("dataInstant", consumptionWatts);
+                /*double wattsHours = (SteadyStateConsumption * timeToReachSteadyState) + (SteadyStateConsumption * duration) */
+                int debS = str.indexOf("scale:")+6;
+                String sc = str.substring(debS, str.indexOf(",",debS));
+                if( sc.equalsIgnoreCase("null") ){
+                    content.put("dataRec", consumptionWatts);
+                } else {
+                    content.put("dataInstant", consumptionWatts);
+                }
 
                 if(typedMessage instanceof SwitchBinaryCommandClass) {
                     content.put("state",((SwitchBinaryCommandClass)typedMessage).isOn());

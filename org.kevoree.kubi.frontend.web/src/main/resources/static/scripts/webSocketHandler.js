@@ -57,13 +57,12 @@ var WebSocketHandler = function(){
                 if(parsedMessage.CLASS == "MODEL") {
                     if (parsedMessage.ACTION == "UPDATE") {
                         console.log("Model Update receive from server");
-                        var seq = new module.org.kevoree.kubi.trace.DefaultTraceSequence();
+                        var seq = new module.org.kevoree.modeling.trace.TraceSequence();
                         seq.populateFromString(parsedMessage.CONTENT);
                         seq.applyOn(KubiKernel.getKubiModel());
                     } else if (parsedMessage.ACTION == "INIT") {
                         console.log("Model Init receive from server");
-                        var loader = new module.org.kevoree.kubi.loader.JSONModelLoader();
-                        KubiKernel.setKubiModel(loader.loadModelFromString(parsedMessage.CONTENT).get(0));
+                        KubiKernel.setKubiModel(KubiKernel.getLoader().loadModelFromString(parsedMessage.CONTENT).get(0));
                     }
                     if (typeof KubiGraphHandler != 'undefined') {
                         KubiGraphHandler.refreshModel();

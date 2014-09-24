@@ -12,7 +12,6 @@ import org.kevoree.log.Log;
  */
 
 @ComponentType
-@Library(name = "Kubi")
 public class StoreComponent {
 
     private KubiWebStoreMain app;
@@ -30,7 +29,9 @@ public class StoreComponent {
 
     @Stop
     public void stopComponent() {
-        app.stop();
+        if(app != null) {
+            app.stop();
+        }
         app = null;
     }
 

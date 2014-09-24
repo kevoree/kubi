@@ -18,7 +18,13 @@ import java.io.BufferedReader
  */
 
 
-open class HttpDataStore(val masterAddress : String) : org.kevoree.modeling.api.persistence.DataStore {
+open class HttpDataStore(val masterAddress : String) : org.kevoree.modeling.api.persistence.AbstractDataStore() {
+    override fun close() {
+        throw UnsupportedOperationException()
+    }
+    override fun commit() {
+        throw UnsupportedOperationException()
+    }
     override fun getSegmentKeys(segment: String): Set<String> {
         throw UnsupportedOperationException()
     }
@@ -51,9 +57,6 @@ open class HttpDataStore(val masterAddress : String) : org.kevoree.modeling.api.
         request.put("key", key);
         sendCommand(request, false);
     }
-    override fun sync() {
-        throw UnsupportedOperationException()
-    }
 
 
     private fun sendCommand(msg : JSONObject, waitResponse : Boolean) : String? {
@@ -63,7 +66,7 @@ open class HttpDataStore(val masterAddress : String) : org.kevoree.modeling.api.
         connection.setDoOutput(true);
 
         val writer = OutputStreamWriter(connection.getOutputStream()!!);
-        writer.write(msg.toString()!!);
+        writer.write(msg.toString());
         writer.flush();
         writer.close();
 

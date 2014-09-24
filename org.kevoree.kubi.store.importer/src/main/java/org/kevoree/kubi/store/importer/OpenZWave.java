@@ -1,10 +1,12 @@
 package org.kevoree.kubi.store.importer;
 
 import org.kevoree.kubi.store.*;
-import org.kevoree.kubi.store.impl.DefaultStoreFactory;
-import org.kevoree.kubi.store.serializer.JSONModelSerializer;
+import org.kevoree.kubi.store.factory.StoreTransaction;
+import org.kevoree.kubi.store.factory.StoreTransactionManager;
 import org.kevoree.log.Log;
 import org.kevoree.modeling.api.ModelSerializer;
+import org.kevoree.modeling.api.json.JSONModelSerializer;
+import org.kevoree.modeling.api.persistence.MemoryDataStore;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -32,9 +34,10 @@ public class OpenZWave {
     public static void main(String[] args) {
 
         String baseUrl = "http://open-zwave.googlecode.com/svn/trunk/config";
-
-        StoreFactory factory = new DefaultStoreFactory();
+        StoreTransactionManager tm = new StoreTransactionManager(new MemoryDataStore());
+        StoreTransaction factory = tm.createTransaction();
         KubiStore store = factory.createKubiStore();
+        factory.root(store);
         Technology zwave = factory.createTechnology();
         zwave.setName("Z-Wave");
         store.addTechnologies(zwave);
@@ -113,13 +116,20 @@ public class OpenZWave {
 
 
         //Updates
-        addAeonMicroSmartSwitch(store);
+        addAeonMicroSmartSwitch(factory);
 
 
         try {
-            ModelSerializer serializer = new JSONModelSerializer();
-            serializer.serializeToStream(store, new FileOutputStream(new File("" +
-                    "org.kevoree.kubi.store.importer/src/main/resources/static/baseStore.json")));
+            ModelSerializer serializer = factory.createJSONSerializer();
+            File dirs = new File("org.kevoree.kubi.store.importer/src/main/resources/static");
+            if(!dirs.exists()) {
+                dirs.mkdirs();
+            }
+            File f = new File("org.kevoree.kubi.store.importer/src/main/resources/static/baseStore.json");
+            if(!f.exists()) {
+                f.createNewFile();
+            }
+            serializer.serializeToStream(store, new FileOutputStream(f));
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IOException e) {
@@ -129,8 +139,8 @@ public class OpenZWave {
 
     }
 
-    private static void addAeonMicroSmartSwitch(KubiStore mainStore) {
-        StoreFactory factory = new DefaultStoreFactory();
+    private static void addAeonMicroSmartSwitch(StoreTransaction factory) {
+        KubiStore mainStore = (KubiStore)factory.lookup("/");
         Product p = factory.createProduct();
         p.setId("0012");
         p.setTypeid("0003");

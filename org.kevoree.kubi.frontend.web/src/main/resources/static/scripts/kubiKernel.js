@@ -7,10 +7,10 @@
  */
 
 
-var module = Kotlin.modules['org.kevoree.kubi.model.js'];
+var module = Kotlin.modules['org.kevoree.kubi'];
 var smartGridModel;
 var saver;
-var loader = new module.org.kevoree.kubi.loader.JSONModelLoader();
+var loader;
 var cloner;
 var compare;
 var factory;
@@ -23,17 +23,18 @@ var KubiKernel = function(){
     return {
         init : function() {
             smartGridModel = null;
-            saver = new module.org.kevoree.kubi.serializer.JSONModelSerializer();
-            cloner = new module.org.kevoree.kubi.cloner.DefaultModelCloner();
-            compare = new module.org.kevoree.kubi.compare.DefaultModelCompare();
-            factory = new module.org.kevoree.kubi.impl.DefaultKubiFactory();
+            factory = new module.org.kevoree.kubi.factory.DefaultKubiFactory();
+            loader = factory.createJSONLoader();
+            saver = factory.createJSONSerializer();
+            cloner = factory.createModelCloner();
+            compare = factory.createModelCompare();
             selectedNode = null;
             selectedAction = null;
         },
        // module : function(){return module},
         getKubiModel : function(){return smartGridModel},
         getSaver : function(){return saver},
-        getLoader : loader,
+        getLoader : function(){return loader},
         getCloner : function(){return cloner},
         getCompare : function(){return compare},
         getFactory : function(){return factory},

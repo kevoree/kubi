@@ -35,8 +35,8 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <ecore>${basedir}/../org.kevoree.kubi.store.model/kubi.store.ecore</ecore>
-                            <packagePrefix>org.kevoree.kubi</packagePrefix>
+                            <ecore>${basedir}/../org.kevoree.kubi.store.model/kubi.store.mm</ecore>
+                            <metaModelQualifiedName>org.kevoree.kubi.Store</metaModelQualifiedName>
                             <js>true</js>
                             <events>true</events>
                             <persistence>true</persistence>

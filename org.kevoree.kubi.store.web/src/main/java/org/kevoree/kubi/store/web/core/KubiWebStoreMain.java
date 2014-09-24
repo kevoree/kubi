@@ -1,13 +1,11 @@
 package org.kevoree.kubi.store.web.core;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.kevoree.kubi.store.KubiStore;
-import org.kevoree.kubi.store.StoreFactory;
-import org.kevoree.kubi.store.impl.DefaultStoreFactory;
-import org.kevoree.kubi.store.loader.JSONModelLoader;
+import org.kevoree.kubi.store.factory.StoreTransaction;
+import org.kevoree.kubi.store.factory.StoreTransactionManager;
 import org.kevoree.kubi.store.web.cmp.StoreComponent;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.json.JSONModelLoader;
 import org.kevoree.modeling.datastores.leveldb.LevelDbDataStore;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
@@ -28,7 +26,7 @@ public class KubiWebStoreMain {
 
     private WebServer webServer;
     //private KubiStore mainStore;
-    private StoreFactory factory = new DefaultStoreFactory();
+    private StoreTransactionManager transactionManager;
     private LevelDbDataStore localDatastore;
 
     public KubiWebStoreMain() {
@@ -36,8 +34,8 @@ public class KubiWebStoreMain {
         Log.debug("Building the store");
         String location = new File("").getAbsolutePath() + File.separator + "target";
         localDatastore = new LevelDbDataStore(location);
+        transactionManager = new StoreTransactionManager(localDatastore);
         Log.info("[KubiStore] Base Storage location : " + location);
-        factory.setDatastore(localDatastore);
         initDatastore();
     }
 
@@ -45,6 +43,7 @@ public class KubiWebStoreMain {
     private void initDatastore() {
 
         Log.debug("Initializing DataStore");
+        StoreTransaction localTransaction = transactionManager.createTransaction();
 
         InputStream fis;
         try {
@@ -67,18 +66,20 @@ public class KubiWebStoreMain {
             }
 
             Log.debug("Loading from file...");
-            JSONModelLoader loader = new JSONModelLoader();
+            JSONModelLoader loader = localTransaction.createJSONLoader();
             KubiStore mainStore = (KubiStore) loader.loadModelFromStream(fis).get(0);
             Log.debug("done.");
 
             Log.debug("Persisting in DB...");
-            factory.persistBatch(factory.createBatch().addElementAndReachable(mainStore));
-            factory.commit();
+            localTransaction.root(mainStore);
             Log.debug("done.");
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } finally {
+            localTransaction.commit();
+            localTransaction.close();
         }
     }
 
@@ -98,7 +99,7 @@ public class KubiWebStoreMain {
         }
 
         webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8082), URI.create("http://localhost:8082"))
-                .add("/datastore", new DataStoreHandler(factory));
+                .add("/datastore", new DataStoreHandler(transactionManager));
 
 
         if(baseStaticDir ==  null) {

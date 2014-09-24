@@ -1,24 +1,21 @@
-repo "http://oss.sonatype.org/content/groups/public/"
-include mvn:org.kevoree.library.java:org.kevoree.library.java.channels:5.0.4
+
 include mvn:org.kevoree.kubi:org.kevoree.kubi.frontend.web:1-SNAPSHOT
 include mvn:org.kevoree.kubi:org.kevoree.kubi.controller:1-SNAPSHOT
-include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:5.0.4
-include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:5.0.4
 include mvn:org.kevoree.kubi:org.kevoree.kubi.driver.zwave:1-SNAPSHOT
 
-add node0 : JavaNode
-add sync : WSGroup
+add node0 : org.kevoree.library.JavaNode/5.0.6
+add sync : org.kevoree.library.WSGroup/5.0.6
 attach node0 sync
 
-add node0.webFrontend : KubiWebFrontend/1-SNAPSHOT
-add node0.controller : DefaultKubiController/1-SNAPSHOT
-add node0.zWaveDriver : ZWaveDriver/1-SNAPSHOT
+add node0.webFrontend : org.kevoree.kubi.frontend.web.cmp.KubiWebFrontend/1-SNAPSHOT
+add node0.controller : org.kevoree.kubi.controller.DefaultKubiController/1-SNAPSHOT
+add node0.zWaveDriver : org.kevoree.kubi.driver.zwave.cmp.ZWaveDriver/1-SNAPSHOT
 
-add AsyncBroa333 : AsyncBroadcast
-add AsyncBroa298 : AsyncBroadcast
-add AsyncBroa287 : AsyncBroadcast
-add AsyncBroa262 : AsyncBroadcast
-add initialModelChannel : AsyncBroadcast
+add AsyncBroa333 : org.kevoree.library.AsyncBroadcast/5.0.6
+add AsyncBroa298 : org.kevoree.library.AsyncBroadcast/5.0.6
+add AsyncBroa287 : org.kevoree.library.AsyncBroadcast/5.0.6
+add AsyncBroa262 : org.kevoree.library.AsyncBroadcast/5.0.6
+add initialModelChannel : org.kevoree.library.AsyncBroadcast/5.0.6
 
 bind node0.controller.toViews AsyncBroa298
 bind node0.controller.toDrivers AsyncBroa262
@@ -32,16 +29,8 @@ bind node0.controller.getInitialModel initialModelChannel
 bind node0.zWaveDriver.getInitialModel initialModelChannel
 bind node0.webFrontend.getInitialModel initialModelChannel
 
-set node0.started = "true"
-set node0.webFrontend.started = "true"
-set node0.zWaveDriver.started = "true"
-set node0.controller.started = "true"
 set node0.webFrontend.logLevel = "TRACE"
 set node0.zWaveDriver.logLevel = "TRACE"
 set node0.controller.logLevel = "TRACE"
-set AsyncBroa333.started = "true"
-set AsyncBroa298.started = "true"
-set AsyncBroa287.started = "true"
-set AsyncBroa262.started = "true"
+set node0.log = "TRACE"
 set sync.port/node0 = "9002"
-set sync.started = "true"

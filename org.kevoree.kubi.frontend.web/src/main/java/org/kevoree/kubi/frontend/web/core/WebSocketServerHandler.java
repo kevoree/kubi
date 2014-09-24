@@ -3,12 +3,11 @@ package org.kevoree.kubi.frontend.web.core;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.kevoree.kubi.KubiModel;
+import org.kevoree.kubi.factory.DefaultKubiFactory;
+import org.kevoree.kubi.factory.KubiFactory;
 import org.kevoree.kubi.frontend.web.cmp.KubiWebFrontend;
-import org.kevoree.kubi.impl.DefaultKubiFactory;
-import org.kevoree.kubi.loader.JSONModelLoader;
-import org.kevoree.kubi.serializer.JSONModelSerializer;
-import org.kevoree.kubi.trace.DefaultTraceSequence;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.json.JSONModelSerializer;
 import org.kevoree.modeling.api.trace.TraceSequence;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
@@ -26,9 +25,9 @@ import java.util.List;
 public class WebSocketServerHandler extends BaseWebSocketHandler {
 
     private KubiModel model = null;
-    private JSONModelSerializer saver = new JSONModelSerializer();
     //private JSONModelLoader loader = new JSONModelLoader();
-    private DefaultKubiFactory factory = new DefaultKubiFactory();
+    private KubiFactory factory = new DefaultKubiFactory();
+    private JSONModelSerializer saver = factory.createJSONSerializer();
     private final List<WebSocketConnection> openConnections = Collections.synchronizedList(new ArrayList<WebSocketConnection>());
     private KubiWebFrontend component;
 
@@ -58,7 +57,7 @@ public class WebSocketServerHandler extends BaseWebSocketHandler {
 
     public void updateModel(JSONObject content) {
         try {
-            TraceSequence seq = new DefaultTraceSequence();
+            TraceSequence seq = new TraceSequence(factory);
             seq.populateFromString(content.getString("CONTENT"));
             seq.applyOn(model);
             Log.debug("[KubiWebFrontend] Forward ModelUpdate to webClients");

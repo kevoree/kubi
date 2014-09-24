@@ -19,11 +19,6 @@
             <artifactId>org.kevoree.modeling.microframework</artifactId>
             <version>${kmf.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fr.inria.jfilter</groupId>
-            <artifactId>jfilter-library</artifactId>
-            <version>1.3</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -40,9 +35,8 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <ecore>kubi.ecore</ecore>
-                            <packagePrefix>org.kevoree</packagePrefix>
-                            <js>false</js>
+                            <ecore>kubi.mm</ecore>
+                            <metaModelQualifiedName>org.kevoree.kubi</metaModelQualifiedName>
                             <events>true</events>
                         </configuration>
                     </execution>

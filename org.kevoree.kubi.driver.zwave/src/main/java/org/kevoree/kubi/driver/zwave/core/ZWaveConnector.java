@@ -24,13 +24,14 @@ import lu.snt.helios.extra.zwave.driver.core.messages.zw_memory.ZW_MemoryGetId;
 import lu.snt.helios.extra.zwave.driver.transport.Callback;
 import org.json.*;
 import org.kevoree.kubi.*;
-import org.kevoree.kubi.compare.DefaultModelCompare;
+import org.kevoree.kubi.factory.DefaultKubiFactory;
+import org.kevoree.kubi.factory.KubiFactory;
 import org.kevoree.kubi.framework.ProductsStoreManager;
-import org.kevoree.kubi.impl.DefaultKubiFactory;
-import org.kevoree.kubi.serializer.JSONModelSerializer;
 import org.kevoree.kubi.store.Manufacturer;
 import org.kevoree.kubi.store.Product;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.api.compare.ModelCompare;
+import org.kevoree.modeling.api.json.JSONModelSerializer;
 import org.kevoree.modeling.api.trace.TraceSequence;
 import org.kevoree.modeling.api.util.ModelTracker;
 
@@ -45,7 +46,7 @@ public class ZWaveConnector {
     private Technology zWaveTech;
     private Node controllerNode;
     private KubiModel zWaveKubiModel;
-    private ModelTracker tracker = new ModelTracker(new DefaultModelCompare());
+    private ModelTracker tracker = new ModelTracker(new ModelCompare(kubiFactory));
     private ArrayList<ZWaveListener> listeners;
     private JSONModelSerializer kubiModelJsonSerializer = new JSONModelSerializer();
 
@@ -79,9 +80,10 @@ public class ZWaveConnector {
 
     public void start(KubiModel initialModel) {
         zWaveKubiModel = initialModel;
-        String aeonLabsKeyPort = "serial:///dev/tty.SLAB_USBtoUART";
-        Log.info("Initiating Z-Wave Manager to " + aeonLabsKeyPort);
-        manager = new ZWaveManager(aeonLabsKeyPort);
+        //String aeonLabsKeyPort = "serial:///dev/tty.SLAB_USBtoUART";
+        String zwaveStickPort = "serial:///dev/tty.usbserial-A702511U";
+        Log.info("Initiating Z-Wave Manager to " + zwaveStickPort);
+        manager = new ZWaveManager(zwaveStickPort);
         //manager.setLogLevel(Log.LEVEL_TRACE);
         manager.open();
         Log.info("ZWave connection ready.");
@@ -105,7 +107,10 @@ public class ZWaveConnector {
     private void initControllerAndModel() {
         Serial_GetApiCapabilities response = (Serial_GetApiCapabilities) manager.sendMessageAndWaitResponse(RequestFactory.serialApiGetCapabilities()); // Capabilities of the API
         ZW_MemoryGetId idsResponse = (ZW_MemoryGetId)manager.sendMessageAndWaitResponse(RequestFactory.zwMemoryGetId()); // HomeId and NodeId of the serial gateway
-
+        if(idsResponse == null) {
+            Log.error("ID Not Found for the gateway {}", RequestFactory.zwMemoryGetId());
+            return ;
+        }
         Manufacturer manufacturer = ProductsStoreManager.getInstance().getManufacturerById(String.format("%02x%02x", response.getManufacturerId_msb(), response.getManufacturerId_lsb()));
         Product product = ProductsStoreManager.getInstance().getProductById(manufacturer, String.format("%02x%02x%02x%02x", response.getProductType_msb(), response.getProductType_lsb(), response.getProductId_msb(), response.getProductId_lsb()));
 
@@ -113,9 +118,23 @@ public class ZWaveConnector {
         tracker.track(zWaveKubiModel);
 
         controllerNode = kubiFactory.createGateway();
-        controllerNode.setBrand(manufacturer.getName());
-        controllerNode.setName(product.getName());
+
+        if(manufacturer == null) {
+            Log.warn("Manufacturer not found for code {}", String.format("%02x%02x", response.getManufacturerId_msb(), response.getManufacturerId_lsb()));
+            controllerNode.setBrand("UNKNOWN");
+        } else {
+            controllerNode.setBrand(manufacturer.getName());
+        }
+        if(product == null) {
+            Log.warn("Product not found for code {}", String.format("%02x%02x%02x%02x", response.getProductType_msb(), response.getProductType_lsb(), response.getProductId_msb(), response.getProductId_lsb()));
+            controllerNode.setName("UNKNOWN");
+        } else {
+            controllerNode.setName(product.getName());
+        }
+
+
         controllerNode.setId("" + idsResponse.getHomeId() + ":" + idsResponse.getNodeId());
+
         controllerNode.setPicture(ProductsStoreManager.getInstance().getProductStoreAddress()+"/img/"+String.format("%02x%02x", response.getManufacturerId_msb(), response.getManufacturerId_lsb())+"/"+String.format("%02x%02x%02x%02x", response.getProductType_msb(), response.getProductType_lsb(), response.getProductId_msb(), response.getProductId_lsb())+".png");
 
         zWaveKubiModel.addNodes(controllerNode);

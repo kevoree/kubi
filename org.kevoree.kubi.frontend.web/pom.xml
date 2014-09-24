@@ -20,11 +20,6 @@
             <version>${kevoree.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.kevoree</groupId>
-            <artifactId>org.kevoree.api</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.kevoree.kubi</groupId>
             <artifactId>org.kevoree.kubi.model</artifactId>
             <version>${project.version}</version>

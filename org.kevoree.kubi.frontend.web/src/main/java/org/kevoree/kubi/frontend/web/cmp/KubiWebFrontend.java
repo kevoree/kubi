@@ -2,12 +2,9 @@ package org.kevoree.kubi.frontend.web.cmp;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
 import org.kevoree.api.Callback;
-import org.kevoree.api.ModelService;
 import org.kevoree.api.Port;
-import org.kevoree.api.handler.ModelListener;
 import org.kevoree.kubi.KubiModel;
 import org.kevoree.kubi.frontend.web.core.EmbedHandler;
 import org.kevoree.kubi.frontend.web.core.ViewListener;
@@ -28,7 +25,6 @@ import java.util.concurrent.Executors;
  */
 
 @ComponentType
-@Library(name = "Kubi")
 public class KubiWebFrontend implements ViewListener {
 
     @Param(defaultValue = "WARN")
@@ -39,10 +35,6 @@ public class KubiWebFrontend implements ViewListener {
     private WebSocketServerHandler modelAtRuntimeHandler;
     private WebServer webServer;
 
-    @KevoreeInject
-    private ModelService kevoreeModelService;
-
-    private ModelListener modelListener;
 
     @Output
     private Port getInitialModel;
@@ -51,18 +43,46 @@ public class KubiWebFrontend implements ViewListener {
     private Port toConroller;
 
     public KubiWebFrontend() {
-        initModelListener();
+        Log.setPrintCaller(true);
+        //initModelListener();
     }
 
     @Start
     public void startComponent() {
         setLogLevel();
-        kevoreeModelService.registerModelListener(modelListener);
+        //kevoreeModelService.registerModelListener(modelListener);
+        getInitialModel.call(null, new Callback<KubiModel>() {
+            @Override
+            public void onSuccess(KubiModel model) {
+                if(model != null) {
+
+                    modelAtRuntimeHandler = new WebSocketServerHandler(KubiWebFrontend.this, model);
+
+                    webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8081), URI.create("http://localhost:8081"))
+                            .add("/ws", modelAtRuntimeHandler)
+                                    //.add(new StaticFileHandler(baseStaticDir));
+                            .add(new EmbedHandler(KubiWebFrontend.this, "static"));
+
+
+                    webServer.start();
+                    Log.info("[KubiWebFrontend] Server running at " + webServer.getUri());
+                }else {
+                    Log.error("Model received is null !");
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.error("An error occured while calling getInitialModelPort:" + throwable.getMessage());
+            }
+        });
     }
 
     @Stop
     public void stopComponent() {
-        webServer.stop();
+        if(webServer != null) {
+            webServer.stop();
+        }
     }
 
     @Update
@@ -140,64 +160,6 @@ public class KubiWebFrontend implements ViewListener {
         toConroller.send(message);
     }
 
-    private void initModelListener() {
-        modelListener = new ModelListener() {
-            @Override
-            public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-                return true;
-            }
-
-            @Override
-            public boolean initUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-                return true;
-            }
-
-            @Override
-            public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-                return true;
-            }
-
-            @Override
-            public void modelUpdated() {
-                getInitialModel.call(null, new Callback<KubiModel>() {
-                    @Override
-                    public void onSuccess(KubiModel model) {
-                        if(model != null) {
-                            kevoreeModelService.unregisterModelListener(modelListener);
-
-                            modelAtRuntimeHandler = new WebSocketServerHandler(KubiWebFrontend.this, model);
-
-                            webServer = WebServers.createWebServer(Executors.newSingleThreadExecutor(), new InetSocketAddress(8081), URI.create("http://localhost:8081"))
-                                    .add("/ws", modelAtRuntimeHandler)
-                                            //.add(new StaticFileHandler(baseStaticDir));
-                                    .add(new EmbedHandler(KubiWebFrontend.this, "static"));
-
-
-                            webServer.start();
-                            Log.info("[KubiWebFrontend] Server running at " + webServer.getUri());
-                        }else {
-                            Log.error("Model received is null !");
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.error("An error occured while calling getInitialModelPort:" + throwable.getMessage());
-                    }
-                });
-            }
-
-            @Override
-            public void preRollback(ContainerRoot currentModel, ContainerRoot proposedModel) {
-
-            }
-
-            @Override
-            public void postRollback(ContainerRoot currentModel, ContainerRoot proposedModel) {
-
-            }
-        };
-    }
 
 }
 

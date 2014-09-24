@@ -4,11 +4,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.kevoree.annotation.*;
 import org.kevoree.api.Port;
-import org.kevoree.kubi.KubiFactory;
 import org.kevoree.kubi.KubiModel;
-import org.kevoree.kubi.cloner.DefaultModelCloner;
-import org.kevoree.kubi.impl.DefaultKubiFactory;
-import org.kevoree.kubi.trace.DefaultTraceSequence;
+import org.kevoree.kubi.factory.DefaultKubiFactory;
+import org.kevoree.kubi.factory.KubiFactory;
 import org.kevoree.log.Log;
 import org.kevoree.modeling.api.ModelCloner;
 import org.kevoree.modeling.api.trace.TraceSequence;
@@ -21,7 +19,6 @@ import org.kevoree.modeling.api.trace.TraceSequence;
  */
 
 @ComponentType
-@Library(name = "Kubi")
 public class DefaultKubiController {
 
     @Param(defaultValue = "WARN")
@@ -36,10 +33,11 @@ public class DefaultKubiController {
 
     private KubiModel baseKubiModel;
     private KubiModel currentKubiModel;
+    private KubiFactory factory;
 
     public DefaultKubiController() {
-        KubiFactory factory = new DefaultKubiFactory();
-        ModelCloner cloner = new DefaultModelCloner();
+        factory = new DefaultKubiFactory();
+        ModelCloner cloner = factory.createModelCloner();
         baseKubiModel = factory.createKubiModel();
 
         currentKubiModel = cloner.clone(baseKubiModel, false);
@@ -121,7 +119,7 @@ public class DefaultKubiController {
             if(actionClass.equals("MODEL")) {
                 if (action.equals("UPDATE")) {
 
-                    TraceSequence seq = new DefaultTraceSequence();
+                    TraceSequence seq = new TraceSequence(factory);
                     seq.populateFromString(driverMessage.getString("CONTENT"));
                     Log.trace("Applying trace in controler:" + seq.exportToString());
                     if (seq.applyOn(currentKubiModel)) {

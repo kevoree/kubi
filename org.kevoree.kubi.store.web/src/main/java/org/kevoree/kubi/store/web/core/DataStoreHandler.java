@@ -1,10 +1,8 @@
 package org.kevoree.kubi.store.web.core;
 
 import org.json.JSONObject;
-import org.kevoree.kubi.store.KubiStore;
-import org.kevoree.kubi.store.Manufacturer;
-import org.kevoree.kubi.store.StoreFactory;
-import org.kevoree.kubi.store.serializer.JSONModelSerializer;
+import org.kevoree.kubi.store.factory.StoreTransaction;
+import org.kevoree.kubi.store.factory.StoreTransactionManager;
 import org.kevoree.log.Log;
 import org.kevoree.modeling.api.ModelSerializer;
 import org.webbitserver.HttpControl;
@@ -21,15 +19,19 @@ import org.webbitserver.HttpResponse;
  */
 public class DataStoreHandler implements HttpHandler {
 
-    private StoreFactory mainStore;
-    private ModelSerializer serializer = new JSONModelSerializer();
+    private StoreTransactionManager transactionManager;
+    private ModelSerializer serializer;
 
-    public DataStoreHandler(StoreFactory store) {
+    public DataStoreHandler(StoreTransactionManager transactionManager) {
         Log.DEBUG();
-        this.mainStore = store;
+        this.transactionManager = transactionManager;
+        StoreTransaction st = transactionManager.createTransaction();
+        serializer = st.createJSONSerializer();
+        st.close();
     }
 
     public void handleHttpRequest(HttpRequest httpRequest, HttpResponse httpResponse, HttpControl httpControl) throws Exception {
+        StoreTransaction st = transactionManager.createTransaction();
         if(httpRequest.method().equalsIgnoreCase("get") || httpRequest.method().equalsIgnoreCase("post")) {
             JSONObject request = new JSONObject(httpRequest.body());
             Log.trace("Request.toString:" + request.toString());
@@ -39,7 +41,7 @@ public class DataStoreHandler implements HttpHandler {
                 httpResponse.status(500).content("Request received with no datastore method!").end();
             } else {
                 if(request.getString("method").equals("get")) {
-                    String content = mainStore.getDatastore().get(request.getString("segment"), request.getString("key"));
+                    String content = transactionManager.getDatastore().get(request.getString("segment"), request.getString("key"));
                     Log.trace("Get Content:" + content);
                     if(content == null) {
                         Log.trace("Return 404");
@@ -49,12 +51,12 @@ public class DataStoreHandler implements HttpHandler {
                         httpResponse.status(200).header("Content-Type","text/plain").content(content).end();
                     }
                 } else if(request.getString("method").equals("put")) {
-                    mainStore.getDatastore().put(request.getString("segment"), request.getString("key"), request.getString("value"));
-                    mainStore.commit();
+                    transactionManager.getDatastore().put(request.getString("segment"), request.getString("key"), request.getString("value"));
+                    transactionManager.getDatastore().commit();
                     httpResponse.status(200).end();
                 } else if(request.getString("method").equals("remove")) {
-                    mainStore.getDatastore().remove(request.getString("segment"), request.getString("key"));
-                    mainStore.commit();
+                    transactionManager.getDatastore().remove(request.getString("segment"), request.getString("key"));
+                    transactionManager.getDatastore().commit();
                     httpResponse.status(200).end();
                 } else {
                     Log.error("Request received with unsupported method:" + httpRequest.method());
@@ -66,5 +68,7 @@ public class DataStoreHandler implements HttpHandler {
             Log.error("HttpRequest received with unsupported method:" + httpRequest.method());
             httpResponse.status(500).content("HttpRequest received with unsupported method:" + httpRequest.method()).end();
         }
+
+        st.close();
     }
 }

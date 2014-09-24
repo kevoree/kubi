@@ -3,8 +3,8 @@ package org.kevoree.kubi.framework;
 import org.kevoree.kubi.store.KubiStore;
 import org.kevoree.kubi.store.Manufacturer;
 import org.kevoree.kubi.store.Product;
-import org.kevoree.kubi.store.StoreFactory;
-import org.kevoree.kubi.store.impl.DefaultStoreFactory;
+import org.kevoree.kubi.store.factory.StoreTransaction;
+import org.kevoree.kubi.store.factory.StoreTransactionManager;
 import org.kevoree.kubi.store.model.HttpDataStore;
 import org.kevoree.log.Log;
 
@@ -17,7 +17,7 @@ import org.kevoree.log.Log;
 
 public class ProductsStoreManager {
 
-    private StoreFactory factory;
+    private StoreTransactionManager stm;
     private HttpDataStore localDataStore;
     private KubiStore store;
     private static ProductsStoreManager INSTANCE;
@@ -37,15 +37,19 @@ public class ProductsStoreManager {
     public void setProductStoreAddress(String productStoreAddress) {
         this.productStoreAddress = productStoreAddress;
         localDataStore = new HttpDataStore(productStoreAddress + "/datastore");
-        factory.setDatastore(localDataStore);
-        store = (KubiStore) factory.lookup("/");
+        stm.close();
+        stm = new StoreTransactionManager(localDataStore);
+        StoreTransaction trans = stm.createTransaction();
+        store = (KubiStore) trans.lookup("/");
+        trans.close();
     }
 
     private ProductsStoreManager() {
-        factory = new DefaultStoreFactory();
         localDataStore = new HttpDataStore(productStoreAddress + "/datastore");
-        factory.setDatastore(localDataStore);
-        store = (KubiStore) factory.lookup("/");
+        stm = new StoreTransactionManager(localDataStore);
+        StoreTransaction trans = stm.createTransaction();
+        store = (KubiStore) trans.lookup("/");
+        trans.close();
     }
 
 

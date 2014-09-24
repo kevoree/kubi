@@ -2,12 +2,9 @@ package org.kevoree.kubi.driver.zwave.cmp;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
 import org.kevoree.api.Callback;
-import org.kevoree.api.ModelService;
 import org.kevoree.api.Port;
-import org.kevoree.api.handler.ModelListener;
 import org.kevoree.kubi.KubiModel;
 import org.kevoree.kubi.driver.zwave.core.ZWaveConnector;
 import org.kevoree.kubi.driver.zwave.core.ZWaveListener;
@@ -21,7 +18,6 @@ import org.kevoree.log.Log;
  */
 
 @ComponentType
-@Library(name = "Kubi")
 public class ZWaveDriver implements ZWaveListener{
 
     @Param(defaultValue = "WARN")
@@ -33,11 +29,8 @@ public class ZWaveDriver implements ZWaveListener{
     @Output
     private Port getInitialModel;
 
-    @KevoreeInject
-    private ModelService kevoreeModelService;
 
     private ZWaveConnector connector;
-    private ModelListener modelListener;
 
     public ZWaveDriver() {
         initModelListener();
@@ -46,61 +39,33 @@ public class ZWaveDriver implements ZWaveListener{
     }
 
     private void initModelListener() {
-        modelListener = new ModelListener() {
-            @Override
-            public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-                return true;
-            }
-
-            @Override
-            public boolean initUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-                return true;
-            }
-
-            @Override
-            public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-                return true;
-            }
-
-            @Override
-            public void modelUpdated() {
-                getInitialModel.call(null, new Callback<KubiModel>() {
-                    @Override
-                    public void onSuccess(KubiModel model) {
-                        if(model != null) {
-                            kevoreeModelService.unregisterModelListener(modelListener);
-                            connector.start(model);
-                        }else {
-                            Log.error("Model received is null !");
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.error("An exception occured while calling the getInitialModelPort:" + throwable.getMessage());
-
-                    }
-
-                });
-            }
-
-            @Override
-            public void preRollback(ContainerRoot currentModel, ContainerRoot proposedModel) {
-
-            }
-
-            @Override
-            public void postRollback(ContainerRoot currentModel, ContainerRoot proposedModel) {
-
-            }
-        };
     }
 
 
     @Start
     public void startComponent() {
         setLogLevel();
-        kevoreeModelService.registerModelListener(modelListener);
+
+        getInitialModel.call(null, new Callback<KubiModel>() {
+            @Override
+            public void onSuccess(KubiModel model) {
+                if(model != null) {
+                    try {
+                        connector.start(model);
+                    } catch(Exception e) {
+
+                    }
+                }else {
+                    Log.error("Model received is null !");
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.error("An exception occured while calling the getInitialModelPort:" + throwable.getMessage(), throwable);
+            }
+
+        });
     }
 
     @Stop

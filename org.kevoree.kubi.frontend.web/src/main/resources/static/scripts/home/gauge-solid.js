@@ -63,7 +63,7 @@ $(function () {
     $('#container-snap').highcharts( Highcharts.merge(gaugeOptions, {
         yAxis: {
             min: 0,
-            max: 2500,
+            max: 10,
             title: {
                 text: 'real-time power'
             }
@@ -97,6 +97,10 @@ $(function () {
             title: {
                 text: 'RPM'
             }
+        },
+
+        credits: {
+            enabled: false
         },
 
         series: [{

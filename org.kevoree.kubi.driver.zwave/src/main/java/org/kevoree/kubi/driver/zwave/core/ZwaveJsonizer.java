@@ -45,15 +45,16 @@ public class ZwaveJsonizer {
                 double consumptionPrecision = new Double(valuePrecision);
                 //
                 String value = str.substring( str.indexOf("value:")+6, str.indexOf("]"));
-                double consumptionWatts = new Double(value) * consumptionPrecision;
+                double theValue = new Double(value) * consumptionPrecision;
                 /*double wattsPerHours = SteadyStateConsumption / timeToReachSteadyState */;
                 /*double wattsHours = (SteadyStateConsumption * timeToReachSteadyState) + (SteadyStateConsumption * duration) */
+
                 int debS = str.indexOf("scale:")+6;
                 String sc = str.substring(debS, str.indexOf(",",debS));
                 if( sc.equalsIgnoreCase("null") ){
-                    content.put("dataRec", consumptionWatts);
+                    content.put("dataRec", theValue);
                 } else {
-                    content.put("dataInstant", consumptionWatts);
+                    content.put("dataInstant", theValue);
                 }
 
                 if(typedMessage instanceof SwitchBinaryCommandClass) {

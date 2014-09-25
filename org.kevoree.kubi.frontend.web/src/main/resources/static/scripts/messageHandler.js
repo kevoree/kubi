@@ -14,7 +14,7 @@ var KubiMessageHandler = function(){
     return {
         handleMessage : function(message) {
 
-            if (typeof KubiGraphHandler != 'undefined') {
+            if (typeof KubiHome != 'undefined') {
                 var reportTable = $('.reportsTable').first();
                 var tbody = reportTable.find('tbody');
                 if(tbody.children().length >= 10) {
@@ -25,17 +25,22 @@ var KubiMessageHandler = function(){
 
                 $('<span class="ticket">Message Received from node'+message.nodeId+' : '+instantaneousConsumption+'</span>').prependTo(tbody);
 
-                var chartsnap = $('#container-snap').highcharts();
-                if (chartsnap) {
-                    var point = chartsnap.series[0].points[0];
-                    point.update(instantaneousConsumption);
-                };
-
-                var chartrpm = $('#container-rpm').highcharts();
-                if (chartrpm) {
-                    var point = chartrpm.series[0].points[0];
-                    point.update(recurrentConsumption);
-                };
+                if(instantaneousConsumption!=0) {
+                    var chartsnap = $('#container-snap').highcharts();
+                    if (chartsnap) {
+                        var point = chartsnap.series[0].points[0];
+                        point.update(instantaneousConsumption);
+                    }
+                    ;
+                }
+                if(recurrentConsumption != 0) {
+                    var chartrpm = $('#container-rpm').highcharts();
+                    if (chartrpm) {
+                        var point = chartrpm.series[0].points[0];
+                        point.update(recurrentConsumption);
+                    }
+                    ;
+                }
             }
             if(typeof  KubiHome != 'undefined') {
                 KubiHome.messageArrived(message);

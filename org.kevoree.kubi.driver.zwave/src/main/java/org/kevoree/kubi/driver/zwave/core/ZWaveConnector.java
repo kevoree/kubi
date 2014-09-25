@@ -80,10 +80,10 @@ public class ZWaveConnector {
 
     public void start(KubiModel initialModel) {
         zWaveKubiModel = initialModel;
-        //String aeonLabsKeyPort = "serial:///dev/tty.SLAB_USBtoUART";
-        String zwaveStickPort = "serial:///dev/tty.usbserial-A702511U";
-        Log.info("Initiating Z-Wave Manager to " + zwaveStickPort);
-        manager = new ZWaveManager(zwaveStickPort);
+        String aeonLabsKeyPort = "serial:///dev/tty.SLAB_USBtoUART";
+        //String zwaveStickPort = "serial:///dev/tty.usbserial-A702511U";
+        Log.info("Initiating Z-Wave Manager to " + aeonLabsKeyPort);
+        manager = new ZWaveManager( aeonLabsKeyPort );
         //manager.setLogLevel(Log.LEVEL_TRACE);
         manager.open();
         Log.info("ZWave connection ready.");

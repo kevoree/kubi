@@ -71,7 +71,7 @@ var WebSocketHandler = function(){
                         KubiHome.modelUpdated();
                     }
                 } else if(parsedMessage.CLASS == "REPORT") {
-                    KubiMessageHandler.handleMessage(parsedMessage);
+                    KubiMessageHandler.handleMessage(parsedMessage.CONTENT);
                 } else if(parsedMessage.CLASS == "ACTION") {
                     KubiMessageHandler.handleMessage(parsedMessage.CONTENT);
                 } else if(parsedMessage.CLASS == "PAGE_TEMPLATE") {

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="nunjucks.js"></script>
+    <script src="org.kubi.model-all.js"></script>
+    <script src="org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+</head>
+<body>
+<script id="ecosystem-template" type="text/x-handlebars-template">
+    <h1>EcoSystem {{ecosystem.name}}</h1>
+    <div class="body">
+        <ul>
+            {% asyncEach device in ecosystem.devices %}
+            <li>{{device.name}} ({{device.version}})
+                <ul>
+                    {% asyncEach ff in device.functions %}
+                    <li>
+                        <button onclick="javascript:btclick('{{ff.now()}}','{{ff.uuid()}}','sayHello');">
+                            {{ff.name}}
+                        </button>
+                    </li>
+                    {% endeach %}
+                </ul>
+            </li>
+            {% endeach %}
+        </ul>
+        {{body}}
+    </div>
+</script>
+<div id="ecosystem"></div>
+<div id="execution-result"></div>
+<script>
+    var last_timestamp = (new Date()).getTime();
+    var kubiModel = new org.kubi.KubiModel();
+    function btclick(time, uuid, params) {
+        kubiModel.universe(0).time(time).lookup(uuid).then(function (resolved) {
+            resolved.exec(params, function (rpcRes) {
+                $("#execution-result").html("Model based RPC result=" + rpcRes);
+            });
+        })
+    }
+    kubiModel.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
+    kubiModel.connect().then(function (e) {
+        if (e) {
+            console.error(e);
+        } else {
+            var currentView = kubiModel.universe(0).time(last_timestamp);
+            currentView.getRoot().then(function (root) {
+                nunjucks.configure({autoescape: true});
+                try {
+                    nunjucks.renderString($("#ecosystem-template").html(), {ecosystem: root,autoRefresh:true,autoNow:true}, function (err, res) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        $("#ecosystem").html(res);
+                    });
+                } catch(e){
+                    console.error(e);
+                }
+
+
+
+            });
+        }
+    });
+</script>
+</body>
+</html>

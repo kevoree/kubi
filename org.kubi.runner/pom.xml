@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>org.kubi.root</artifactId>
+        <groupId>org.kubi</groupId>
+        <version>1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>org.kubi.runner</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Kubi::Runner</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.frontend.web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.modeling</groupId>
+            <artifactId>org.kevoree.modeling.microframework.drivers.leveldb</artifactId>
+            <version>${kmf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.modeling</groupId>
+            <artifactId>org.kevoree.modeling.microframework.drivers.websocket</artifactId>
+            <version>${kmf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.driver.zwave</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.zwave.productstore</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+-->
+    </dependencies>
+
+
+</project>

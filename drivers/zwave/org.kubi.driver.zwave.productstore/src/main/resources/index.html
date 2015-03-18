@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script src="./org.kubi.zwave.productstore-all.js"></script>
+<script>
+    var zwaveproductsstoreUniverse = new org.kubi.zwave.ZWaveProductsStoreUniverse();
+    zwaveproductsstoreUniverse.connect(function(error){
+        var zwaveproductsstoreView = zwaveproductsstoreUniverse.newDimension().time(0);
+
+        //create your root element from 'zwaveproductsstoreView' ::  var element = zwaveproductsstoreView.create[...]();
+        //set your root element (if necessary) 'zwaveproductsstoreView' ::  zwaveproductsstoreView.setRoot(<element>);
+
+        //Load from JSON
+        //zwaveproductsstoreView.json().load("Model_As_String", function(error){console.error(error);});
+
+        /*  Serialize in JSON:
+
+         zwaveproductsstoreView.json().save(<model>, function(serializedModel, error){
+         if(!error) {
+             //Do something with 'serializedModel'
+         } else {
+             console.error(error);
+         }
+         */
+    });
+
+</script>
+</body>
+</html>

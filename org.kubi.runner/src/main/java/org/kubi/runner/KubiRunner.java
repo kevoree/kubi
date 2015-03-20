@@ -8,7 +8,10 @@ import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
 import org.kubi.*;
 import org.kubi.driver.zwave.ZWaveConnector;
+import org.kubi.meta.MetaDevice;
 import org.kubi.meta.MetaFunction;
+import org.kubi.meta.MetaParameter;
+import org.kubi.simulationLaws.PolynomialLaw;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -105,7 +108,7 @@ public class KubiRunner {
             @Override
             public void on(Throwable throwable) {
                 final KubiUniverse ku = km.universe(0);
-                final KubiView kv = ku.time(0);
+                final KubiView kv = ku.time(System.currentTimeMillis());
                 kv.select("/").then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
@@ -120,35 +123,63 @@ public class KubiRunner {
                             deviceEchoFunction.setName("sayEcho");
                             deviceEchoFunction.addParameters(kv.createParameter().setName("name"));
                             device.addFunctions(deviceEchoFunction);
-                            e.addDevices(device);
+                            //e.addDevices(device);
+
 
                             Device device2 = kv.createDevice();
                             device2.setName("echo2");
+                            device2.addParameters(kv.createParameter().setName("name"));
+                            Function deviceEchoFunction2 = kv.createFunction();
+                            deviceEchoFunction2.setName("sayChocolat");
+                            deviceEchoFunction2.addParameters(kv.createParameter().setName("name"));
+                            device2.addFunctions(deviceEchoFunction2);
                             e.addDevices(device2);
 
-                            /*
+                            final PolynomialLaw polynomialLaw = new PolynomialLaw(24839.21865, -14430.25924,
+                                    3359.404392, -401.9522656, 26.18040012, -0.8830270156, 0.01208028907);
+                            final long start = System.currentTimeMillis();
                             Thread t = new Thread(new Runnable() {
                                 @Override
                                 public void run() {
                                     while(true){
                                         try {
-                                            Thread.sleep(10000);
+                                            Thread.sleep(1000);
                                         } catch (InterruptedException e1) {
                                             e1.printStackTrace();
                                         }
                                         System.err.println("Simulate modification...");
-                                        device2.setVersion(System.currentTimeMillis() + "");
-                                        km.save();
+                                        device2.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME,"name").done().then(new Callback<KObject[]>() {
+                                            @Override
+                                            public void on(KObject[] kObjects) {
+                                                if(kObjects.length != 0){Parameter parameter = ((Parameter)kObjects[0]);
+                                                    parameter.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
+                                                        @Override
+                                                        public void on(KObject kObject) {
+                                                            ((Parameter)kObject).setValue(polynomialLaw.evaluate((Double.parseDouble((System.currentTimeMillis()-start)+"")/1000 ) % 24) + "");
+
+                                                            km.save();
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                                        //device2.setVersion(System.currentTimeMillis() + "");
+                                        //km.save();
                                     }
                                 }
                             });
                             t.start();
-*/
+
 
                             km.setOperation(MetaFunction.OP_EXEC, new KOperation() {
                                 @Override
                                 public void on(KObject source, Object[] params, Callback<Object> result) {
-                                    result.on(Arrays.asList(params));
+                                    if(((Function)source).getName().equals("sayEcho")){
+                                        result.on("banane");
+                                    }
+                                    else{
+                                        result.on(Arrays.asList(params));
+                                    }
                                 }
                             });
                             kv.setRoot(e).then(new Callback<Throwable>() {

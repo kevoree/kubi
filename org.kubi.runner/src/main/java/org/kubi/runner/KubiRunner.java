@@ -123,7 +123,7 @@ public class KubiRunner {
                             deviceEchoFunction.setName("sayEcho");
                             deviceEchoFunction.addParameters(kv.createParameter().setName("name"));
                             device.addFunctions(deviceEchoFunction);
-                            //e.addDevices(device);
+                            e.addDevices(device);
 
 
                             Device device2 = kv.createDevice();

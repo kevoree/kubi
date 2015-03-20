@@ -905,6 +905,7 @@ var org;
                     var AbstractKModel = (function () {
                         function AbstractKModel() {
                             this._manager = new org.kevoree.modeling.api.data.manager.DefaultKDataManager(this);
+                            this._key = this._manager.nextModelKey();
                         }
                         AbstractKModel.prototype.metaModel = function () {
                             throw "Abstract method";
@@ -963,8 +964,18 @@ var org;
                         AbstractKModel.prototype.defer = function () {
                             return new org.kevoree.modeling.api.abs.AbstractKDefer();
                         };
-                        AbstractKModel.prototype.clearListeners = function () {
+                        AbstractKModel.prototype.key = function () {
+                            return this._key;
+                        };
+                        AbstractKModel.prototype.clearGroupListeners = function (groupID) {
+                        };
+                        AbstractKModel.prototype.clearAllListeners = function () {
                             this.manager().cdn().unregisterAll();
+                        };
+                        AbstractKModel.prototype.nextGroupId = function () {
+                            return 0;
+                        };
+                        AbstractKModel.prototype.listen = function (groupId, target, multiListener) {
                         };
                         return AbstractKModel;
                     })();
@@ -1101,10 +1112,10 @@ var org;
                             }
                             return task;
                         };
-                        AbstractKObject.prototype.listen = function (listener) {
+                        AbstractKObject.prototype.listen = function (groupId, listener) {
                             this.universe().model().manager().cdn().registerListener(this, listener);
                         };
-                        AbstractKObject.prototype.unregister = function (listener) {
+                        AbstractKObject.prototype.unregister = function (groupId, listener) {
                             this.universe().model().manager().cdn().unregister(this, listener);
                         };
                         AbstractKObject.prototype.domainKey = function () {
@@ -1576,7 +1587,7 @@ var org;
                         AbstractKObject.prototype.inbounds = function () {
                             var rawPayload = this.view().universe().model().manager().entry(this, org.kevoree.modeling.api.data.manager.AccessMode.READ);
                             if (rawPayload != null) {
-                                var payload = rawPayload.get(org.kevoree.modeling.api.data.manager.Index.INBOUNDS_INDEX);
+                                var payload = rawPayload.getRef(org.kevoree.modeling.api.data.manager.Index.INBOUNDS_INDEX);
                                 if (payload != null) {
                                     try {
                                         return this._view.lookupAll(payload);
@@ -2855,6 +2866,8 @@ var org;
                                 this.GLO_TREE_INDEX = 2;
                                 this._cache = new org.kevoree.modeling.api.data.cache.MultiLayeredMemoryCache();
                                 this.cachedGlobalUniverse = null;
+                                this._modelKeyCalculator = new org.kevoree.modeling.api.data.manager.KeyCalculator(DefaultKDataManager.zeroPrefix, 0);
+                                this._groupKeyCalculator = new org.kevoree.modeling.api.data.manager.KeyCalculator(DefaultKDataManager.zeroPrefix, 0);
                                 this._db = new org.kevoree.modeling.api.data.cdn.MemoryKContentDeliveryDriver();
                                 this._db.setManager(this);
                                 this._operationManager = new org.kevoree.modeling.api.util.DefaultOperationManager(this);
@@ -2895,6 +2908,12 @@ var org;
                                     nextGeneratedKey = this._objectKeyCalculator.nextKey();
                                 }
                                 return nextGeneratedKey;
+                            };
+                            DefaultKDataManager.prototype.nextModelKey = function () {
+                                return this._modelKeyCalculator.nextKey();
+                            };
+                            DefaultKDataManager.prototype.nextGroupKey = function () {
+                                return this._groupKeyCalculator.nextKey();
                             };
                             DefaultKDataManager.prototype.globalUniverseOrder = function () {
                                 if (this.cachedGlobalUniverse != null) {
@@ -3439,6 +3458,7 @@ var org;
                             };
                             DefaultKDataManager.OUT_OF_CACHE_MESSAGE = "KMF Error: your object is out of cache, you probably kept an old reference. Please reload it with a lookup";
                             DefaultKDataManager.UNIVERSE_NOT_CONNECTED_ERROR = "Please connect your model prior to create a universe or an object";
+                            DefaultKDataManager.zeroPrefix = 0;
                             return DefaultKDataManager;
                         })();
                         manager.DefaultKDataManager = DefaultKDataManager;

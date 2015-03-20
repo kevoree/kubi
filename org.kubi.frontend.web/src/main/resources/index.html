@@ -8,11 +8,16 @@
 </head>
 <body>
 <script id="ecosystem-template" type="text/x-handlebars-template">
+
+    {% macro input(name, value='', type='text') %}
+    <input type="txt" value="{{ value | escape }}" onchange="javascript:alert(value);"/>
+    {% endmacro %}
+
     <h1>EcoSystem {{ecosystem.name}}</h1>
     <div class="body">
         <ul>
             {% asyncEach device in ecosystem.devices %}
-            <li>{{device.name}} ({{device.version}})
+            <li>{{device.name}} ({{device.version}}) {{device | field('name')}} {{device | field('version')}}
                 <ul>
                     {% asyncEach ff in device.functions %}
                     <li>
@@ -48,17 +53,56 @@
             var currentView = kubiModel.universe(0).time(last_timestamp);
             currentView.getRoot().then(function (root) {
                 nunjucks.configure({autoescape: true});
+
+                var env = new nunjucks.Environment();
+                env.addFilter('field', function (src, attName) {
+                    var metaAtt = src.metaClass().attribute(attName);
+                    var id = 'el_' + Math.floor(Math.random() * 100000);
+                    var id_fct = id + '_fct';
+                    var copyObj = src;
+                    window[id_fct] = function (newVal) {
+                        copyObj.set(metaAtt, newVal);
+                        copyObj.view().universe().model().save();
+                    }
+                    var currentVal = src.get(metaAtt);
+                    var ret = new nunjucks.runtime.SafeString('<input type="text" value="' + currentVal + '" id="' + id + '" onchange="javascript:window.' + id_fct + '(value);">');
+                    return ret;
+                });
+                env.addFilter('select', function (src, attName) {
+                    var metaAtt = src.metaClass().attribute(attName);
+                    /*
+                     <select name="select">
+                     <option value="value1">Valeur 1</option>
+                     <option value="value2" selected>Valeur 2</option>
+                     <option value="value3">Valeur 3</option>
+                     </select>
+                     */
+
+                    var id = 'el_' + Math.floor(Math.random() * 100000);
+                    var id_fct = id + '_fct';
+                    var copyObj = src;
+                    window[id_fct] = function (newVal) {
+                        copyObj.set(metaAtt, newVal);
+                        copyObj.view().universe().model().save();
+                    }
+                    var currentVal = src.get(metaAtt);
+                    var ret = new nunjucks.runtime.SafeString('<input type="text" value="' + currentVal + '" id="' + id + '" onchange="javascript:window.' + id_fct + '(value);">');
+                    return ret;
+                });
                 try {
-                    nunjucks.renderString($("#ecosystem-template").html(), {ecosystem: root,autoRefresh:true,autoNow:true}, function (err, res) {
+                    env.renderString($("#ecosystem-template").html(), {
+                        ecosystem: root,
+                        autoRefresh: true,
+                        autoNow: true
+                    }, function (err, res) {
                         if (err) {
                             console.log(err);
                         }
                         $("#ecosystem").html(res);
                     });
-                } catch(e){
+                } catch (e) {
                     console.error(e);
                 }
-
 
 
             });

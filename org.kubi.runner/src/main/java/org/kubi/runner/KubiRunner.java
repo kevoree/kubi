@@ -119,6 +119,7 @@ public class KubiRunner {
 
                             Device device = kv.createDevice();
                             device.setName("echo");
+                            device.addParameters(kv.createParameter().setName("name"));
                             Function deviceEchoFunction = kv.createFunction();
                             deviceEchoFunction.setName("sayEcho");
                             deviceEchoFunction.addParameters(kv.createParameter().setName("name"));
@@ -137,6 +138,7 @@ public class KubiRunner {
 
                             final PolynomialLaw polynomialLaw = new PolynomialLaw(24839.21865, -14430.25924,
                                     3359.404392, -401.9522656, 26.18040012, -0.8830270156, 0.01208028907);
+                            final PolynomialLaw polynomialLaw1 = new PolynomialLaw(0., 2.);
                             final long start = System.currentTimeMillis();
                             Thread t = new Thread(new Runnable() {
                                 @Override
@@ -156,6 +158,21 @@ public class KubiRunner {
                                                         @Override
                                                         public void on(KObject kObject) {
                                                             ((Parameter)kObject).setValue(polynomialLaw.evaluate((Double.parseDouble((System.currentTimeMillis()-start)+"")/1000 ) % 24) + "");
+
+                                                            km.save();
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                                        device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME,"name").done().then(new Callback<KObject[]>() {
+                                            @Override
+                                            public void on(KObject[] kObjects) {
+                                                if(kObjects.length != 0){Parameter parameter = ((Parameter)kObjects[0]);
+                                                    parameter.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
+                                                        @Override
+                                                        public void on(KObject kObject) {
+                                                            ((Parameter)kObject).setValue(polynomialLaw1.evaluate((Double.parseDouble((System.currentTimeMillis()-start)+"")/1000 ) % 24) + "");
 
                                                             km.save();
                                                         }

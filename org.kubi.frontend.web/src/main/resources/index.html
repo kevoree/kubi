@@ -166,7 +166,7 @@
          for(var i=0;i<unsortedDataPoints.length;i++){
              sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length-i-1,unsortedDataPoints.length-i)[0])
          }
-         
+
          addDataPointsWithSerieName(sortedDataPoints,deviceName);
          initPage();
          chart.render();

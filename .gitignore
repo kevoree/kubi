@@ -4,3 +4,4 @@ target/
 .iml/*
 **/*iml
 .DS_Store
+/kubiDB/

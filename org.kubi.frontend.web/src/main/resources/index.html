@@ -65,13 +65,15 @@
 <script>
  var chart;
 
+ var dataPoints = {};
+
  function initGraph(){
      chart = new CanvasJS.Chart("chartContainer",
              {
                  width: 1000,
                  height: 500,
                  title: {
-                     text: "grah of the occupation of the parking(%) depending of the time(hour)"
+                     text: "graph of the occupation of the parking(%) depending of the time(hour)"
                  },
                  axisX: {
                      valueFormatString: "HH:mm:ss",
@@ -104,45 +106,68 @@
                  toolTip: {
                      shared: true
                  },
-                 data: [{
-                     type: "line",
-                     showInLegend: true,
-                     name: "Parking occupation",
-                     dataPoints: []
-                 }]
+                 data: []
              }
         );
 
      var currentView = kubiModel.universe(0).time(last_timestamp);
 
      currentView.getRoot().then(function (root) {
-         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "echo2")
+         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).done().then(function (devices){
+             var d;
+             for(d = 0; d< devices.length; d++)
+             {
+                 var device = devices[d];
+                 // add a curb describing the device on the chart
+                 chart.options.data.push({type: "line", showInLegend: true, name: device.getName(), dataPoints: []});
+                 dataPoints[device.getName()]=[];
+                 // add old data to the chart
+                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params){
+                     if (params.length != 0) {
+                         var param = params[0];
+                         param.jump(param.now()-1000).then(function (paramTimed){
+                             param.parent().then(function (parent){
+                                 // TODO : gérer mieux l'ajout
+                                 addPreviousValues(paramTimed, parent.getName());
+                             });
+                         });
+                     }
+                 });
+             }
+         });
+         /*root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "echo2")
              .traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params) {
-                if (params.length != 0) {
-                    var param = params[0];
-                    param.jump(param.now()-1000).then(function (paramTimed){
-                        addPreviousValues(paramTimed);
-                    });
-                }
-             });
+                 if (params.length != 0) {
+                     var param = params[0];
+                     param.jump(param.now()-1000).then(function (paramTimed){
+                         addPreviousValues(paramTimed);
+                     });
+                 }
+                 });*/
      });
  }
 
- var dataPoints = [];
- function addPreviousValues(paramTimed){
+ /**
+  * TODO : mettre un truc avec plus de trucs dedans ([{name, dataPoint},{name, dataPoint}]
+  **/
+ function addPreviousValues(paramTimed, deviceName){
+     console.log("--", deviceName);
      if((paramTimed.now() > last_timestamp-30000) && (paramTimed.getValue()!= undefined)) {
-         dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-
+         dataPoints[deviceName].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
+         console.log("---------",dataPoints);
+         //addDataPointWithSerie({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())}, deviceName);
          paramTimed.jump(paramTimed.now() - 1000).then(function (param1){
-             addPreviousValues(param1);
+             addPreviousValues(param1, deviceName);
          });
      }
      else{
+         var unsortedDataPoints = dataPoints[deviceName];
          var sortedDataPoints = [];
-         for(var i=0;i<dataPoints.length;i++){
-             sortedDataPoints.push(dataPoints.slice(dataPoints.length-i-1,dataPoints.length-i)[0])
+         for(var i=0;i<unsortedDataPoints.length;i++){
+             sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length-i-1,unsortedDataPoints.length-i)[0])
          }
-         addDataPointsWithSerieNumber(sortedDataPoints,0);
+         
+         addDataPointsWithSerieName(sortedDataPoints,deviceName);
          initPage();
          chart.render();
      }
@@ -163,8 +188,8 @@
  }
 
  /**
-  *Add a set of points to the chart
-  *@param  value the set of poins
+  *Add a set of points to the chart in the data set number serieNumber
+  *@param  value the set of points
   * @param serieNumber the number of the serie that you want to add the points
   * [
   *     {x: new Date(timestamp), y: Float_value},
@@ -183,7 +208,41 @@
  }
 
  /**
-  * Add the point to the chart
+  * ----- doesn't work !! -----
+  *Add a set of points to the chart
+  * @param  value the set of poins
+  * @param serieName the name of the serie that you want to add the points
+  * [
+  *     {x: new Date(timestamp), y: Float_value},
+  *     {x: new Date(timestamp), y: Float_value}
+  * ]
+  **/
+ function addDataPointsWithSerieName(values, serieName) {
+     var dpsCollection;
+     var index;
+     for(var d in chart.options.data){
+         data = chart.options.data[d];
+         if(data.name.equals(serieName)){
+             dpsCollection = data.dataPoints;
+             index = d;
+         }
+     }
+     if(dpsCollection != null && index != null) {
+         for (var point in values) {
+             dpsCollection.push(values[point]);
+             if (dpsCollection.length > this.windowSize) {
+                 dpsCollection.shift();
+             }
+         }
+     }
+     else{
+         console.error("Bad series name ",serieName, " : device not in the data set of the chart.");
+     }
+     this.chart.render();
+ }
+
+ /**
+  * Add the point to the chart in the first set of data
   * @param point
   * {x: new Date(timestamp), y: Float_value}
   */
@@ -196,7 +255,39 @@
         this.chart.render();
     }
 
-    function initPage(){
+
+ /**
+  * Add the point to the chart
+  * @param point
+  * {x: new Date(timestamp), y: Float_value}
+  * @param serie name
+  *     the name of the chart where you want to add the point (should be the name of the device)
+  */
+ function addDataPointWithSerie(point, serie) {
+     console.log("In dataPOintWithSerie .....",serie);
+     var dpsCollection;
+     var index;
+     for(var i in chart.options.data){
+         data = chart.options.data[i];
+         if(data.name.equals(serie)){
+             dpsCollection = data.dataPoints;
+             index=i;
+         }
+     }
+     if(dpsCollection != null && index!=null) {
+         var dpsCollection = chart.options.data[index].dataPoints;
+         dpsCollection.push(point);
+         if (dpsCollection.length > this.windowSize) {
+             dpsCollection.shift();
+         }
+     }
+     else{
+         console.error("Bad series name (=",serie ,") : device not in the data set of the chart.");
+     }
+     this.chart.render();
+ }
+
+ function initPage(){
         var currentView = kubiModel.universe(0).time(last_timestamp);
         currentView.getRoot().then(function (root) {
             nunjucks.configure({autoescape: true});
@@ -210,20 +301,24 @@
                     $("#ecosystem").html(res);
                     var currentView = kubiModel.universe(0).time((new Date()).getTime());
                     currentView.getRoot().then(function (root) {
-                        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "echo2")
-                                .traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params) {
-                                    var param = params[0];
-                                    addDataPoint({x: new Date(param.now()), y: parseFloat(param.getValue())});
-                                    console.log({x: new Date(param.now()), y: parseFloat(param.getValue())});
-                                });
+                        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).done().then(function (devices){
+                            var d;
+                           for(d = 0; d<devices.length ; d++){
+                               var device = devices[d];
+                               device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params) {
+                                   var param = params[0];
+                                   param.parent().then(function(parent){
+                                       addDataPointWithSerie({x: new Date(param.now()), y: parseFloat(param.getValue())}, parent.getName());
+                                   });
+                               });
+                           }
+                        });
+
                     });
                 });
             } catch(e){
                 console.error(e);
             }
-
-
-
         });
     }
 

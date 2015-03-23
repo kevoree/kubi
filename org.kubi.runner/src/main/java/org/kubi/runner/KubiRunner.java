@@ -158,7 +158,6 @@ public class KubiRunner {
                                                         @Override
                                                         public void on(KObject kObject) {
                                                             ((Parameter)kObject).setValue(polynomialLaw.evaluate((Double.parseDouble((System.currentTimeMillis()-start)+"")/1000 ) % 24) + "");
-
                                                             km.save();
                                                         }
                                                     });

@@ -49,7 +49,7 @@ public class EchoMockPlugin implements Plugin, Runnable {
             public void on(KObject kObject) {
                 Ecosystem newEcoSystem = (Ecosystem) kObject;
                 float addDeviceProba = rand.nextFloat();
-                if (addDeviceProba < 0.2) {
+                if (addDeviceProba < 0.3) {
                     String deviceName = "Device_" + rand.nextInt(1000);
                     System.err.println("MadMock add a device ... named:" + deviceName);
                     Device newDevice = newEcoSystem.view().createDevice();

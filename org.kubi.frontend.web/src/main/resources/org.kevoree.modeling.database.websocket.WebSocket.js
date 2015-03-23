@@ -126,14 +126,14 @@ var org;
                         WebSocketClient.prototype.remove = function (keys, error) {
                             console.error("Not implemented yet");
                         };
-                        WebSocketClient.prototype.registerListener = function (origin, listener) {
-                            this._localEventListeners.registerListener(origin, listener);
+                        WebSocketClient.prototype.registerListener = function (groupId, origin, listener) {
+                            this._localEventListeners.registerListener(groupId, origin, listener);
                         };
-                        WebSocketClient.prototype.unregister = function (origin, listener) {
-                            this._localEventListeners.unregister(origin, listener);
+                        WebSocketClient.prototype.registerMultiListener = function (groupId, origin, objects, listener) {
+                            this._localEventListeners.registerListenerAll(groupId, origin, objects, listener);
                         };
-                        WebSocketClient.prototype.unregisterAll = function () {
-                            this._localEventListeners.unregisterAll();
+                        WebSocketClient.prototype.unregisterGroup = function (groupId) {
+                            this._localEventListeners.unregister(groupId);
                         };
                         WebSocketClient.prototype.setManager = function (manager) {
                             this._manager = manager;

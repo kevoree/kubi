@@ -49,7 +49,8 @@
         <!-- EnOcean driver -->
         <module>drivers/enocean/org.kubi.driver.enocean</module>
         <!-- EchoMock driver -->
-        <module>drivers/mock/org.kubi.driver.echomock</module>
+        <module>drivers/mock/org.kubi.driver.madmock</module>
+        <module>drivers/mock/org.kubi.driver.smartcampus</module>
 
         <module>org.kubi.frontend.web</module>
         <module>org.kubi.kernel</module>

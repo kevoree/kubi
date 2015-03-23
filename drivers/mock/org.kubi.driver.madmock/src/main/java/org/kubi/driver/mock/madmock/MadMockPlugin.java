@@ -1,4 +1,4 @@
-package org.kubi.driver.mock.echomock;
+package org.kubi.driver.mock.madmock;
 
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by duke on 20/03/15.
  */
-public class EchoMockPlugin implements Plugin, Runnable {
+public class MadMockPlugin implements Plugin, Runnable {
 
     ScheduledExecutorService service = null;
 

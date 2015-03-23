@@ -1,4 +1,4 @@
-package org.kevoree.kubi.driver.enocean;
+package org.kubi.driver.enocean;
 
 import eu.aleon.aleoncean.packet.ESP3Packet;
 import eu.aleon.aleoncean.rxtx.ESP3Connector;

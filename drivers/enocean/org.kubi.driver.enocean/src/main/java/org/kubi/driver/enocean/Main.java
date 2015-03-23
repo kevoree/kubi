@@ -1,4 +1,4 @@
-package org.kevoree.kubi.driver.enocean;
+package org.kubi.driver.enocean;
 
 import eu.aleon.aleoncean.rxtx.USB300;
 

@@ -25,9 +25,9 @@ public class MadMockPlugin implements Plugin, Runnable {
 
     @Override
     public void start(KubiModel model) {
+        System.out.println("MadMock Start ... ");
         this.model = model;
         service = Executors.newScheduledThreadPool(1);
-        System.out.println("Kubi Mock Start ... ");
         madEchoSystem = model.universe(0).time(System.currentTimeMillis()).createEcosystem();
         madEchoSystem.setName("MadMockEcoSystem");
         model.universe(0).time(System.currentTimeMillis()).setRoot(madEchoSystem);

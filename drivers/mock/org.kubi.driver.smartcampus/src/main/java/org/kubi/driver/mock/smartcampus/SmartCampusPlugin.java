@@ -1,6 +1,11 @@
 package org.kubi.driver.mock.smartcampus;
 
+import org.kevoree.modeling.api.Callback;
+import org.kevoree.modeling.api.KObject;
+import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
+import org.kubi.KubiUniverse;
+import org.kubi.KubiView;
 import org.kubi.api.Plugin;
 
 import java.util.concurrent.Executors;
@@ -31,6 +36,16 @@ public class SmartCampusPlugin implements Plugin, Runnable {
 
     @Override
     public void run() {
-        //TODO
+        final KubiUniverse ku = model.universe(0);
+        final KubiView kv = ku.time(System.currentTimeMillis());
+        kv.select("/").then(new Callback<KObject[]>() {
+            @Override
+            public void on(KObject[] kObjects) {
+                if (kObjects.length == 0) {
+                    Ecosystem e = kv.createEcosystem();
+                    e.setName("ecoSystemTest");
+                }
+            }
+        });
     }
 }

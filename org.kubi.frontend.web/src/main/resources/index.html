@@ -7,6 +7,7 @@
     <script src="org.kevoree.modeling.database.websocket.WebSocket.js"></script>
 </head>
 <body>
+<a href="indexJR.html">indexJR</a>
 <script id="ecosystem-template" type="text/x-handlebars-template">
 
     {% macro input(name, value='', type='text') %}
@@ -24,6 +25,16 @@
                         <button onclick="javascript:btclick('{{ff.now()}}','{{ff.uuid()}}','sayHello');">
                             {{ff.name}}
                         </button>
+                    </li>
+                    {% endeach %}
+                </ul>
+                <ul>
+                    {% asyncEach param in device.parameters %}
+
+                    <li>
+                        <p>
+                            {{param.name}}  -  {{param.value}}
+                        </p>
                     </li>
                     {% endeach %}
                 </ul>

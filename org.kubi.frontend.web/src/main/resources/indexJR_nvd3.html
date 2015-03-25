@@ -5,7 +5,11 @@
     <script src="nunjucks.js"></script>
     <script src="org.kubi.model-all.js"></script>
     <script src="org.kevoree.modeling.database.websocket.WebSocket.js"></script>
-    <script src="./canvasjs.min.js"></script>
+    <!--  for the second graph -->
+    <link href="./nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script src="./nv.d3.js"></script>
+
 </head>
 <body>
 <a href="index.html">index</a>
@@ -43,8 +47,10 @@
     </div>
 </script>
 <div id="ecosystem"></div>
-<div id="chartContainer"></div>
+<div id="chart1"></div>
 <div id="execution-result"></div>
+
+
 <script>
     var last_timestamp = (new Date()).getTime();
     var kubiModel = new org.kubi.KubiModel();
@@ -69,47 +75,6 @@
     var chart;
     var dataPoints = {};
     function initGraph(){
-        chart = new CanvasJS.Chart("chartContainer",
-                {
-                    width: 1000,
-                    height: 500,
-                    title: {
-                        text: "graph of the occupation of the parking(%) depending of the time(hour)"
-                    },
-                    axisX: {
-                        valueFormatString: "HH:mm:ss",
-                        interval: 3600,
-                        intervalType: "second",
-                        labelFontColor: "black",
-                        lineColor: "black",
-                        lineThickness: 1,
-                        tickColor: "black",
-                        tickLength: 5,
-                        tickThickness: 1
-                    },
-                    axisY: {
-                        title: "% frequency",
-                        titleFontColor: "black",
-                        lineColor: "black",
-                        lineThickness: 1,
-                        gridColor: "black",
-                        gridThickness: 1,
-                        labelFontColor: "black",
-                        tickColor: "black",
-                        tickLength: 5,
-                        tickThickness: 1
-                    },
-                    legend: {
-                        verticalAlign: "bottom",
-                        horizontalAlign: "center",
-                        fontSize: 16
-                    },
-                    toolTip: {
-                        shared: true
-                    },
-                    data: []
-                }
-        );
         var currentView = kubiModel.universe(0).time(last_timestamp);
         currentView.getRoot().then(function (root) {
             root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).done().then(function (devices){
@@ -126,7 +91,6 @@
                             var param = params[0];
                             param.jump(param.now()-1000).then(function (paramTimed){
                                 param.parent().then(function (parent){
-                                    // TODO : gérer mieux l'ajout
                                     addPreviousValues(paramTimed, parent.getName());
                                 });
                             });
@@ -145,9 +109,6 @@
              });*/
         });
     }
-    /**
-     * TODO : mettre un truc avec plus de trucs dedans ([{name, dataPoint},{name, dataPoint}]
-     **/
     function addPreviousValues(paramTimed, deviceName){
         console.log("--", deviceName);
         if((paramTimed.now() > last_timestamp-30000) && (paramTimed.getValue()!= undefined)) {
@@ -254,16 +215,8 @@
      *     the name of the chart where you want to add the point (should be the name of the device)
      */
     function addDataPointWithSerie(point, serie) {
+        /*
         console.log("In dataPOintWithSerie .....",serie);
-        var dpsCollection;
-        var index;
-        for(var i in chart.options.data){
-            data = chart.options.data[i];
-            if(data.name.equals(serie)){
-                dpsCollection = data.dataPoints;
-                index=i;
-            }
-        }
         if(dpsCollection != null && index!=null) {
             var dpsCollection = chart.options.data[index].dataPoints;
             dpsCollection.push(point);
@@ -274,7 +227,7 @@
         else{
             console.error("Bad series name (=",serie ,") : device not in the data set of the chart.");
         }
-        this.chart.render();
+        this.chart.render();*/
     }
     function initPage(){
         var currentView = kubiModel.universe(0).time(last_timestamp);
@@ -309,5 +262,116 @@
         });
     }
 </script>
+
+
+<script>
+    // Wrapping in nv.addGraph allows for '0 timeout render', stores rendered charts in nv.graphs, and may do more in the future... it's NOT required
+    var chart;
+    var data;
+    var randomizeFillOpacity = function() {
+        var rand = Math.random(0,1);
+        for (var i = 0; i < 100; i++) { // modify sine amplitude
+            data[4].values[i].y = Math.sin(i/(5 + rand)) * .4 * rand - .25;
+        }
+        data[4].fillOpacity = rand;
+        chart.update();
+    };
+    nv.addGraph(function() {
+        chart = nv.models.lineChart()
+                .options({
+                    transitionDuration: 300
+                    //useInteractiveGuideline: true
+                })
+        ;
+        // chart sub-models (ie. xAxis, yAxis, etc) when accessed directly, return themselves, not the parent chart, so need to chain separately
+        chart.xAxis
+                .axisLabel("Time (s)")
+                .tickFormat(d3.format(',.1f'))
+                .staggerLabels(true)
+        ;
+        chart.yAxis
+                .axisLabel('Voltage (v)')
+                .tickFormat(d3.format(',.2f'))
+        ;
+        data = sinAndCos();
+        console.log(chart.values);
+        d3.select('#chart1').append('svg')
+                .datum(data)
+                .call(chart);
+        nv.utils.windowResize(chart.update);
+        return chart;
+    });
+    function sinAndCos() {
+        var sin = [],
+                sin2 = [],
+                cos = [],
+                rand = [],
+                rand2 = []
+                ;
+        for (var i = 0; i < 100; i++) {
+            sin.push({x: i, y: i % 10 == 5 ? null : Math.sin(i/10) }); //the nulls are to show how defined works
+            sin2.push({x: i, y: Math.sin(i/5) * 0.4 - 0.25});
+            cos.push({x: i, y: .5 * Math.cos(i/10)});
+            rand.push({x:i, y: Math.random() / 10});
+            rand2.push({x: i, y: Math.cos(i/10) + Math.random() / 10 })
+        }
+        return [
+            {
+                area: true,
+                values: sin,
+                key: "Sine Wave",
+                color: "#ff7f0e",
+                strokeWidth: 4,
+                classed: 'dashed'
+            },
+            {
+                values: cos,
+                key: "Cosine Wave",
+                color: "#2ca02c"
+            },
+            {
+                values: rand,
+                key: "Random Points",
+                color: "#2222ff"
+            },
+            {
+                values: rand2,
+                key: "Random Cosine",
+                color: "#667711",
+                strokeWidth: 3.5
+            },
+            {
+                area: true,
+                values: sin2,
+                key: "Fill opacity",
+                color: "#EF9CFB",
+                fillOpacity: .1
+            }
+        ];
+    }
+</script>
 </body>
+
+<style>
+    body {
+
+        display: block;
+    }
+    text {
+        font: 12px sans-serif;
+    }
+    svg {
+        display: block;
+    }
+    html, body, #chart1, svg {
+        margin: 0px;
+        padding: 0px;
+        height: 100%;
+        width: 100%;
+    }
+    .dashed {
+        stroke-dasharray: 5,5;
+    }
+</style>
+
 </html>

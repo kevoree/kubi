@@ -1,13 +1,15 @@
 package org.kubi.driver.mock.smartcampus;
 
 import org.kevoree.modeling.api.Callback;
+import org.kevoree.modeling.api.KObject;
 import org.kevoree.modeling.api.KOperation;
-import org.kubi.Function;
-import org.kubi.KubiModel;
-import org.kubi.KubiUniverse;
-import org.kubi.KubiView;
+import org.kubi.*;
 import org.kubi.api.Plugin;
+import org.kubi.meta.MetaDevice;
+import org.kubi.meta.MetaFunction;
+import org.kubi.meta.MetaParameter;
 
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

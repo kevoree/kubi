@@ -1,6 +1,7 @@
 package org.kubi.runner;
 
 import org.kevoree.modeling.api.Callback;
+import org.kevoree.modeling.api.scheduler.ExecutorServiceScheduler;
 import org.kevoree.modeling.databases.websocket.WebSocketWrapper;
 import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
 import org.kubi.KubiModel;
@@ -21,6 +22,7 @@ public class KubiKernel {
 
     public KubiKernel(String dbPath, int port) throws IOException {
         kubiModel = new KubiModel();
+        kubiModel.setScheduler(new ExecutorServiceScheduler());
         LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(dbPath);
         WebSocketWrapper webSocketWrapper = new WebSocketWrapper(leveldb, port);
         webSocketWrapper.exposeResourcesOf(KubiRunner.class.getClassLoader());

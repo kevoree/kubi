@@ -4,19 +4,13 @@ import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KOperation;
 import org.kubi.Function;
 import org.kubi.KubiModel;
+import org.kubi.KubiUniverse;
+import org.kubi.KubiView;
 import org.kubi.api.Plugin;
-import org.kubi.meta.MetaFunction;
-import org.kevoree.log.Log;
-import org.kevoree.modeling.api.KObject;
-import org.kubi.*;
-import org.kubi.meta.MetaDevice;
-import org.kubi.meta.MetaParameter;
 
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * Created by duke on 20/03/15.
@@ -33,7 +27,6 @@ public class SmartCampusPlugin implements Plugin, Runnable {
         this.model = model;
         service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
-        //Log.TRACE();
     }
 
     @Override
@@ -49,9 +42,6 @@ public class SmartCampusPlugin implements Plugin, Runnable {
             @Override
             public void on(KObject[] kObjects) {
                 if (kObjects.length == 0) {
-                    System.out.println("before");
-                    //Log.debug("Root creation");
-                    System.out.println("after");
                     Ecosystem e = kv.createEcosystem();
                     e.setName("ecoSystemTest");
 

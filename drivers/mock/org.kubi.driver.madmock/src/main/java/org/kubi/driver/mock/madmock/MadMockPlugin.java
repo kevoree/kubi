@@ -5,7 +5,7 @@ import org.kevoree.modeling.api.KObject;
 import org.kubi.Device;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
-import org.kubi.api.Plugin;
+import org.kubi.api.KubiPlugin;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by duke on 20/03/15.
  */
-public class MadMockPlugin implements Plugin, Runnable {
+public class MadMockPlugin implements KubiPlugin, Runnable {
 
     ScheduledExecutorService service = null;
 

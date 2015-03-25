@@ -1,20 +1,10 @@
 package org.kubi.driver.zwave;
 
-import com.eclipsesource.json.JsonObject;
 import lu.snt.zwave.driver.ZWaveKey;
-import lu.snt.zwave.protocol.command.ZWControlCommandWithResult;
-import lu.snt.zwave.protocol.command.ZWaveFactories;
 import lu.snt.zwave.protocol.constants.CommandClass;
-import lu.snt.zwave.protocol.messages.app_command.SwitchBinaryCommandClass;
-import lu.snt.zwave.utils.ZWCallback;
-import org.kubi.KubiModel;
 import org.kubi.KubiView;
 import org.kevoree.log.Log;
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KObject;
-import org.kevoree.modeling.api.KOperation;
 import org.kubi.*;
-import org.kubi.meta.MetaFunction;
 
 /**
  * Created by gregory.nain on 20/02/15.
@@ -23,9 +13,9 @@ public class FunctionsFactory {
 
     public static void addFunctionFunction(Device dev, CommandClass cc, ZWaveKey key) {
         int ccIndex = cc.getByteValue();
-        if(ccIndex == CommandClass.SWITCH_BINARY.getByteValue() ) {
+        if (ccIndex == CommandClass.SWITCH_BINARY.getByteValue()) {
             addSwitchBinaryFunction(dev, key);
-        } else if(ccIndex == CommandClass.SENSOR_MULTILEVEL.getByteValue() ) {
+        } else if (ccIndex == CommandClass.SENSOR_MULTILEVEL.getByteValue()) {
             addSensorMultiLevel(dev, key);
         } else {
             Log.debug("No function factory for CommandClass:" + cc.getName());
@@ -34,38 +24,24 @@ public class FunctionsFactory {
 
     public static void addSensorMultiLevel(Device dev, ZWaveKey key) {
         KubiView factory = dev.view();
-        Parameter multiLevelSensorState = factory.createParameter();
+        StateParameter multiLevelSensorState = factory.createStateParameter();
         multiLevelSensorState.setName(CommandClass.SENSOR_MULTILEVEL.getName());
         multiLevelSensorState.setValueType("float");
         multiLevelSensorState.setPrecision(0.1f);
         multiLevelSensorState.setUnit("kW");
-        dev.addParameters(multiLevelSensorState);
+        dev.addStateParameters(multiLevelSensorState);
     }
 
 
-    public static void addSwitchBinaryFunction(Device dev,  ZWaveKey key) {
+    public static void addSwitchBinaryFunction(Device dev, ZWaveKey key) {
         KubiView kv = dev.view();
-
-        //add a parameter to the device
-        Parameter onOffState = kv.createParameter();
+        ActionParameter onOffState = kv.createActionParameter();
         onOffState.setName(CommandClass.SWITCH_BINARY.getName());
         onOffState.setValueType("boolean");
         onOffState.setRange("[false,true]");
-        dev.addParameters(onOffState);
+        dev.addActionParameters(onOffState);
 
-        //create the function instance
-        Function switchBinary = kv.createFunction();
-        switchBinary.setName("Simple Switch");
-        dev.addFunctions(switchBinary);
-
-        //add a input parameter to the function
-        Parameter switchState = kv.createParameter();
-        switchState.setName("state");
-        switchState.setValueType("boolean");
-        switchState.setRange("[false,true]");
-        switchBinary.addParameters(switchState);
-
-        //Registers the callback for this function
+        /*
         KubiModel km = kv.universe().model();
         km.setInstanceOperation(MetaFunction.OP_EXEC, switchBinary, new KOperation() {
             @Override
@@ -124,8 +100,7 @@ public class FunctionsFactory {
                 });
             }
         });
-
-
+        */
     }
 
 

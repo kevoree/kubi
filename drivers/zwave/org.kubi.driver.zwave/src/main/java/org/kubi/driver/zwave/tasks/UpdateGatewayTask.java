@@ -11,14 +11,10 @@ import org.kevoree.log.Log;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
 import org.kubi.*;
-import org.kubi.driver.zwave.KeyHandler;
+import org.kubi.driver.zwave.StickHandler;
+import org.kubi.driver.zwave.ZWavePlugin;
 import org.kubi.meta.MetaDevice;
 import org.kubi.meta.MetaTechnology;
-import org.kubi.zwave.Manufacturer;
-import org.kubi.zwave.Product;
-import org.kubi.zwave.ZWaveProductsStoreView;
-import org.kubi.zwave.meta.MetaManufacturer;
-import org.kubi.zwave.meta.MetaProduct;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -28,11 +24,11 @@ import java.net.UnknownHostException;
  */
 public class UpdateGatewayTask implements Runnable {
 
-    private KeyHandler _keyHandler;
+    private StickHandler _stickHandler;
     private InetAddress IP = null;
 
-    public UpdateGatewayTask(KeyHandler keyHandler) {
-        this._keyHandler = keyHandler;
+    public UpdateGatewayTask(StickHandler stickHandler) {
+        this._stickHandler = stickHandler;
         try {
             IP = InetAddress.getLocalHost();
             Log.trace("HostAddress::" + IP.getHostAddress());
@@ -53,7 +49,7 @@ public class UpdateGatewayTask implements Runnable {
                 apiCapabilitiesCommand.onControllerResponse(new ZWCallback<Serial_GetApiCapabilities>() {
                     @Override
                     public void on(Serial_GetApiCapabilities apiCapabilities) {
-                        final KubiUniverse universe = _keyHandler.getModel().universe(0);
+                        final KubiUniverse universe = _stickHandler.getModel().universe(0);
                         final KubiView factory = universe.time(System.currentTimeMillis());
 
                         String manuStringId = String.format("%02x%02x", apiCapabilities.getManufacturerId_msb(), apiCapabilities.getManufacturerId_lsb());
@@ -68,7 +64,7 @@ public class UpdateGatewayTask implements Runnable {
                         factory.select("/").then(new Callback<KObject[]>() {
                             public void on(KObject[] kObjects) {
                                 final Ecosystem kubiEcosystem = (Ecosystem) kObjects[0];
-                                kubiEcosystem.select("technologies[name=" + KeyHandler.TECHNOLOGY + "]").then(new Callback<KObject[]>() {
+                                kubiEcosystem.select("technologies[name=" + ZWavePlugin.TECHNOLOGY + "]").then(new Callback<KObject[]>() {
                                     @Override
                                     public void on(KObject[] kObjects) {
                                         final Technology techno = (Technology) kObjects[0];
@@ -78,9 +74,8 @@ public class UpdateGatewayTask implements Runnable {
                                                     Log.debug("Adding ZWave Controller:{}", controllerId.getHomeId() + "_" + controllerId.getNodeId());
                                                     Device controller = factory.createDevice();
                                                     controller.setId("" + controllerId.getHomeId() + "_" + controllerId.getNodeId());
-                                                    controller.setTechnology(techno);
-                                                    kubiEcosystem.addDevices(controller);
-                                                    _keyHandler.setHomeId("" + controllerId.getHomeId());
+                                                    techno.addDevices(controller);
+                                                    _stickHandler.setHomeId("" + controllerId.getHomeId());
 
                                                     /*
                                                     final ZWaveProductsStoreView zWaveProductStore = _keyHandler.getZwaveStorel().universe(0).time(0);
@@ -96,9 +91,7 @@ public class UpdateGatewayTask implements Runnable {
                                                                             controller.setManufacturer(manufacturer.getName());
                                                                             controller.setName(product.getName());
                                                                             controller.setPicture("http://" + IP.getHostAddress() + ":8283/img/" + manuStringId + "/" + productStringType + productStringId + ".png");
-
                                                                             Log.trace("Controller:: {}({}) - {}({})", manufacturer.getName(), manuStringId, product.getName(), productStringType + productStringId);
-
                                                                             _keyHandler.getModel().save().then(new Callback<Throwable>() {
                                                                                 @Override
                                                                                 public void on(Throwable throwable) {
@@ -118,7 +111,7 @@ public class UpdateGatewayTask implements Runnable {
                                                         }
                                                     });
                                                     */
-                                                    _keyHandler.getModel().save().then(new Callback<Throwable>() {
+                                                    _stickHandler.getModel().save().then(new Callback<Throwable>() {
                                                         @Override
                                                         public void on(Throwable throwable) {
                                                             if (throwable != null) {
@@ -136,10 +129,10 @@ public class UpdateGatewayTask implements Runnable {
                         });
                     }
                 });
-                _keyHandler.getKey().submitCommand(apiCapabilitiesCommand);
+                _stickHandler.getKey().submitCommand(apiCapabilitiesCommand);
             }
         });
-        _keyHandler.getKey().submitCommand(getIdCommand);
+        _stickHandler.getKey().submitCommand(getIdCommand);
     }
 
 }

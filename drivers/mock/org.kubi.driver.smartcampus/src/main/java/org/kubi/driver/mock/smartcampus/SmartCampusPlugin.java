@@ -6,7 +6,7 @@ import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.KubiUniverse;
 import org.kubi.KubiView;
-import org.kubi.api.Plugin;
+import org.kubi.api.KubiPlugin;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by duke on 20/03/15.
  */
-public class SmartCampusPlugin implements Plugin, Runnable {
+public class SmartCampusPlugin implements KubiPlugin, Runnable {
 
     ScheduledExecutorService service = null;
 

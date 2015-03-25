@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>lu.snt.zwave</groupId>
             <artifactId>lu.snt.zwave.driver</artifactId>
             <version>1.0.1-SNAPSHOT</version>

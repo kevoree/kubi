@@ -45,13 +45,14 @@
 
         <!-- ZWave driver -->
         <module>drivers/zwave/org.kubi.driver.zwave</module>
-        <module>drivers/zwave/org.kubi.driver.zwave.productstore</module>
+     <!--   <module>drivers/zwave/org.kubi.driver.zwave.productstore</module>-->
         <!-- EnOcean driver -->
-        <module>drivers/enocean/org.kubi.driver.enocean</module>
+     <!--   <module>drivers/enocean/org.kubi.driver.enocean</module>-->
         <!-- EchoMock driver -->
+        <!--
         <module>drivers/mock/org.kubi.driver.madmock</module>
         <module>drivers/mock/org.kubi.driver.smartcampus</module>
-
+-->
         <module>org.kubi.frontend.web</module>
         <module>org.kubi.kernel</module>
 

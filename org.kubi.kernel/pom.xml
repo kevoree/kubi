@@ -46,6 +46,13 @@
 
         <dependency>
             <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.driver.zwave</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
             <artifactId>org.kubi.driver.madmock</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -54,6 +61,7 @@
             <artifactId>org.kubi.driver.smartcampus</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
 
     </dependencies>
 

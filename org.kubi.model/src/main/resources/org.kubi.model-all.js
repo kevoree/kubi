@@ -2417,22 +2417,39 @@ var org;
                             };
                             KCacheLayer.prototype.insert = function (p_key, current, p_obj_insert) {
                                 if (current == org.kevoree.modeling.api.KConfig.KEY_SIZE - 1) {
-                                    if (this._cachedObjects == null) {
-                                        this._cachedObjects = new org.kevoree.modeling.api.map.LongHashMap(org.kevoree.modeling.api.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.api.KConfig.CACHE_LOAD_FACTOR);
-                                    }
-                                    this._cachedObjects.put(p_key.part(current), p_obj_insert);
+                                    this.private_insert_object(p_key, current, p_obj_insert);
                                 }
                                 else {
                                     if (this._nestedLayers == null) {
-                                        this._nestedLayers = new org.kevoree.modeling.api.map.LongHashMap(org.kevoree.modeling.api.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.api.KConfig.CACHE_LOAD_FACTOR);
+                                        this.private_nestedLayers_init();
                                     }
                                     var previousLayer = this._nestedLayers.get(p_key.part(current));
-                                    if (previousLayer == null) {
-                                        previousLayer = new org.kevoree.modeling.api.data.cache.KCacheLayer();
-                                        this._nestedLayers.put(p_key.part(current), previousLayer);
+                                    if (previousLayer != null) {
+                                        previousLayer.insert(p_key, current + 1, p_obj_insert);
                                     }
-                                    previousLayer.insert(p_key, current + 1, p_obj_insert);
+                                    else {
+                                        this.private_insert_nested(p_key, current, p_obj_insert);
+                                    }
                                 }
+                            };
+                            KCacheLayer.prototype.private_insert_object = function (p_key, current, p_obj_insert) {
+                                if (this._cachedObjects == null) {
+                                    this._cachedObjects = new org.kevoree.modeling.api.map.LongHashMap(org.kevoree.modeling.api.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.api.KConfig.CACHE_LOAD_FACTOR);
+                                }
+                                this._cachedObjects.put(p_key.part(current), p_obj_insert);
+                            };
+                            KCacheLayer.prototype.private_nestedLayers_init = function () {
+                                if (this._nestedLayers == null) {
+                                    this._nestedLayers = new org.kevoree.modeling.api.map.LongHashMap(org.kevoree.modeling.api.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.api.KConfig.CACHE_LOAD_FACTOR);
+                                }
+                            };
+                            KCacheLayer.prototype.private_insert_nested = function (p_key, current, p_obj_insert) {
+                                var previousLayer = this._nestedLayers.get(p_key.part(current));
+                                if (previousLayer == null) {
+                                    previousLayer = new org.kevoree.modeling.api.data.cache.KCacheLayer();
+                                    this._nestedLayers.put(p_key.part(current), previousLayer);
+                                }
+                                previousLayer.insert(p_key, current + 1, p_obj_insert);
                             };
                             KCacheLayer.prototype.dirties = function (result, prefixKeys, current) {
                                 if (current == org.kevoree.modeling.api.KConfig.KEY_SIZE - 1) {
@@ -2636,15 +2653,24 @@ var org;
                                 }
                                 else {
                                     var nextLayer = this._nestedLayers.get(key.part(0));
-                                    if (nextLayer == null) {
-                                        nextLayer = new org.kevoree.modeling.api.data.cache.KCacheLayer();
-                                        this._nestedLayers.put(key.part(0), nextLayer);
+                                    if (nextLayer != null) {
+                                        nextLayer.insert(key, 1, payload);
                                     }
-                                    nextLayer.insert(key, 1, payload);
+                                    else {
+                                        this.internal_put(key, payload);
+                                    }
                                     if (MultiLayeredMemoryCache.DEBUG) {
                                         System.out.println(MultiLayeredMemoryCache.prefixDebugPut + ":" + key + "->" + payload + ")");
                                     }
                                 }
+                            };
+                            MultiLayeredMemoryCache.prototype.internal_put = function (key, payload) {
+                                var nextLayer = this._nestedLayers.get(key.part(0));
+                                if (nextLayer == null) {
+                                    nextLayer = new org.kevoree.modeling.api.data.cache.KCacheLayer();
+                                    this._nestedLayers.put(key.part(0), nextLayer);
+                                }
+                                nextLayer.insert(key, 1, payload);
                             };
                             MultiLayeredMemoryCache.prototype.dirties = function () {
                                 var result = new java.util.ArrayList();
@@ -3776,7 +3802,7 @@ var org;
                             function ResolutionHelper() {
                             }
                             ResolutionHelper.resolve_universe = function (globalTree, objUniverseTree, timeToResolve, originUniverseId) {
-                                if (globalTree == null) {
+                                if (globalTree == null || objUniverseTree == null) {
                                     return originUniverseId;
                                 }
                                 var currentUniverse = originUniverseId;
@@ -12716,11 +12742,11 @@ var org;
                 this._metaModel = new org.kevoree.modeling.api.abs.AbstractMetaModel("Kubi", -1);
                 var tempMetaClasses = new Array();
                 tempMetaClasses[1] = org.kubi.meta.MetaGroup.getInstance();
-                tempMetaClasses[3] = org.kubi.meta.MetaTechnology.getInstance();
+                tempMetaClasses[4] = org.kubi.meta.MetaStateParameter.getInstance();
+                tempMetaClasses[2] = org.kubi.meta.MetaTechnology.getInstance();
                 tempMetaClasses[0] = org.kubi.meta.MetaEcosystem.getInstance();
-                tempMetaClasses[2] = org.kubi.meta.MetaDevice.getInstance();
-                tempMetaClasses[5] = org.kubi.meta.MetaFunction.getInstance();
-                tempMetaClasses[4] = org.kubi.meta.MetaParameter.getInstance();
+                tempMetaClasses[3] = org.kubi.meta.MetaDevice.getInstance();
+                tempMetaClasses[5] = org.kubi.meta.MetaActionParameter.getInstance();
                 this._metaModel.init(tempMetaClasses);
             }
             KubiModel.prototype.internal_create = function (key) {
@@ -12745,6 +12771,66 @@ var org;
         kubi.KubiUniverse = KubiUniverse;
         var impl;
         (function (impl) {
+            var ActionParameterImpl = (function (_super) {
+                __extends(ActionParameterImpl, _super);
+                function ActionParameterImpl(p_factory, p_uuid, p_metaClass) {
+                    _super.call(this, p_factory, p_uuid, p_metaClass);
+                }
+                ActionParameterImpl.prototype.getUnit = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_UNIT);
+                };
+                ActionParameterImpl.prototype.setUnit = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_UNIT, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getDesired = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_DESIRED);
+                };
+                ActionParameterImpl.prototype.setDesired = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_DESIRED, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getValueType = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_VALUETYPE);
+                };
+                ActionParameterImpl.prototype.setValueType = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_VALUETYPE, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getPrecision = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_PRECISION);
+                };
+                ActionParameterImpl.prototype.setPrecision = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getName = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_NAME);
+                };
+                ActionParameterImpl.prototype.setName = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_NAME, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getRange = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_RANGE);
+                };
+                ActionParameterImpl.prototype.setRange = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_RANGE, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getValue = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_VALUE);
+                };
+                ActionParameterImpl.prototype.setValue = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.view = function () {
+                    return _super.prototype.view.call(this);
+                };
+                return ActionParameterImpl;
+            })(org.kevoree.modeling.api.abs.AbstractKObject);
+            impl.ActionParameterImpl = ActionParameterImpl;
             var DeviceImpl = (function (_super) {
                 __extends(DeviceImpl, _super);
                 function DeviceImpl(p_factory, p_uuid, p_metaClass) {
@@ -12785,17 +12871,17 @@ var org;
                     this.set(org.kubi.meta.MetaDevice.ATT_MANUFACTURER, p_obj);
                     return this;
                 };
-                DeviceImpl.prototype.addFunctions = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaDevice.REF_FUNCTIONS, p_obj);
+                DeviceImpl.prototype.addGroupes = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaDevice.REF_GROUPES, p_obj);
                     return this;
                 };
-                DeviceImpl.prototype.removeFunctions = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaDevice.REF_FUNCTIONS, p_obj);
+                DeviceImpl.prototype.removeGroupes = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaDevice.REF_GROUPES, p_obj);
                     return this;
                 };
-                DeviceImpl.prototype.getFunctions = function () {
+                DeviceImpl.prototype.getGroupes = function () {
                     var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
-                    this.internal_ref(org.kubi.meta.MetaDevice.REF_FUNCTIONS, function (kObjects) {
+                    this.internal_ref(org.kubi.meta.MetaDevice.REF_GROUPES, function (kObjects) {
                         var casted = new Array();
                         for (var i = 0; i < kObjects.length; i++) {
                             casted[i] = kObjects[i];
@@ -12804,8 +12890,52 @@ var org;
                     });
                     return task;
                 };
-                DeviceImpl.prototype.sizeOfFunctions = function () {
-                    return this.size(org.kubi.meta.MetaDevice.REF_FUNCTIONS);
+                DeviceImpl.prototype.sizeOfGroupes = function () {
+                    return this.size(org.kubi.meta.MetaDevice.REF_GROUPES);
+                };
+                DeviceImpl.prototype.addActionParameters = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaDevice.REF_ACTIONPARAMETERS, p_obj);
+                    return this;
+                };
+                DeviceImpl.prototype.removeActionParameters = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaDevice.REF_ACTIONPARAMETERS, p_obj);
+                    return this;
+                };
+                DeviceImpl.prototype.getActionParameters = function () {
+                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
+                    this.internal_ref(org.kubi.meta.MetaDevice.REF_ACTIONPARAMETERS, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        task.initCallback()(casted);
+                    });
+                    return task;
+                };
+                DeviceImpl.prototype.sizeOfActionParameters = function () {
+                    return this.size(org.kubi.meta.MetaDevice.REF_ACTIONPARAMETERS);
+                };
+                DeviceImpl.prototype.addStateParameters = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaDevice.REF_STATEPARAMETERS, p_obj);
+                    return this;
+                };
+                DeviceImpl.prototype.removeStateParameters = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaDevice.REF_STATEPARAMETERS, p_obj);
+                    return this;
+                };
+                DeviceImpl.prototype.getStateParameters = function () {
+                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
+                    this.internal_ref(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        task.initCallback()(casted);
+                    });
+                    return task;
+                };
+                DeviceImpl.prototype.sizeOfStateParameters = function () {
+                    return this.size(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS);
                 };
                 DeviceImpl.prototype.addLinks = function (p_obj) {
                     this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaDevice.REF_LINKS, p_obj);
@@ -12844,28 +12974,6 @@ var org;
                         }
                     });
                     return task;
-                };
-                DeviceImpl.prototype.addParameters = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaDevice.REF_PARAMETERS, p_obj);
-                    return this;
-                };
-                DeviceImpl.prototype.removeParameters = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaDevice.REF_PARAMETERS, p_obj);
-                    return this;
-                };
-                DeviceImpl.prototype.getParameters = function () {
-                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
-                    this.internal_ref(org.kubi.meta.MetaDevice.REF_PARAMETERS, function (kObjects) {
-                        var casted = new Array();
-                        for (var i = 0; i < kObjects.length; i++) {
-                            casted[i] = kObjects[i];
-                        }
-                        task.initCallback()(casted);
-                    });
-                    return task;
-                };
-                DeviceImpl.prototype.sizeOfParameters = function () {
-                    return this.size(org.kubi.meta.MetaDevice.REF_PARAMETERS);
                 };
                 DeviceImpl.prototype.view = function () {
                     return _super.prototype.view.call(this);
@@ -12929,113 +13037,12 @@ var org;
                 EcosystemImpl.prototype.sizeOfTechnologies = function () {
                     return this.size(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES);
                 };
-                EcosystemImpl.prototype.addDevices = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaEcosystem.REF_DEVICES, p_obj);
-                    return this;
-                };
-                EcosystemImpl.prototype.removeDevices = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaEcosystem.REF_DEVICES, p_obj);
-                    return this;
-                };
-                EcosystemImpl.prototype.getDevices = function () {
-                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
-                    this.internal_ref(org.kubi.meta.MetaEcosystem.REF_DEVICES, function (kObjects) {
-                        var casted = new Array();
-                        for (var i = 0; i < kObjects.length; i++) {
-                            casted[i] = kObjects[i];
-                        }
-                        task.initCallback()(casted);
-                    });
-                    return task;
-                };
-                EcosystemImpl.prototype.sizeOfDevices = function () {
-                    return this.size(org.kubi.meta.MetaEcosystem.REF_DEVICES);
-                };
                 EcosystemImpl.prototype.view = function () {
                     return _super.prototype.view.call(this);
                 };
                 return EcosystemImpl;
             })(org.kevoree.modeling.api.abs.AbstractKObject);
             impl.EcosystemImpl = EcosystemImpl;
-            var FunctionImpl = (function (_super) {
-                __extends(FunctionImpl, _super);
-                function FunctionImpl(p_factory, p_uuid, p_metaClass) {
-                    _super.call(this, p_factory, p_uuid, p_metaClass);
-                }
-                FunctionImpl.prototype.getName = function () {
-                    return this.get(org.kubi.meta.MetaFunction.ATT_NAME);
-                };
-                FunctionImpl.prototype.setName = function (p_obj) {
-                    this.set(org.kubi.meta.MetaFunction.ATT_NAME, p_obj);
-                    return this;
-                };
-                FunctionImpl.prototype.setDevice = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.SET, org.kubi.meta.MetaFunction.REF_DEVICE, p_obj);
-                    return this;
-                };
-                FunctionImpl.prototype.getDevice = function () {
-                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
-                    this.internal_ref(org.kubi.meta.MetaFunction.REF_DEVICE, function (kObjects) {
-                        if (kObjects.length > 0) {
-                            task.initCallback()(kObjects[0]);
-                        }
-                        else {
-                            task.initCallback()(null);
-                        }
-                    });
-                    return task;
-                };
-                FunctionImpl.prototype.addParameters = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaFunction.REF_PARAMETERS, p_obj);
-                    return this;
-                };
-                FunctionImpl.prototype.removeParameters = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaFunction.REF_PARAMETERS, p_obj);
-                    return this;
-                };
-                FunctionImpl.prototype.getParameters = function () {
-                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
-                    this.internal_ref(org.kubi.meta.MetaFunction.REF_PARAMETERS, function (kObjects) {
-                        var casted = new Array();
-                        for (var i = 0; i < kObjects.length; i++) {
-                            casted[i] = kObjects[i];
-                        }
-                        task.initCallback()(casted);
-                    });
-                    return task;
-                };
-                FunctionImpl.prototype.sizeOfParameters = function () {
-                    return this.size(org.kubi.meta.MetaFunction.REF_PARAMETERS);
-                };
-                FunctionImpl.prototype.setReturnType = function (p_obj) {
-                    this.mutate(org.kevoree.modeling.api.KActionType.SET, org.kubi.meta.MetaFunction.REF_RETURNTYPE, p_obj);
-                    return this;
-                };
-                FunctionImpl.prototype.getReturnType = function () {
-                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
-                    this.internal_ref(org.kubi.meta.MetaFunction.REF_RETURNTYPE, function (kObjects) {
-                        if (kObjects.length > 0) {
-                            task.initCallback()(kObjects[0]);
-                        }
-                        else {
-                            task.initCallback()(null);
-                        }
-                    });
-                    return task;
-                };
-                FunctionImpl.prototype.exec = function (p_jsonInput, p_result) {
-                    var exec_params = new Array();
-                    exec_params[0] = p_jsonInput;
-                    this.view().universe().model().manager().operationManager().call(this, org.kubi.meta.MetaFunction.OP_EXEC, exec_params, function (o) {
-                        p_result(o);
-                    });
-                };
-                FunctionImpl.prototype.view = function () {
-                    return _super.prototype.view.call(this);
-                };
-                return FunctionImpl;
-            })(org.kevoree.modeling.api.abs.AbstractKObject);
-            impl.FunctionImpl = FunctionImpl;
             var GroupImpl = (function (_super) {
                 __extends(GroupImpl, _super);
                 function GroupImpl(p_factory, p_uuid, p_metaClass) {
@@ -13047,6 +13054,50 @@ var org;
                 GroupImpl.prototype.setName = function (p_obj) {
                     this.set(org.kubi.meta.MetaGroup.ATT_NAME, p_obj);
                     return this;
+                };
+                GroupImpl.prototype.addGroupes = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaGroup.REF_GROUPES, p_obj);
+                    return this;
+                };
+                GroupImpl.prototype.removeGroupes = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaGroup.REF_GROUPES, p_obj);
+                    return this;
+                };
+                GroupImpl.prototype.getGroupes = function () {
+                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
+                    this.internal_ref(org.kubi.meta.MetaGroup.REF_GROUPES, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        task.initCallback()(casted);
+                    });
+                    return task;
+                };
+                GroupImpl.prototype.sizeOfGroupes = function () {
+                    return this.size(org.kubi.meta.MetaGroup.REF_GROUPES);
+                };
+                GroupImpl.prototype.addDevices = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.ADD, org.kubi.meta.MetaGroup.REF_DEVICES, p_obj);
+                    return this;
+                };
+                GroupImpl.prototype.removeDevices = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.REMOVE, org.kubi.meta.MetaGroup.REF_DEVICES, p_obj);
+                    return this;
+                };
+                GroupImpl.prototype.getDevices = function () {
+                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
+                    this.internal_ref(org.kubi.meta.MetaGroup.REF_DEVICES, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        task.initCallback()(casted);
+                    });
+                    return task;
+                };
+                GroupImpl.prototype.sizeOfDevices = function () {
+                    return this.size(org.kubi.meta.MetaGroup.REF_DEVICES);
                 };
                 GroupImpl.prototype.view = function () {
                     return _super.prototype.view.call(this);
@@ -13066,22 +13117,25 @@ var org;
                     switch (p_clazz.index()) {
                         case 1:
                             return new org.kubi.impl.GroupImpl(this, p_key, p_clazz);
-                        case 3:
+                        case 4:
+                            return new org.kubi.impl.StateParameterImpl(this, p_key, p_clazz);
+                        case 2:
                             return new org.kubi.impl.TechnologyImpl(this, p_key, p_clazz);
                         case 0:
                             return new org.kubi.impl.EcosystemImpl(this, p_key, p_clazz);
-                        case 2:
+                        case 3:
                             return new org.kubi.impl.DeviceImpl(this, p_key, p_clazz);
                         case 5:
-                            return new org.kubi.impl.FunctionImpl(this, p_key, p_clazz);
-                        case 4:
-                            return new org.kubi.impl.ParameterImpl(this, p_key, p_clazz);
+                            return new org.kubi.impl.ActionParameterImpl(this, p_key, p_clazz);
                         default:
                             return new org.kevoree.modeling.api.reflexive.DynamicKObject(this, p_key, p_clazz);
                     }
                 };
                 KubiViewImpl.prototype.createGroup = function () {
                     return this.create(org.kubi.meta.MetaGroup.getInstance());
+                };
+                KubiViewImpl.prototype.createStateParameter = function () {
+                    return this.create(org.kubi.meta.MetaStateParameter.getInstance());
                 };
                 KubiViewImpl.prototype.createTechnology = function () {
                     return this.create(org.kubi.meta.MetaTechnology.getInstance());
@@ -13092,11 +13146,8 @@ var org;
                 KubiViewImpl.prototype.createDevice = function () {
                     return this.create(org.kubi.meta.MetaDevice.getInstance());
                 };
-                KubiViewImpl.prototype.createFunction = function () {
-                    return this.create(org.kubi.meta.MetaFunction.getInstance());
-                };
-                KubiViewImpl.prototype.createParameter = function () {
-                    return this.create(org.kubi.meta.MetaParameter.getInstance());
+                KubiViewImpl.prototype.createActionParameter = function () {
+                    return this.create(org.kubi.meta.MetaActionParameter.getInstance());
                 };
                 KubiViewImpl.prototype.universe = function () {
                     return _super.prototype.universe.call(this);
@@ -13104,59 +13155,59 @@ var org;
                 return KubiViewImpl;
             })(org.kevoree.modeling.api.abs.AbstractKView);
             impl.KubiViewImpl = KubiViewImpl;
-            var ParameterImpl = (function (_super) {
-                __extends(ParameterImpl, _super);
-                function ParameterImpl(p_factory, p_uuid, p_metaClass) {
+            var StateParameterImpl = (function (_super) {
+                __extends(StateParameterImpl, _super);
+                function StateParameterImpl(p_factory, p_uuid, p_metaClass) {
                     _super.call(this, p_factory, p_uuid, p_metaClass);
                 }
-                ParameterImpl.prototype.getUnit = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_UNIT);
+                StateParameterImpl.prototype.getUnit = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_UNIT);
                 };
-                ParameterImpl.prototype.setUnit = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_UNIT, p_obj);
+                StateParameterImpl.prototype.setUnit = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_UNIT, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.getValueType = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_VALUETYPE);
+                StateParameterImpl.prototype.getValueType = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_VALUETYPE);
                 };
-                ParameterImpl.prototype.setValueType = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_VALUETYPE, p_obj);
+                StateParameterImpl.prototype.setValueType = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_VALUETYPE, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.getPrecision = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_PRECISION);
+                StateParameterImpl.prototype.getPrecision = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_PRECISION);
                 };
-                ParameterImpl.prototype.setPrecision = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_PRECISION, p_obj);
+                StateParameterImpl.prototype.setPrecision = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_PRECISION, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.getName = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_NAME);
+                StateParameterImpl.prototype.getName = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_NAME);
                 };
-                ParameterImpl.prototype.setName = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_NAME, p_obj);
+                StateParameterImpl.prototype.setName = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_NAME, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.getRange = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_RANGE);
+                StateParameterImpl.prototype.getRange = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_RANGE);
                 };
-                ParameterImpl.prototype.setRange = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_RANGE, p_obj);
+                StateParameterImpl.prototype.setRange = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_RANGE, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.getValue = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_VALUE);
+                StateParameterImpl.prototype.getValue = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_VALUE);
                 };
-                ParameterImpl.prototype.setValue = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_VALUE, p_obj);
+                StateParameterImpl.prototype.setValue = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_VALUE, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.view = function () {
+                StateParameterImpl.prototype.view = function () {
                     return _super.prototype.view.call(this);
                 };
-                return ParameterImpl;
+                return StateParameterImpl;
             })(org.kevoree.modeling.api.abs.AbstractKObject);
-            impl.ParameterImpl = ParameterImpl;
+            impl.StateParameterImpl = StateParameterImpl;
             var TechnologyImpl = (function (_super) {
                 __extends(TechnologyImpl, _super);
                 function TechnologyImpl(p_factory, p_uuid, p_metaClass) {
@@ -13200,10 +13251,43 @@ var org;
         })(impl = kubi.impl || (kubi.impl = {}));
         var meta;
         (function (meta) {
+            var MetaActionParameter = (function (_super) {
+                __extends(MetaActionParameter, _super);
+                function MetaActionParameter() {
+                    _super.call(this, "org.kubi.ActionParameter", 5);
+                    var temp_all = new Array();
+                    temp_all[0] = MetaActionParameter.ATT_UNIT;
+                    temp_all[1] = MetaActionParameter.ATT_DESIRED;
+                    temp_all[2] = MetaActionParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaActionParameter.ATT_PRECISION;
+                    temp_all[4] = MetaActionParameter.ATT_NAME;
+                    temp_all[5] = MetaActionParameter.ATT_RANGE;
+                    temp_all[6] = MetaActionParameter.ATT_VALUE;
+                    var temp_references = new Array();
+                    var temp_operations = new Array();
+                    this.init(temp_all);
+                }
+                MetaActionParameter.getInstance = function () {
+                    if (MetaActionParameter.INSTANCE == null) {
+                        MetaActionParameter.INSTANCE = new org.kubi.meta.MetaActionParameter();
+                    }
+                    return MetaActionParameter.INSTANCE;
+                };
+                MetaActionParameter.INSTANCE = null;
+                MetaActionParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_DESIRED = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("desired", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 10, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                return MetaActionParameter;
+            })(org.kevoree.modeling.api.abs.AbstractMetaClass);
+            meta.MetaActionParameter = MetaActionParameter;
             var MetaDevice = (function (_super) {
                 __extends(MetaDevice, _super);
                 function MetaDevice() {
-                    _super.call(this, "org.kubi.Device", 2);
+                    _super.call(this, "org.kubi.Device", 3);
                     var temp_all = new Array();
                     temp_all[0] = MetaDevice.ATT_NAME;
                     temp_all[1] = MetaDevice.ATT_ID;
@@ -13211,10 +13295,11 @@ var org;
                     temp_all[3] = MetaDevice.ATT_PICTURE;
                     temp_all[4] = MetaDevice.ATT_MANUFACTURER;
                     var temp_references = new Array();
-                    temp_all[5] = MetaDevice.REF_FUNCTIONS;
-                    temp_all[6] = MetaDevice.REF_LINKS;
-                    temp_all[7] = MetaDevice.REF_TECHNOLOGY;
-                    temp_all[8] = MetaDevice.REF_PARAMETERS;
+                    temp_all[5] = MetaDevice.REF_GROUPES;
+                    temp_all[6] = MetaDevice.REF_ACTIONPARAMETERS;
+                    temp_all[7] = MetaDevice.REF_STATEPARAMETERS;
+                    temp_all[8] = MetaDevice.REF_LINKS;
+                    temp_all[9] = MetaDevice.REF_TECHNOLOGY;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -13230,28 +13315,33 @@ var org;
                 MetaDevice.ATT_VERSION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("version", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
                 MetaDevice.ATT_PICTURE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("picture", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
                 MetaDevice.ATT_MANUFACTURER = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("manufacturer", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaDevice.REF_FUNCTIONS = new org.kevoree.modeling.api.abs.AbstractMetaReference("functions", 9, true, false, function () {
-                    return org.kubi.meta.MetaFunction.getInstance();
+                MetaDevice.REF_GROUPES = new org.kevoree.modeling.api.abs.AbstractMetaReference("groupes", 9, false, false, function () {
+                    return org.kubi.meta.MetaGroup.getInstance();
                 }, function () {
-                    return org.kubi.meta.MetaFunction.REF_DEVICE;
+                    return org.kubi.meta.MetaGroup.REF_DEVICES;
                 }, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
-                MetaDevice.REF_LINKS = new org.kevoree.modeling.api.abs.AbstractMetaReference("links", 10, false, false, function () {
+                MetaDevice.REF_ACTIONPARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("actionParameters", 10, true, false, function () {
+                    return org.kubi.meta.MetaActionParameter.getInstance();
+                }, null, function () {
+                    return org.kubi.meta.MetaDevice.getInstance();
+                });
+                MetaDevice.REF_STATEPARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("stateParameters", 11, true, false, function () {
+                    return org.kubi.meta.MetaStateParameter.getInstance();
+                }, null, function () {
+                    return org.kubi.meta.MetaDevice.getInstance();
+                });
+                MetaDevice.REF_LINKS = new org.kevoree.modeling.api.abs.AbstractMetaReference("links", 12, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, null, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
-                MetaDevice.REF_TECHNOLOGY = new org.kevoree.modeling.api.abs.AbstractMetaReference("technology", 11, false, true, function () {
+                MetaDevice.REF_TECHNOLOGY = new org.kevoree.modeling.api.abs.AbstractMetaReference("technology", 13, false, true, function () {
                     return org.kubi.meta.MetaTechnology.getInstance();
                 }, function () {
                     return org.kubi.meta.MetaTechnology.REF_DEVICES;
                 }, function () {
-                    return org.kubi.meta.MetaDevice.getInstance();
-                });
-                MetaDevice.REF_PARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("parameters", 12, true, false, function () {
-                    return org.kubi.meta.MetaParameter.getInstance();
-                }, null, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
                 return MetaDevice;
@@ -13266,7 +13356,6 @@ var org;
                     var temp_references = new Array();
                     temp_all[1] = MetaEcosystem.REF_GROUPES;
                     temp_all[2] = MetaEcosystem.REF_TECHNOLOGIES;
-                    temp_all[3] = MetaEcosystem.REF_DEVICES;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -13288,59 +13377,9 @@ var org;
                 }, null, function () {
                     return org.kubi.meta.MetaEcosystem.getInstance();
                 });
-                MetaEcosystem.REF_DEVICES = new org.kevoree.modeling.api.abs.AbstractMetaReference("devices", 7, true, false, function () {
-                    return org.kubi.meta.MetaDevice.getInstance();
-                }, null, function () {
-                    return org.kubi.meta.MetaEcosystem.getInstance();
-                });
                 return MetaEcosystem;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaEcosystem = MetaEcosystem;
-            var MetaFunction = (function (_super) {
-                __extends(MetaFunction, _super);
-                function MetaFunction() {
-                    _super.call(this, "org.kubi.Function", 5);
-                    var temp_all = new Array();
-                    temp_all[0] = MetaFunction.ATT_NAME;
-                    var temp_references = new Array();
-                    temp_all[1] = MetaFunction.REF_DEVICE;
-                    temp_all[2] = MetaFunction.REF_PARAMETERS;
-                    temp_all[3] = MetaFunction.REF_RETURNTYPE;
-                    var temp_operations = new Array();
-                    temp_all[4] = MetaFunction.OP_EXEC;
-                    this.init(temp_all);
-                }
-                MetaFunction.getInstance = function () {
-                    if (MetaFunction.INSTANCE == null) {
-                        MetaFunction.INSTANCE = new org.kubi.meta.MetaFunction();
-                    }
-                    return MetaFunction.INSTANCE;
-                };
-                MetaFunction.INSTANCE = null;
-                MetaFunction.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaFunction.REF_DEVICE = new org.kevoree.modeling.api.abs.AbstractMetaReference("device", 5, false, true, function () {
-                    return org.kubi.meta.MetaDevice.getInstance();
-                }, function () {
-                    return org.kubi.meta.MetaDevice.REF_FUNCTIONS;
-                }, function () {
-                    return org.kubi.meta.MetaFunction.getInstance();
-                });
-                MetaFunction.REF_PARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("parameters", 6, true, false, function () {
-                    return org.kubi.meta.MetaParameter.getInstance();
-                }, null, function () {
-                    return org.kubi.meta.MetaFunction.getInstance();
-                });
-                MetaFunction.REF_RETURNTYPE = new org.kevoree.modeling.api.abs.AbstractMetaReference("returnType", 7, true, true, function () {
-                    return org.kubi.meta.MetaParameter.getInstance();
-                }, null, function () {
-                    return org.kubi.meta.MetaFunction.getInstance();
-                });
-                MetaFunction.OP_EXEC = new org.kevoree.modeling.api.abs.AbstractMetaOperation("exec", 8, function () {
-                    return org.kubi.meta.MetaFunction.getInstance();
-                });
-                return MetaFunction;
-            })(org.kevoree.modeling.api.abs.AbstractMetaClass);
-            meta.MetaFunction = MetaFunction;
             var MetaGroup = (function (_super) {
                 __extends(MetaGroup, _super);
                 function MetaGroup() {
@@ -13348,6 +13387,8 @@ var org;
                     var temp_all = new Array();
                     temp_all[0] = MetaGroup.ATT_NAME;
                     var temp_references = new Array();
+                    temp_all[1] = MetaGroup.REF_GROUPES;
+                    temp_all[2] = MetaGroup.REF_DEVICES;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -13359,44 +13400,56 @@ var org;
                 };
                 MetaGroup.INSTANCE = null;
                 MetaGroup.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 4, 0, true, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaGroup.REF_GROUPES = new org.kevoree.modeling.api.abs.AbstractMetaReference("groupes", 5, true, false, function () {
+                    return org.kubi.meta.MetaGroup.getInstance();
+                }, null, function () {
+                    return org.kubi.meta.MetaGroup.getInstance();
+                });
+                MetaGroup.REF_DEVICES = new org.kevoree.modeling.api.abs.AbstractMetaReference("devices", 6, false, false, function () {
+                    return org.kubi.meta.MetaDevice.getInstance();
+                }, function () {
+                    return org.kubi.meta.MetaDevice.REF_GROUPES;
+                }, function () {
+                    return org.kubi.meta.MetaGroup.getInstance();
+                });
                 return MetaGroup;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaGroup = MetaGroup;
-            var MetaParameter = (function (_super) {
-                __extends(MetaParameter, _super);
-                function MetaParameter() {
-                    _super.call(this, "org.kubi.Parameter", 4);
+            var MetaStateParameter = (function (_super) {
+                __extends(MetaStateParameter, _super);
+                function MetaStateParameter() {
+                    _super.call(this, "org.kubi.StateParameter", 4);
                     var temp_all = new Array();
-                    temp_all[0] = MetaParameter.ATT_UNIT;
-                    temp_all[1] = MetaParameter.ATT_VALUETYPE;
-                    temp_all[2] = MetaParameter.ATT_PRECISION;
-                    temp_all[3] = MetaParameter.ATT_NAME;
-                    temp_all[4] = MetaParameter.ATT_RANGE;
-                    temp_all[5] = MetaParameter.ATT_VALUE;
+                    temp_all[0] = MetaStateParameter.ATT_UNIT;
+                    temp_all[1] = MetaStateParameter.ATT_VALUETYPE;
+                    temp_all[2] = MetaStateParameter.ATT_PRECISION;
+                    temp_all[3] = MetaStateParameter.ATT_NAME;
+                    temp_all[4] = MetaStateParameter.ATT_RANGE;
+                    temp_all[5] = MetaStateParameter.ATT_VALUE;
                     var temp_references = new Array();
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
-                MetaParameter.getInstance = function () {
-                    if (MetaParameter.INSTANCE == null) {
-                        MetaParameter.INSTANCE = new org.kubi.meta.MetaParameter();
+                MetaStateParameter.getInstance = function () {
+                    if (MetaStateParameter.INSTANCE == null) {
+                        MetaStateParameter.INSTANCE = new org.kubi.meta.MetaStateParameter();
                     }
-                    return MetaParameter.INSTANCE;
+                    return MetaStateParameter.INSTANCE;
                 };
-                MetaParameter.INSTANCE = null;
-                MetaParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                return MetaParameter;
+                MetaStateParameter.INSTANCE = null;
+                MetaStateParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                return MetaStateParameter;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
-            meta.MetaParameter = MetaParameter;
+            meta.MetaStateParameter = MetaStateParameter;
             var MetaTechnology = (function (_super) {
                 __extends(MetaTechnology, _super);
                 function MetaTechnology() {
-                    _super.call(this, "org.kubi.Technology", 3);
+                    _super.call(this, "org.kubi.Technology", 2);
                     var temp_all = new Array();
                     temp_all[0] = MetaTechnology.ATT_NAME;
                     var temp_references = new Array();
@@ -13412,7 +13465,7 @@ var org;
                 };
                 MetaTechnology.INSTANCE = null;
                 MetaTechnology.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 4, 0, true, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaTechnology.REF_DEVICES = new org.kevoree.modeling.api.abs.AbstractMetaReference("devices", 5, false, false, function () {
+                MetaTechnology.REF_DEVICES = new org.kevoree.modeling.api.abs.AbstractMetaReference("devices", 5, true, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, function () {
                     return org.kubi.meta.MetaDevice.REF_TECHNOLOGY;

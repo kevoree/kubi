@@ -4,8 +4,10 @@ import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.scheduler.ExecutorServiceScheduler;
 import org.kevoree.modeling.databases.websocket.WebSocketWrapper;
 import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
+import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
-import org.kubi.api.Plugin;
+import org.kubi.api.KubiKernel;
+import org.kubi.api.KubiPlugin;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,11 +18,11 @@ import java.util.concurrent.Executors;
 /**
  * Created by duke on 20/03/15.
  */
-public class KubiKernel {
+public class KubiKernelImpl implements KubiKernel {
 
     private KubiModel kubiModel;
 
-    public KubiKernel(String dbPath, int port) throws IOException {
+    public KubiKernelImpl(String dbPath, int port) throws IOException {
         kubiModel = new KubiModel();
         kubiModel.setScheduler(new ExecutorServiceScheduler());
         LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(dbPath);
@@ -31,7 +33,7 @@ public class KubiKernel {
 
     private boolean isConnected = false;
 
-    private ServiceLoader<Plugin> pluginLoaders;
+    private ServiceLoader<KubiPlugin> pluginLoaders;
 
     private ExecutorService executorService;
 
@@ -40,10 +42,15 @@ public class KubiKernel {
             kubiModel.connect().then(new Callback<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
+
+                    Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(System.currentTimeMillis()).createEcosystem();
+                    ecosystem.setName("KubiRoot");
+                    kubiModel.universe(currentUniverse()).time(System.currentTimeMillis()).setRoot(ecosystem);
+
                     executorService = Executors.newCachedThreadPool();
                     isConnected = true;
-                    pluginLoaders = ServiceLoader.load(Plugin.class);
-                    for (Plugin plugin : pluginLoaders) {
+                    pluginLoaders = ServiceLoader.load(KubiPlugin.class);
+                    for (KubiPlugin plugin : pluginLoaders) {
                         try {
                             addDriver(plugin);
                         } catch (Exception e) {
@@ -57,7 +64,7 @@ public class KubiKernel {
 
     public synchronized void stop() throws InterruptedException {
         if (isConnected) {
-            for (Plugin plugin : plugins) {
+            for (KubiPlugin plugin : plugins) {
                 try {
                     removeDriver(plugin);
                 } catch (Exception e) {
@@ -75,15 +82,22 @@ public class KubiKernel {
         return kubiModel;
     }
 
-    private ArrayList<Plugin> plugins = new ArrayList<Plugin>();
+    @Override
+    public long currentUniverse() {
+        return 0;
+    }
 
-    public void addDriver(Plugin plugin) throws Exception {
+    private ArrayList<KubiPlugin> plugins = new ArrayList<KubiPlugin>();
+
+    private KubiKernel selfPointer = this;
+
+    public void addDriver(KubiPlugin plugin) throws Exception {
         if (isConnected) {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     plugins.add(plugin);
-                    plugin.start(kubiModel);
+                    plugin.start(selfPointer);
                 }
             });
         } else {
@@ -91,7 +105,7 @@ public class KubiKernel {
         }
     }
 
-    public void removeDriver(Plugin plugin) throws Exception {
+    public void removeDriver(KubiPlugin plugin) throws Exception {
         if (isConnected) {
             executorService.execute(new Runnable() {
                 @Override

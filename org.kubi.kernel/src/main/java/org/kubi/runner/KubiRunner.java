@@ -12,7 +12,7 @@ public class KubiRunner {
 
     public static void main(String[] args) throws IOException {
         clearDB();
-        KubiKernel kernel = new KubiKernel(DB_NAME, PORT);
+        KubiKernelImpl kernel = new KubiKernelImpl(DB_NAME, PORT);
         kernel.start();
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

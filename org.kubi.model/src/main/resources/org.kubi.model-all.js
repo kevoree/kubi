@@ -12850,6 +12850,13 @@ var org;
                     this.set(org.kubi.meta.MetaDevice.ATT_ID, p_obj);
                     return this;
                 };
+                DeviceImpl.prototype.getHomeId = function () {
+                    return this.get(org.kubi.meta.MetaDevice.ATT_HOMEID);
+                };
+                DeviceImpl.prototype.setHomeId = function (p_obj) {
+                    this.set(org.kubi.meta.MetaDevice.ATT_HOMEID, p_obj);
+                    return this;
+                };
                 DeviceImpl.prototype.getVersion = function () {
                     return this.get(org.kubi.meta.MetaDevice.ATT_VERSION);
                 };
@@ -13291,15 +13298,16 @@ var org;
                     var temp_all = new Array();
                     temp_all[0] = MetaDevice.ATT_NAME;
                     temp_all[1] = MetaDevice.ATT_ID;
-                    temp_all[2] = MetaDevice.ATT_VERSION;
-                    temp_all[3] = MetaDevice.ATT_PICTURE;
-                    temp_all[4] = MetaDevice.ATT_MANUFACTURER;
+                    temp_all[2] = MetaDevice.ATT_HOMEID;
+                    temp_all[3] = MetaDevice.ATT_VERSION;
+                    temp_all[4] = MetaDevice.ATT_PICTURE;
+                    temp_all[5] = MetaDevice.ATT_MANUFACTURER;
                     var temp_references = new Array();
-                    temp_all[5] = MetaDevice.REF_GROUPES;
-                    temp_all[6] = MetaDevice.REF_ACTIONPARAMETERS;
-                    temp_all[7] = MetaDevice.REF_STATEPARAMETERS;
-                    temp_all[8] = MetaDevice.REF_LINKS;
-                    temp_all[9] = MetaDevice.REF_TECHNOLOGY;
+                    temp_all[6] = MetaDevice.REF_GROUPES;
+                    temp_all[7] = MetaDevice.REF_ACTIONPARAMETERS;
+                    temp_all[8] = MetaDevice.REF_STATEPARAMETERS;
+                    temp_all[9] = MetaDevice.REF_LINKS;
+                    temp_all[10] = MetaDevice.REF_TECHNOLOGY;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -13312,32 +13320,33 @@ var org;
                 MetaDevice.INSTANCE = null;
                 MetaDevice.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
                 MetaDevice.ATT_ID = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("id", 5, 0, true, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaDevice.ATT_VERSION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("version", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaDevice.ATT_PICTURE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("picture", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaDevice.ATT_MANUFACTURER = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("manufacturer", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaDevice.REF_GROUPES = new org.kevoree.modeling.api.abs.AbstractMetaReference("groupes", 9, false, false, function () {
+                MetaDevice.ATT_HOMEID = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("homeId", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaDevice.ATT_VERSION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("version", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaDevice.ATT_PICTURE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("picture", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaDevice.ATT_MANUFACTURER = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("manufacturer", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaDevice.REF_GROUPES = new org.kevoree.modeling.api.abs.AbstractMetaReference("groupes", 10, false, false, function () {
                     return org.kubi.meta.MetaGroup.getInstance();
                 }, function () {
                     return org.kubi.meta.MetaGroup.REF_DEVICES;
                 }, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
-                MetaDevice.REF_ACTIONPARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("actionParameters", 10, true, false, function () {
+                MetaDevice.REF_ACTIONPARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("actionParameters", 11, true, false, function () {
                     return org.kubi.meta.MetaActionParameter.getInstance();
                 }, null, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
-                MetaDevice.REF_STATEPARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("stateParameters", 11, true, false, function () {
+                MetaDevice.REF_STATEPARAMETERS = new org.kevoree.modeling.api.abs.AbstractMetaReference("stateParameters", 12, true, false, function () {
                     return org.kubi.meta.MetaStateParameter.getInstance();
                 }, null, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
-                MetaDevice.REF_LINKS = new org.kevoree.modeling.api.abs.AbstractMetaReference("links", 12, false, false, function () {
+                MetaDevice.REF_LINKS = new org.kevoree.modeling.api.abs.AbstractMetaReference("links", 13, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, null, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 });
-                MetaDevice.REF_TECHNOLOGY = new org.kevoree.modeling.api.abs.AbstractMetaReference("technology", 13, false, true, function () {
+                MetaDevice.REF_TECHNOLOGY = new org.kevoree.modeling.api.abs.AbstractMetaReference("technology", 14, false, true, function () {
                     return org.kubi.meta.MetaTechnology.getInstance();
                 }, function () {
                     return org.kubi.meta.MetaTechnology.REF_DEVICES;

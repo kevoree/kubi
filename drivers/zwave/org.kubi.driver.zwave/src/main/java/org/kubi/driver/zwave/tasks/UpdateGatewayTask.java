@@ -12,6 +12,7 @@ import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
 import org.kubi.*;
 import org.kubi.driver.zwave.StickHandler;
+import org.kubi.driver.zwave.StickPhysMapper;
 import org.kubi.driver.zwave.ZWavePlugin;
 import org.kubi.meta.MetaDevice;
 import org.kubi.meta.MetaTechnology;
@@ -26,9 +27,11 @@ public class UpdateGatewayTask implements Runnable {
 
     private StickHandler _stickHandler;
     private InetAddress IP = null;
+    private StickPhysMapper mapper;
 
-    public UpdateGatewayTask(StickHandler stickHandler) {
+    public UpdateGatewayTask(StickHandler stickHandler, StickPhysMapper mapper) {
         this._stickHandler = stickHandler;
+        this.mapper = mapper;
         try {
             IP = InetAddress.getLocalHost();
             Log.trace("HostAddress::" + IP.getHostAddress());
@@ -52,14 +55,16 @@ public class UpdateGatewayTask implements Runnable {
                         final KubiUniverse universe = _stickHandler.getModel().universe(0);
                         final KubiView factory = universe.time(System.currentTimeMillis());
 
+                        /*
                         String manuStringId = String.format("%02x%02x", apiCapabilities.getManufacturerId_msb(), apiCapabilities.getManufacturerId_lsb());
                         String productStringId = String.format("%02x%02x", apiCapabilities.getProductId_msb(), apiCapabilities.getProductId_lsb());
                         String productStringType = String.format("%02x%02x", apiCapabilities.getProductType_msb(), apiCapabilities.getProductType_lsb());
-
+*/
+                        /*
                         int manufacturerId = Integer.parseInt(manuStringId, 16);
                         int productId = Integer.parseInt(productStringId, 16);
                         int productType = Integer.parseInt(productStringType, 16);
-
+                        */
 
                         factory.select("/").then(new Callback<KObject[]>() {
                             public void on(KObject[] kObjects) {
@@ -75,42 +80,10 @@ public class UpdateGatewayTask implements Runnable {
                                                     Device controller = factory.createDevice();
                                                     controller.setId("" + controllerId.getHomeId() + "_" + controllerId.getNodeId());
                                                     techno.addDevices(controller);
-                                                    _stickHandler.setHomeId("" + controllerId.getHomeId());
 
-                                                    /*
-                                                    final ZWaveProductsStoreView zWaveProductStore = _keyHandler.getZwaveStorel().universe(0).time(0);
-                                                    zWaveProductStore.select("/manufacturers[id=" + manufacturerId + "]").then(new Callback<KObject[]>() {
-                                                        public void on(KObject[] kObjects) {
-                                                            if (kObjects != null && kObjects.length > 0) {
-                                                                Manufacturer manufacturer = (Manufacturer) kObjects[0];
-                                                                Log.trace("Controller Manufacturer found:" + manufacturer.getName());
-                                                                manufacturer.traversal().traverse(MetaManufacturer.REF_PRODUCTS).withAttribute(MetaProduct.ATT_ID, productId).withAttribute(MetaProduct.ATT_TYPE, productType).done().then(new Callback<KObject[]>() {
-                                                                    public void on(KObject[] kObjects) {
-                                                                        if (kObjects != null && kObjects.length > 0) {
-                                                                            Product product = (Product) kObjects[0];
-                                                                            controller.setManufacturer(manufacturer.getName());
-                                                                            controller.setName(product.getName());
-                                                                            controller.setPicture("http://" + IP.getHostAddress() + ":8283/img/" + manuStringId + "/" + productStringType + productStringId + ".png");
-                                                                            Log.trace("Controller:: {}({}) - {}({})", manufacturer.getName(), manuStringId, product.getName(), productStringType + productStringId);
-                                                                            _keyHandler.getModel().save().then(new Callback<Throwable>() {
-                                                                                @Override
-                                                                                public void on(Throwable throwable) {
-                                                                                    if (throwable != null) {
-                                                                                        Log.error("", throwable);
-                                                                                    }
-                                                                                }
-                                                                            });
-                                                                        } else {
-                                                                            Log.warn("ZWave Product not found for id:{}", productId);
-                                                                        }
-                                                                    }
-                                                                });
-                                                            } else {
-                                                                Log.warn("ZWave Manufacturer not found for id:{}", manufacturerId);
-                                                            }
-                                                        }
-                                                    });
-                                                    */
+                                                    mapper.set(controllerId.getHomeId() + "", _stickHandler);
+                                                    _stickHandler.set_homeId(controllerId.getHomeId()+"");
+                                                    _stickHandler.discoverDevices();
                                                     _stickHandler.getModel().save().then(new Callback<Throwable>() {
                                                         @Override
                                                         public void on(Throwable throwable) {

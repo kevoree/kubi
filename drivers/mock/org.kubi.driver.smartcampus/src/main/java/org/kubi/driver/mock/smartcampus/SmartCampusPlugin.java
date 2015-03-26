@@ -1,11 +1,6 @@
 package org.kubi.driver.mock.smartcampus;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KObject;
-import org.kubi.Ecosystem;
-import org.kubi.KubiModel;
-import org.kubi.KubiUniverse;
-import org.kubi.KubiView;
+import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
 
 import java.util.concurrent.Executors;
@@ -19,12 +14,9 @@ public class SmartCampusPlugin implements KubiPlugin, Runnable {
 
     ScheduledExecutorService service = null;
 
-    private KubiModel model;
-
     @Override
-    public void start(KubiModel model) {
+    public void start(KubiKernel kernel) {
         System.out.println("SmartCampus Start ... ");
-        this.model = model;
         service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
     }
@@ -36,16 +28,6 @@ public class SmartCampusPlugin implements KubiPlugin, Runnable {
 
     @Override
     public void run() {
-        final KubiUniverse ku = model.universe(0);
-        final KubiView kv = ku.time(System.currentTimeMillis());
-        kv.select("/").then(new Callback<KObject[]>() {
-            @Override
-            public void on(KObject[] kObjects) {
-                if (kObjects.length == 0) {
-                    Ecosystem e = kv.createEcosystem();
-                    e.setName("ecoSystemTest");
-                }
-            }
-        });
+
     }
 }

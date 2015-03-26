@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by duke on 20/03/15.
@@ -71,7 +72,11 @@ public class KubiKernelImpl implements KubiKernel {
                     e.printStackTrace();
                 }
             }
+
+            executorService.shutdown();
+            executorService.awaitTermination(3000, TimeUnit.SECONDS);
             executorService.shutdownNow();
+
             executorService = null;
             kubiModel.close();
             isConnected = false;

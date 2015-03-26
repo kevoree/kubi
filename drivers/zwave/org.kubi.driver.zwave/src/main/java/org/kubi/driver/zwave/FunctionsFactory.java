@@ -40,67 +40,6 @@ public class FunctionsFactory {
         onOffState.setValueType("boolean");
         onOffState.setRange("[false,true]");
         dev.addActionParameters(onOffState);
-
-        /*
-        KubiModel km = kv.universe().model();
-        km.setInstanceOperation(MetaFunction.OP_EXEC, switchBinary, new KOperation() {
-            @Override
-            public void on(KObject kObject, Object[] objects, Callback<Object> callback) {
-
-                Function func = ((Function) kObject);
-                func.getDevice().then(new Callback<Device>() {
-                    public void on(Device device) {
-
-                        //Reads the Parameter : 1 string, must be a JSON string with named parameters
-                        JsonObject param = JsonObject.readFrom((String) objects[0]);
-                        //Submits the ZWave SET command
-                        String nodeId = device.getId();
-                        nodeId = nodeId.substring(nodeId.lastIndexOf("_") + 1);
-                        int zwNodeId = Integer.valueOf(nodeId);
-                        key.submitCommand(ZWaveFactories.control().switchBinarySet(zwNodeId, param.get("state").asBoolean()));
-                        //Submits a GET command to refresh the switch state
-                        ZWControlCommandWithResult<SwitchBinaryCommandClass> getStateCommand = ZWaveFactories.control().switchBinaryGet(zwNodeId);
-                        getStateCommand.onResult(new ZWCallback<SwitchBinaryCommandClass>() {
-                            public void on(SwitchBinaryCommandClass switchBinaryCommandClass) {
-
-                                //jumps the device to the time the answer is received
-                                device.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
-                                    public void on(KObject deviceNow) {
-
-                                        //select the device parameter
-                                        deviceNow.select("parameters[name=" + switchBinaryCommandClass.getCommandClass().getName() + "]").then(new Callback<KObject[]>() {
-                                            @Override
-                                            public void on(KObject[] kObjects) {
-                                                if (kObjects != null && kObjects.length > 0) {
-
-                                                    //sets the parameter value
-                                                    Parameter param = (Parameter) kObjects[0];
-                                                    param.setValue(Boolean.toString(switchBinaryCommandClass.isOn()));
-
-                                                    param.universe().model().save().then(new Callback<Throwable>() {
-                                                        @Override
-                                                        public void on(Throwable throwable) {
-                                                            if (throwable != null) {
-                                                                throwable.printStackTrace();
-                                                            }
-                                                        }
-                                                    });
-                                                    if (callback != null) {
-                                                        callback.on(Boolean.toString(switchBinaryCommandClass.isOn()));
-                                                    }
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                        key.submitCommand(getStateCommand);
-                    }
-                });
-            }
-        });
-        */
     }
 
 

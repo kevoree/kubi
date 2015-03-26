@@ -1,9 +1,6 @@
 package org.kubi.driver.zwave.callbacks;
 
-import lu.snt.zwave.protocol.command.ZWControlCommandWithResult;
-import lu.snt.zwave.protocol.command.ZWaveFactories;
 import lu.snt.zwave.protocol.constants.CommandClass;
-import lu.snt.zwave.protocol.messages.app_command.ManufacturerSpecificCommandClass;
 import lu.snt.zwave.protocol.messages.zw_common.ZW_ApplicationNodeInformation;
 import lu.snt.zwave.utils.ZWCallback;
 import org.kubi.KubiUniverse;
@@ -16,6 +13,8 @@ import org.kubi.driver.zwave.FunctionsFactory;
 import org.kubi.driver.zwave.StickHandler;
 import org.kubi.driver.zwave.StandardCallback;
 import org.kubi.driver.zwave.ZWavePlugin;
+import org.kubi.meta.MetaDevice;
+import org.kubi.meta.MetaTechnology;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -50,57 +49,16 @@ public class ApplicationNodeInfoCallback implements ZWCallback<ZW_ApplicationNod
                         @Override
                         public void on(KObject[] kObjects) {
                             final Technology techno = (Technology) kObjects[0];
-                            techno.select("devices[id=" + _stickHandler.getHomeId() + "_" + zw_applicationNodeInformation.getNodeId() + "]").then(new Callback<KObject[]>() {
+                            techno.traversal().traverse(MetaTechnology.REF_DEVICES).withAttribute(MetaDevice.ATT_HOMEID, _stickHandler.homeId()).withAttribute(MetaDevice.ATT_ID, zw_applicationNodeInformation.getNodeId()).done().then(new Callback<KObject[]>() {
                                 @Override
                                 public void on(KObject[] kObjects) {
-                                    Device dev = null;
                                     if (kObjects.length == 0) {
                                         Log.debug("Adding Device id:" + zw_applicationNodeInformation.getNodeId());
-                                        dev = factory.createDevice().setId("" + _stickHandler.getHomeId() + "_" + zw_applicationNodeInformation.getNodeId()).setTechnology(techno);
-
-                                        ZWControlCommandWithResult<ManufacturerSpecificCommandClass> manufacturerSpecificCommand = ZWaveFactories.control().manufacturerSpecificInfoGet(zw_applicationNodeInformation.getNodeId());
-                                        final Device finalDev = dev;
-                                        manufacturerSpecificCommand.onResult(new ZWCallback<ManufacturerSpecificCommandClass>() {
-                                            @Override
-                                            public void on(ManufacturerSpecificCommandClass deviceDetails) {
-                                                if (deviceDetails != null) {
-                                                    /*
-                                                    final ZWaveProductsStoreView zWaveProductStore = _keyHandler.getZwaveStorel().universe(0).time(0);
-                                                    zWaveProductStore.select("/manufacturers[id=" + Integer.parseInt(deviceDetails.getManufacturer(), 16) + "]").then(new Callback<KObject[]>() {
-                                                        public void on(KObject[] kObjects) {
-                                                            if (kObjects != null && kObjects.length > 0) {
-                                                                Manufacturer manufacturer = (Manufacturer) kObjects[0];
-                                                                manufacturer.select("products[id=" + Integer.parseInt(deviceDetails.getProductId(), 16) + ",type=" + Integer.parseInt(deviceDetails.getProductType(), 16) + "]").then(new Callback<KObject[]>() {
-                                                                    public void on(KObject[] kObjects) {
-                                                                        if (kObjects != null && kObjects.length > 0) {
-                                                                            Product product = (Product) kObjects[0];
-                                                                            Log.trace("Prod:: {}({}) - {}({})", manufacturer.getName(), deviceDetails.getManufacturer(), product.getName(), deviceDetails.getProductType() + deviceDetails.getProductId());
-                                                                            finalDev.setManufacturer(manufacturer.getName());
-                                                                            finalDev.setName(product.getName());
-                                                                            finalDev.setPicture("http://" + IP.getHostAddress() + ":8283/img/" + deviceDetails.getManufacturer() + "/" + deviceDetails.getProductType() + deviceDetails.getProductId() + ".png");
-                                                                            _keyHandler.getModel().save().then(StandardCallback.DISPLAY_ERROR);
-                                                                        } else {
-                                                                            Log.warn("ZWave Product not found for id:{}", deviceDetails.getProductId());
-                                                                        }
-                                                                    }
-                                                                });
-                                                            } else {
-                                                                Log.warn("ZWave Manufacturer not found for id:{}", deviceDetails.getManufacturer());
-                                                            }
-                                                        }
-                                                    });
-                                                    */
-                                                }
-                                            }
-                                        });
-                                        _stickHandler.getKey().submitCommand(manufacturerSpecificCommand);
+                                        Device dev = factory.createDevice().setId(zw_applicationNodeInformation.getNodeId() + "").setHomeId(_stickHandler.homeId()).setTechnology(techno);
                                         //adds functions to the model per CommandClass
                                         for (CommandClass cc : zw_applicationNodeInformation.getCommandClasses()) {
                                             FunctionsFactory.addFunctionFunction(dev, cc, _stickHandler.getKey());
                                         }
-                                        techno.addDevices(dev);
-                                    } else {
-                                        dev = (Device) kObjects[0];
                                     }
                                     _stickHandler.getModel().save().then(StandardCallback.DISPLAY_ERROR);
                                 }

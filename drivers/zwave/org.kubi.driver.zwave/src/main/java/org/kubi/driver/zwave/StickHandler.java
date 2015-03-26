@@ -32,11 +32,20 @@ public class StickHandler {
 
     private ZWaveKey _key;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public void set_homeId(String _homeId) {
+        this._homeId = _homeId;
+    }
+
     private String _homeId;
     private KubiModel kubiModel;
     //private ZWaveProductsStoreModel productStore;
 
-    public StickHandler(ZWaveKey key, KubiModel kubiModel/*, ZWaveProductsStoreModel productStore*/) {
+    public String homeId() {
+        return _homeId;
+    }
+
+    public StickHandler(ZWaveKey key, KubiModel kubiModel, StickPhysMapper mapper) {
         this._key = key;
         this.kubiModel = kubiModel;
         // this.productStore = productStore;
@@ -45,7 +54,7 @@ public class StickHandler {
         _key.addZWaveStateListener(new ZWaveStateListener() {
             public void stateChanged(ZWaveState zWaveState) {
                 if (zWaveState == ZWaveState.READY) {
-                    executor.execute(new UpdateGatewayTask(StickHandler.this));
+                    executor.execute(new UpdateGatewayTask(StickHandler.this, mapper));
                 }
             }
         });
@@ -57,16 +66,6 @@ public class StickHandler {
         _key.disconnect();
     }
 
-
-    public void setHomeId(String homeId) {
-        this._homeId = homeId;
-        executor.execute(launchDiscovery);
-    }
-
-    public String getHomeId() {
-        return _homeId;
-    }
-
     public ZWaveKey getKey() {
         return _key;
     }
@@ -74,10 +73,10 @@ public class StickHandler {
     public KubiModel getModel() {
         return kubiModel;
     }
-/*
-    public ZWaveProductsStoreModel getZwaveStorel() {
-        return productStore;
-    }*/
+
+    public void discoverDevices() {
+        executor.submit(launchDiscovery);
+    }
 
     //TODO, maybe do it periodically
     private Runnable launchDiscovery = new Runnable() {

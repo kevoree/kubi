@@ -18,6 +18,7 @@ class org.kubi.Group {
 class org.kubi.Device {
     @id
     id : String
+    homeId : String
     groupes : org.kubi.Group[0,*] oppositeOf devices
 
     links : org.kubi.Device[0,*]

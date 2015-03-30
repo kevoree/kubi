@@ -66,9 +66,9 @@ public class SmartCampusPlugin implements Plugin, Runnable {
                     device2.addFunctions(deviceEchoFunction2);
                     e.addDevices(device2);
 
-                    final PolynomialLaw polynomialLaw = new PolynomialLaw(24839.21865, -14430.25924,
+                    final PolynomialLaw polynomialLaw = new PolynomialParkingLaw(24839.21865, -14430.25924,
                             3359.404392, -401.9522656, 26.18040012, -0.8830270156, 0.01208028907);
-                    final PolynomialLaw polynomialLaw1 = new PolynomialLaw(0., 2.);
+                    final PolynomialLaw polynomialLaw1 = new PolynomialParkingLaw(0., 2.);
                     final long start = System.currentTimeMillis();
                     Thread t = new Thread(new Runnable() {
                         @Override

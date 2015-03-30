@@ -30,10 +30,6 @@ public class PolynomialLaw {
      * evaluate f(n)
      */
     public Double evaluate(Double n) {
-        // only the the case of a parking of a campus frequency
-        if (n%24 > 18 || n%24<8 ){
-            return 0.;
-        }
         double res = 0;
         double pow = 1;
         for (int i = 0; i < this.coefficients.size(); i++) {

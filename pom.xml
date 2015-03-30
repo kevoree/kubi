@@ -51,6 +51,7 @@
         <!-- EchoMock driver -->
         <module>drivers/mock/org.kubi.driver.madmock</module>
         <module>drivers/mock/org.kubi.driver.smartcampus</module>
+        <module>drivers/mock/org.kubi.driver.smartwindow</module>
 
         <module>org.kubi.frontend.web</module>
         <module>org.kubi.kernel</module>

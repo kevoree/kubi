@@ -977,13 +977,9 @@
         }
 
         function asyncAll(arr, dimen, func, cb) {
-
-            console.log("Arr2", arr);
-
             var finished = 0;
             var len;
             var outputArr;
-
             function done(i, output) {
                 finished++;
                 outputArr[i] = output;
@@ -992,7 +988,6 @@
                     cb(null, outputArr.join(''));
                 }
             }
-
             if (lib.isArray(arr)) {
                 len = arr.length;
                 outputArr = new Array(len);

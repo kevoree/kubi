@@ -43,13 +43,13 @@
         </dependency>
 
         <!-- Comment under -->
-<!-- madmock
+        <!-- madmock
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.driver.madmock</artifactId>
             <version>${project.version}</version>
         </dependency>
--->
+        -->
         <!-- smartcampus
         <dependency>
             <groupId>org.kubi</groupId>
@@ -58,13 +58,22 @@
         </dependency>
         -->
 
-
+        <!-- smartcWindow
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.driver.smartwindow</artifactId>
             <version>${project.version}</version>
         </dependency>
-    </dependencies>
+        -->
 
+        <!-- smartfridge
+        -->
+
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.driver.smartfridge</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>

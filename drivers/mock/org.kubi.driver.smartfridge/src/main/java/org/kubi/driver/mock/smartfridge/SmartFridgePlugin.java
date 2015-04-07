@@ -1,4 +1,4 @@
-package org.kubi.driver.mock.smartwindow;
+package org.kubi.driver.mock.smartfridge;
 
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by duke on 20/03/15.
  */
-public class SmartWindowPlugin implements Plugin, Runnable {
+public class SmartFridgePlugin implements Plugin, Runnable {
 
     ScheduledExecutorService service = null;
 
@@ -25,7 +25,7 @@ public class SmartWindowPlugin implements Plugin, Runnable {
 
     @Override
     public void start(KubiModel model) {
-        System.out.println("SmartWindow Start ... ");
+        System.out.println("SmartFridge Start ... ");
         this.model = model;
         service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
@@ -33,7 +33,7 @@ public class SmartWindowPlugin implements Plugin, Runnable {
 
     @Override
     public void stop() {
-        System.out.println("SmartWindow Stop ... ");
+        System.out.println("SmartFridge Stop ... ");
     }
 
     @Override
@@ -48,28 +48,12 @@ public class SmartWindowPlugin implements Plugin, Runnable {
                     e.setName("ecoSystemTest");
 
                     Device device = kv.createDevice();
-                    device.setName("airQuality");
+                    device.setName("ElectricConsommation");
                     device.addParameters(kv.createParameter().setName("name"));
-                    Function deviceEchoFunction = kv.createFunction();
-                    deviceEchoFunction.setName("sayEcho");
-                    deviceEchoFunction.addParameters(kv.createParameter().setName("name"));
-                    device.addFunctions(deviceEchoFunction);
                     e.addDevices(device);
-
-
-                    Device device2 = kv.createDevice();
-                    device2.setName("temperature");
-                    device2.addParameters(kv.createParameter().setName("name"));
-                    Function deviceEchoFunction2 = kv.createFunction();
-                    deviceEchoFunction2.setName("sayChocolat");
-                    deviceEchoFunction2.addParameters(kv.createParameter().setName("name"));
-                    device2.addFunctions(deviceEchoFunction2);
-                    e.addDevices(device2);
-
-                    final PolynomialLaw polynomialLaw = new PolynomialLaw(21.98543123, - 2.230361305, 0.3107517482, 0.01966783215
-                            - 0.006555944053, 0.0003205128204);
-                    final PolynomialLaw polynomialLaw1 = new PolynomialLaw(60.01311188, 29.11611306, - 11.10467657, 2.090253497
-                            - 0.1948572261, 0.007211538463);
+                    // 0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353
+                    // 0.001186431353, - 0.06983998705, 1.756913793, - 24.65403975, 211.264638, - 1136.920265, 3798.572543, -7460.92177, 7546.363798, - 2736.016278, 0.285796339);
+                    final PolynomialLaw polynomialLaw = new PolynomialLaw(0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353);
                     final long start = System.currentTimeMillis();
                     Thread t = new Thread(new Runnable() {
                         @Override
@@ -81,21 +65,6 @@ public class SmartWindowPlugin implements Plugin, Runnable {
                                     e1.printStackTrace();
                                 }
                                 System.err.println("Simulate modification...");
-                                device2.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
-                                    @Override
-                                    public void on(KObject[] kObjects) {
-                                        if (kObjects.length != 0) {
-                                            Parameter parameter = ((Parameter) kObjects[0]);
-                                            parameter.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
-                                                @Override
-                                                public void on(KObject kObject) {
-                                                    ((Parameter) kObject).setValue(polynomialLaw.evaluate(((Double.parseDouble((System.currentTimeMillis() - start) + "") / 1000) % 24)/8) + "");
-                                                    model.save();
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
                                 device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
                                     @Override
                                     public void on(KObject[] kObjects) {
@@ -104,7 +73,7 @@ public class SmartWindowPlugin implements Plugin, Runnable {
                                             parameter.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
                                                 @Override
                                                 public void on(KObject kObject) {
-                                                    ((Parameter) kObject).setValue(polynomialLaw1.evaluate(((Double.parseDouble((System.currentTimeMillis() - start) + "") / 1000) % 24)/8) + "");
+                                                    ((Parameter) kObject).setValue(polynomialLaw.evaluate(Double.parseDouble(((System.currentTimeMillis() - start) / 1000) % 11 + ""))+ "");
                                                     model.save();
                                                 }
                                             });

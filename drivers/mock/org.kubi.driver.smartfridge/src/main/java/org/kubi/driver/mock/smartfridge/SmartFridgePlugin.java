@@ -51,8 +51,9 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                     device.setName("ElectricConsommation");
                     device.addParameters(kv.createParameter().setName("name"));
                     e.addDevices(device);
-                    // 0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353
-                    // 0.001186431353, - 0.06983998705, 1.756913793, - 24.65403975, 211.264638, - 1136.920265, 3798.572543, -7460.92177, 7546.363798, - 2736.016278, 0.285796339);
+
+                    // KubiUniverse kuparallele = ku.diverge();
+
                     final PolynomialLaw polynomialLaw = new PolynomialLaw(0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353);
                     final long start = System.currentTimeMillis();
                     Thread t = new Thread(new Runnable() {
@@ -73,7 +74,7 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                                             parameter.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
                                                 @Override
                                                 public void on(KObject kObject) {
-                                                    ((Parameter) kObject).setValue(polynomialLaw.evaluate(Double.parseDouble(((System.currentTimeMillis() - start) / 1000) % 11 + ""))+ "");
+                                                    ((Parameter) kObject).setValue(polynomialLaw.evaluate(Double.parseDouble(((System.currentTimeMillis() - start) / 1000) % 11 + "")) + "");
                                                     model.save();
                                                 }
                                             });

@@ -54,6 +54,9 @@
         <module>drivers/mock/org.kubi.driver.smartwindow</module>
         <module>drivers/mock/org.kubi.driver.smartfridge</module>
 
+
+        <module>periodAnalysis</module>
+
         <module>org.kubi.frontend.web</module>
         <module>org.kubi.kernel</module>
 

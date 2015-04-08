@@ -43,9 +43,7 @@ public class KubiKernel {
                     executorService = Executors.newCachedThreadPool();
                     isConnected = true;
                     pluginLoaders = ServiceLoader.load(Plugin.class);
-                    System.out.println("oivrortk,mtr");
                     for (Plugin plugin : pluginLoaders) {
-                        System.out.println("oivrortk,mtr");
                         try {
                             addDriver(plugin);
                         } catch (Exception e) {

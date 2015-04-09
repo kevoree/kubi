@@ -1,5 +1,7 @@
 package org.kubi.periodAnalysis;
 
+import org.kevoree.brain.JavaPeriodCalculatorFFT;
+import org.kevoree.brain.JavaPeriodCalculatorPearson;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
 import org.kevoree.modeling.api.KOperation;
@@ -11,10 +13,7 @@ import org.kubi.meta.MetaEcosystem;
 import org.kubi.meta.MetaFunction;
 import org.kubi.meta.MetaParameter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +44,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
     @Override
     public void run() {
         try {
-            Thread.sleep(10000);
+            Thread.sleep(30000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -83,11 +82,11 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
      */
     private void getPreviousValues(Parameter parameter, int numberOfValues, long time, long periodOfGets) {
         List<Double> res = new ArrayList<Double>();
-        getPreviousValues(res, parameter, numberOfValues, System.currentTimeMillis(), 1000);
+        getPreviousValues(res, parameter, numberOfValues, System.currentTimeMillis(), periodOfGets);
     }
 
     private void getPreviousValues(Parameter parameter, int numberOfValues) {
-        getPreviousValues(parameter, numberOfValues, System.currentTimeMillis(), 1000);
+        getPreviousValues(parameter, numberOfValues, System.currentTimeMillis(), 100);
     }
 
     private void getPreviousValues(List<Double> result, Parameter parameter, int numberOfValues, long time, long periodOfGets) {
@@ -95,7 +94,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
             @Override
             public void on(KObject kObject) {
                 Parameter p = (Parameter)kObject;
-                if (p!=null && periodOfGets>0 && p.getValue()!=null){
+                if (p!=null && numberOfValues>0 && p.getValue()!=null){
                     result.add(Double.parseDouble(p.getValue()));
                     getPreviousValues(result, p, numberOfValues - 1, time - periodOfGets, periodOfGets);
                 }
@@ -107,6 +106,15 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
     }
 
     private void calculatePeriod(Object[] result, Parameter parameter) {
-        System.out.println("....."+result.length);
+        int size = result.length%2==0 ? result.length : result.length-1 ;
+        double[] observationsDouble = new double[size];
+        for (int i = 0; i<size; i++){
+            observationsDouble[i] = Double.parseDouble(result[i] + "");
+        }
+        System.out.println("Length-----------" + observationsDouble.length);
+        System.out.println("Pearson....." + JavaPeriodCalculatorPearson.getPeriod(observationsDouble, 2, size/2));
+        System.out.println("FFT........." + JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, size/2));
+
+
     }
 }

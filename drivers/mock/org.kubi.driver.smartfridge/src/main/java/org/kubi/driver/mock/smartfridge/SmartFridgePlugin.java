@@ -65,7 +65,7 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                                 } catch (InterruptedException e1) {
                                     e1.printStackTrace();
                                 }
-                                System.err.println("Simulate modification...");
+                                //System.err.println("Simulate modification...");
                                 device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
                                     @Override
                                     public void on(KObject[] kObjects) {

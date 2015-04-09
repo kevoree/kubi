@@ -13135,6 +13135,13 @@ var org;
                 function ParameterImpl(p_factory, p_uuid, p_metaClass) {
                     _super.call(this, p_factory, p_uuid, p_metaClass);
                 }
+                ParameterImpl.prototype.getPeriod = function () {
+                    return this.get(org.kubi.meta.MetaParameter.ATT_PERIOD);
+                };
+                ParameterImpl.prototype.setPeriod = function (p_obj) {
+                    this.set(org.kubi.meta.MetaParameter.ATT_PERIOD, p_obj);
+                    return this;
+                };
                 ParameterImpl.prototype.getUnit = function () {
                     return this.get(org.kubi.meta.MetaParameter.ATT_UNIT);
                 };
@@ -13393,12 +13400,13 @@ var org;
                 function MetaParameter() {
                     _super.call(this, "org.kubi.Parameter", 4);
                     var temp_all = new Array();
-                    temp_all[0] = MetaParameter.ATT_UNIT;
-                    temp_all[1] = MetaParameter.ATT_VALUETYPE;
-                    temp_all[2] = MetaParameter.ATT_PRECISION;
-                    temp_all[3] = MetaParameter.ATT_NAME;
-                    temp_all[4] = MetaParameter.ATT_RANGE;
-                    temp_all[5] = MetaParameter.ATT_VALUE;
+                    temp_all[0] = MetaParameter.ATT_PERIOD;
+                    temp_all[1] = MetaParameter.ATT_UNIT;
+                    temp_all[2] = MetaParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaParameter.ATT_PRECISION;
+                    temp_all[4] = MetaParameter.ATT_NAME;
+                    temp_all[5] = MetaParameter.ATT_RANGE;
+                    temp_all[6] = MetaParameter.ATT_VALUE;
                     var temp_references = new Array();
                     var temp_operations = new Array();
                     this.init(temp_all);
@@ -13410,12 +13418,13 @@ var org;
                     return MetaParameter.INSTANCE;
                 };
                 MetaParameter.INSTANCE = null;
-                MetaParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_PERIOD = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("period", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 10, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
                 return MetaParameter;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaParameter = MetaParameter;

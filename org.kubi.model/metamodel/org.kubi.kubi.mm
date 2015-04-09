@@ -33,6 +33,8 @@ class org.kubi.Device {
 class org.kubi.Parameter {
     name : String
     value : String
+    // The value of the period at a time T is the period calculated between T and T+x (at the beginning of the segment).
+    period : String
     valueType : String
     precision : Float
     unit : String

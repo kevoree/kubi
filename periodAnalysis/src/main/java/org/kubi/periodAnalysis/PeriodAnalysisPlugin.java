@@ -62,7 +62,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
                     public void on(KObject[] kObjects) {
                         Object[] values = null;
                         if(kObjects.length > 0){
-                            getPreviousValues((Parameter) kObjects[0], 1000);
+                            getPreviousValues((Parameter) kObjects[0], 50);
                         }
 
                     }
@@ -80,13 +80,13 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
      * @param periodOfGets
      * @return
      */
-    private void getPreviousValues(Parameter parameter, int numberOfValues, long time, long periodOfGets) {
+    public void getPreviousValues(Parameter parameter, int numberOfValues, long time, long periodOfGets) {
         List<Double> res = new ArrayList<Double>();
         getPreviousValues(res, parameter, numberOfValues, System.currentTimeMillis(), periodOfGets);
     }
 
     private void getPreviousValues(Parameter parameter, int numberOfValues) {
-        getPreviousValues(parameter, numberOfValues, System.currentTimeMillis(), 100);
+        getPreviousValues(parameter, numberOfValues, System.currentTimeMillis(), 1000);
     }
 
     private void getPreviousValues(List<Double> result, Parameter parameter, int numberOfValues, long time, long periodOfGets) {
@@ -112,8 +112,10 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
             observationsDouble[i] = Double.parseDouble(result[i] + "");
         }
         System.out.println("Length-----------" + observationsDouble.length);
-        System.out.println("Pearson....." + JavaPeriodCalculatorPearson.getPeriod(observationsDouble, 2, size/2));
-        System.out.println("FFT........." + JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, size/2));
+        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, size/2);
+        parameter.setPeriod(period + "");
+
+        System.out.println("FFT........." + period + "______" + (new Date(parameter.now())).toString());
 
 
     }

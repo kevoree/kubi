@@ -52,6 +52,14 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                     device.addParameters(kv.createParameter().setName("name"));
                     e.addDevices(device);
 
+                    /*
+                     * The device deviceVirtual is the device containing the peiord calculated by the FFT algorithm
+                     * The value at a time T is the period calculated between T-x and T+x (in the middle of the segment).
+                     */
+                    Device deviceVirtual = kv.createDevice();
+                    deviceVirtual.setName("ElectricConsommation_Period");
+                    deviceVirtual.addParameters(kv.createParameter().setName("name"));
+                    e.addDevices(deviceVirtual);
                     // KubiUniverse kuparallele = ku.diverge();
 
                     final PolynomialLaw polynomialLaw = new PolynomialLaw(0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353);

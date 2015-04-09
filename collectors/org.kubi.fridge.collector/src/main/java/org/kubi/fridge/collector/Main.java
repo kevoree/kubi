@@ -16,6 +16,7 @@ import org.kevoree.log.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
  * Created by gnain on 09/04/15.
@@ -29,7 +30,13 @@ public class Main implements ZWaveKeyDiscoveryListener {
 
     public static void main(String[] args) {
         Log.TRACE();
-        final Main m = new Main();
+        final Main m;
+        System.out.println(Arrays.toString(args));
+        if (args.length > 0) {
+            m = new Main(args[0] + File.separator);
+        } else {
+            m = new Main("");
+        }
 
         final ZWaveManager zwaveManager = new ZWaveManager();
         zwaveManager.addZWaveKeyDiscoveryListener(m);
@@ -43,7 +50,7 @@ public class Main implements ZWaveKeyDiscoveryListener {
                 }
                 zwaveManager.stop();
 
-                if(m.pr != null) {
+                if (m.pr != null) {
                     m.pr.close();
                 }
             }
@@ -51,8 +58,8 @@ public class Main implements ZWaveKeyDiscoveryListener {
 
     }
 
-    public Main() {
-        csv = new File("CSV_" + System.currentTimeMillis() + ".csv");
+    public Main(String folder) {
+        csv = new File(folder + "CSV_" + System.currentTimeMillis() + ".csv");
         try {
             pr = new PrintWriter(csv);
         } catch (FileNotFoundException e) {
@@ -102,6 +109,7 @@ public class Main implements ZWaveKeyDiscoveryListener {
                     System.out.println("Not supported frame:" + zw_applicationCommandHandler.getClass().getName());
                 }
                 pr.println(";");
+                pr.flush();
             }
         });
 

@@ -53,6 +53,8 @@
         <module>drivers/mock/org.kubi.driver.smartcampus</module>
         <module>drivers/mock/org.kubi.driver.smartwindow</module>
         <module>drivers/mock/org.kubi.driver.smartfridge</module>
+        <!-- Modules with real data -->
+        <module>drivers/mock/org.kubi.driver.realsmartfridge</module>
 
 
         <module>periodAnalysis</module>

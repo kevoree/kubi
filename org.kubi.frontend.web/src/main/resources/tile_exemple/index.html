@@ -113,7 +113,7 @@
 
 <script>
     var chart;
-    windowSize = 200;
+    windowSize = 100000;
     var dataPoints = {};
     function initGraph(){
         chart = new CanvasJS.Chart("chartContainer",
@@ -215,7 +215,8 @@
                                 });
                             });
                             // add old data to the chart
-                            param.jump(param.now()-1000).then(function (paramTimed){
+                            //param.jump(param.now()-10000).then(function (paramTimed){
+                            param.jump(1428598520634).then(function (paramTimed){
                                 param.parent().then(function (parent){
                                     addPreviousValuesWithPeriod(paramTimed, parent.getName());
                                 });
@@ -227,13 +228,14 @@
         });
     }
     function addPreviousValues(paramTimed, deviceName){
-        if((paramTimed.now() > last_timestamp-300000) && (paramTimed.getValue()!= undefined)) {
+        if((paramTimed.now() > last_timestamp-3000000) && (paramTimed.getValue()!= undefined)) {
             dataPoints[deviceName].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-            paramTimed.jump(paramTimed.now() - 1000).then(function (param1){
+            paramTimed.jump(paramTimed.now() - 100000).then(function (param1){
                 addPreviousValues(param1, deviceName);
             });
         }
         else{
+            console.log(dataPoints[deviceName]);
             var unsortedDataPoints = dataPoints[deviceName];
             var sortedDataPoints = [];
             for(var i=0;i<unsortedDataPoints.length;i++){
@@ -248,10 +250,10 @@
      * Add some previous values and the periods calculated in the Java Plugin from these values
      */
     function addPreviousValuesWithPeriod(paramTimed, deviceName){
-        if((paramTimed.now() > last_timestamp-300000) && (paramTimed.getValue()!= undefined)) {
+        //if((paramTimed.now() > last_timestamp-300000) && (paramTimed.getValue()!= undefined)) {
+        if((paramTimed.now() > 1428590400000) && (paramTimed.getValue()!= undefined)) {
             dataPoints[deviceName].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
             if(paramTimed.getPeriod()!= undefined){
-                console.log("ozeuroezuroizeuiruzoi");
                 dataPoints[deviceName+"_Period"].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
             }
             paramTimed.jump(paramTimed.now() - 1000).then(function (param1){

@@ -123,12 +123,12 @@
                     backgroundColor: "#708090",
                     theme: "theme3",
                     title: {
-                        text: "graph of the parameter influenced by the opening of the window depending of the time(hour)",
+                        text: "Graph of the electric consumption of the fridge of the coffee place depending of the time(hour)",
                         fontColor: "white"
                     },
                     axisX: {
                         valueFormatString: "HH:mm:ss",
-                        interval: 3600,
+                        interval: 10800,
                         intervalType: "second",
                         labelFontColor: "#white",
                         lineColor: "white",
@@ -140,7 +140,7 @@
                         gridThickness: 1
                     },
                     axisY2: {
-                        title: "truc",
+                        title: "truc2",
                         titleFontColor: "white",
                         lineColor: "white",
                         lineThickness: 1,
@@ -152,7 +152,7 @@
                         tickThickness: 1
                     },
                     axisY: {
-                        title: "truc",
+                        title: "Electric consumption(kW) of the fridge ",
                         titleFontColor: "white",
                         lineColor: "white",
                         lineThickness: 1,
@@ -215,8 +215,7 @@
                                 });
                             });
                             // add old data to the chart
-                            //param.jump(param.now()-10000).then(function (paramTimed){
-                            param.jump(1428598520634).then(function (paramTimed){
+                            param.jump(1428685739017).then(function (paramTimed){
                                 param.parent().then(function (parent){
                                     addPreviousValuesWithPeriod(paramTimed, parent.getName());
                                 });
@@ -250,9 +249,16 @@
      * Add some previous values and the periods calculated in the Java Plugin from these values
      */
     function addPreviousValuesWithPeriod(paramTimed, deviceName){
-        //if((paramTimed.now() > last_timestamp-300000) && (paramTimed.getValue()!= undefined)) {
-        if((paramTimed.now() > 1428590400000) && (paramTimed.getValue()!= undefined)) {
+        if((paramTimed.now() > 428599098412) && (paramTimed.getValue()!= undefined)) {
             dataPoints[deviceName].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
+            if(deviceName.equals("openCheck")){
+                try {
+                    console.log(paramTimed.now());
+                }catch (err){
+                    console.log("_________"+err);
+//                    err.printStackTrace();
+                }
+            }
             if(paramTimed.getPeriod()!= undefined){
                 dataPoints[deviceName+"_Period"].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
             }

@@ -1,10 +1,12 @@
 package org.kubi.driver.mock.realsmartfridge;
 
+import com.sun.tools.classfile.StackMapTable_attribute;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
 import org.kubi.*;
 import org.kubi.api.Plugin;
 import org.kubi.meta.MetaDevice;
+import org.kubi.meta.MetaEcosystem;
 import org.kubi.meta.MetaParameter;
 
 import java.io.BufferedReader;
@@ -19,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * Created by jerome on 10/04/15.
  */
 public class RealSmartFridgePlugin implements Plugin, Runnable {
-
 
 
     ScheduledExecutorService service = null;
@@ -55,28 +56,28 @@ public class RealSmartFridgePlugin implements Plugin, Runnable {
                     device.addParameters(kv.createParameter().setName("name"));
                     e.addDevices(device);
 
-//
-//                    Device device2 = kv.createDevice();
-//                    device2.setName("openCheck");
-//                    device2.addParameters(kv.createParameter().setName("name"));
-//                    e.addDevices(device2);
+
+                    Device device2 = kv.createDevice();
+                    device2.setName("openCheck");
+                    device2.addParameters(kv.createParameter().setName("name"));
+                    e.addDevices(device2);
 
 
-                    String csvFile ="/Users/jerome/Documents/Jerome/stage_dev/kubi/drivers/mock/org.kubi.driver.realsmartfridge/src/main/resources/data_fridge.csv";
+                    String csvFile = "/Users/jerome/Documents/Jerome/stage_dev/kubi/drivers/mock/org.kubi.driver.realsmartfridge/src/main/resources/fridgeCoffee1.csv";
                     BufferedReader bufferedReader = null;
                     String line;
                     String csvSpliter = ";";
 
-                    try{
+                    try {
                         bufferedReader = new BufferedReader(new FileReader(csvFile));
-                        while ((line = bufferedReader.readLine()) != null){
+                        while ((line = bufferedReader.readLine()) != null) {
                             String[] data = line.split(csvSpliter);
-                            if ((new String(3+"")).equals(data[1])){
+                            if ((new String(3 + "")).equals(data[1])) {
                                 // it's a data from the plug
-                                device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME,"name").done().then(new Callback<KObject[]>() {
+                                device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
                                     @Override
                                     public void on(KObject[] kObjects) {
-                                        if (kObjects.length != 0){
+                                        if (kObjects.length != 0) {
                                             Parameter parameter = (Parameter) kObjects[0];
                                             parameter.jump(Long.parseLong(data[0]))
                                                     .then(new Callback<KObject>() {
@@ -84,7 +85,6 @@ public class RealSmartFridgePlugin implements Plugin, Runnable {
                                                         public void on(KObject kObject) {
                                                             if (kObject != null) {
                                                                 try {
-                                                                    System.out.println(Double.parseDouble(data[2])+"_______"+((Parameter) kObject).now());
                                                                     ((Parameter) kObject).setValue("" + Double.parseDouble(data[2]));
                                                                 } catch (Exception e1) {
                                                                     System.err.println(data[2]);
@@ -97,15 +97,41 @@ public class RealSmartFridgePlugin implements Plugin, Runnable {
                                 });
                                 model.save();
                             }
+                                if ((new String(2 + "")).equals(data[1])) {
+                                    // it's a data from the plug
+                                    device2.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
+                                        @Override
+                                        public void on(KObject[] kObjects) {
+                                            if (kObjects.length != 0) {
+                                                Parameter parameter = (Parameter) kObjects[0];
+                                                parameter.jump(Long.parseLong(data[0]))
+                                                        .then(new Callback<KObject>() {
+                                                            @Override
+                                                            public void on(KObject kObject) {
+                                                                if (kObject != null) {
+                                                                    try {
+                                                                        System.out.println((Float.parseFloat(data[2])));
+                                                                        ((Parameter) kObject).setValue("" + (Float.parseFloat(data[2])));
+                                                                    } catch (Exception e1) {
+                                                                        System.err.println(data[2]);
+                                                                    }
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        }
+                                    });
+                                    model.save();
+                                }
                         }
 
                     } catch (FileNotFoundException e1) {
                         e1.printStackTrace();
                     } catch (IOException e1) {
                         e1.printStackTrace();
-                    }finally {
-                        if (bufferedReader != null){
-                            try{
+                    } finally {
+                        if (bufferedReader != null) {
+                            try {
                                 bufferedReader.close();
                             } catch (IOException e1) {
                                 e1.printStackTrace();
@@ -134,5 +160,42 @@ public class RealSmartFridgePlugin implements Plugin, Runnable {
                 }
             }
         });
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        kv.getRoot().then(new Callback<KObject>() {
+            @Override
+            public void on(KObject kObject) {
+                if (kObject != null) {
+                    Ecosystem e = (Ecosystem)kObject;
+                    e.traversal().traverse(MetaEcosystem.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "openCheck").done().then(new Callback<KObject[]>() {
+                        @Override
+                        public void on(KObject[] kObjects) {
+                            if (kObjects.length != 0){
+                                ((Device)kObjects[0]).traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
+                                    @Override
+                                    public void on(KObject[] kObjects) {
+                                        if (kObjects.length !=0){
+//                                            for (int i = 0; i < 100; i++) {
+//                                                ((Parameter) kObjects[0]).jump(1428680933017L - i*2000).then(new Callback<KObject>() {
+//                                                    @Override
+//                                                    public void on(KObject kObject) {
+//                                                        System.out.println(Float.parseFloat(((Parameter) kObject).getValue()) + "_______" + ((Parameter) kObject).now());
+//                                                    }
+//                                                });
+//                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+
+        });
+
     }
 }

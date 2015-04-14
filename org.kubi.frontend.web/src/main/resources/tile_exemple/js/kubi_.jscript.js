@@ -70,7 +70,7 @@ function initGraph() {
             },
             axisX: {
                 valueFormatString: "HH:mm:ss",
-                interval: 10800,
+                interval: 21600,
                 intervalType: "second",
                 labelFontColor: "#white",
                 lineColor: "white",
@@ -161,7 +161,7 @@ function getDataFromKubi(){
                             });
                         }); // end of listen
                         // add old data to the chart
-                        param.jump(1428685739017).then(function (paramTimed){
+                        param.jump(1428997125841).then(function (paramTimed){
                             param.parent().then(function (parent){
                                 //addPreviousValuesWithPeriod(paramTimed, parent.getName());
                                 addPreviousValues(paramTimed, parent.getName());
@@ -174,7 +174,7 @@ function getDataFromKubi(){
     });
 }
 function addPreviousValues(paramTimed, deviceName){
-    if((paramTimed.now() > 1428599090000) && (paramTimed.getValue()!= undefined)) {
+    if((paramTimed.now() > 1428599097936) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         paramTimed.jump(paramTimed.now() - 35000).then(function (param1){
             addPreviousValues(param1, deviceName);

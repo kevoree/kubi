@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+
+<script type="text/javascript">
+    window.onload = function () {
+        var chart = new CanvasJS.Chart("chartContainer",
+                {
+                    zoomEnabled: true,
+                    animationEnabled: true,
+                    title:{
+                        text: "100,000 Data Points! Zoom-in And Observe Axis Labels"
+                    },
+                    legend: {
+                        cursor: "pointer",
+                        itemclick: function (e) {
+                            //console.log("legend click: " + e.dataPointIndex);
+                            //console.log(e);
+                            if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                                e.dataSeries.visible = false;
+                            } else {
+                                e.dataSeries.visible = true;
+                            }
+
+                            e.chart.render();
+                        }
+                    },
+                    axisX :{
+                        labelAngle: -30
+                    },
+                    axisY :{
+                        includeZero:false
+                    },
+                    axisY2 :{
+                        includeZero:false
+                    },
+                    data: data
+                });
+        chart.render();
+    }
+
+    var limit = 100000;
+
+    var y = 0;
+    var data = []; var dataSeries = { type: "line",
+        title :  "azertyui" };
+    var dataPoints = [];
+
+    var dataSeries2 = { type: "line",
+    title :  "ploup"
+            };
+    var dataPoints2 = [];
+
+    var dataSeries3 = { type: "line",
+    title :  "paf"
+            };
+    var dataPoints3 = [];
+
+    for (var i = -limit/2; i <= limit/2; i++) {
+        y += (Math.random() * 10 - 5);
+        dateTime = new Date(1960, 08, 15);
+
+        // dateTime.setMilliseconds(dateTime.getMilliseconds() + i);
+        // dateTime.setSeconds(dateTime.getSeconds() + i);
+        // dateTime.setMinutes(dateTime.getMinutes() + i);
+        // dateTime.setHours(dateTime.getHours() + i);
+        dateTime.setDate(dateTime.getDate() + i);
+        // dateTime.setMonth(dateTime.getMonth() + i);
+        // dateTime.setFullYear(dateTime.getFullYear() + i);
+
+        dataPoints.push({
+            x: dateTime,
+            y: y
+        });
+        dataPoints2.push({
+            x: dateTime,
+            y: y*y
+        });
+        dataPoints3.push({
+            x: dateTime,
+            y: y*y-100000
+        });
+    }
+
+    dataSeries.dataPoints = dataPoints;
+    data.push(dataSeries);
+
+    dataSeries2.dataPoints = dataPoints2;
+    data.push(dataSeries2);
+
+    dataSeries3.dataPoints = dataPoints3;
+    data.push(dataSeries3);
+
+    console.log(data);
+
+</script>
+<script type="text/javascript" src="/canvasjs.min.js"></script></head>
+<body>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+</body>
+</html>

@@ -6,8 +6,36 @@
 var last_timestamp = (new Date()).getTime();
 var kubiModel = new org.kubi.KubiModel();
 var chart;
+/**
+ * Should contain the list of data for the graph
+ * dataChart[
+ *      dataSeries{
+ *          type: "line", title : "plop",
+ *          dataPoints : [
+ *              {x: ..., y:...},
+ *              {x: ..., y:...}, ...
+ *          ]
+ *      }, ...
+ * ]
+ * @type {Array}
+ */
+var dataChart = [];
+/**
+ * "Map":
+ * <
+ *  deviceName , dataSeries{
+ *      type: "line",
+ *      title : "plop",
+ *      dataPoints : [
+ *          {x: ..., y:...},
+ *          {x: ..., y:...}, ...
+ *      ]
+ *    }
+ *  >
+ * @type {Array}
+ */
+var dataSeries = [];
 windowSize = 1000000;
-var dataPoints = {};
 
 var universeNumber = 0;
 
@@ -34,6 +62,8 @@ function initGraph() {
             height: 500,
             backgroundColor: "#708090",
             theme: "theme3",
+            zoomEnabled: true,
+            animationEnabled: true,
             title: {
                 text: "Graph of the electric consumption of the fridge of the coffee place depending of the time(hour)",
                 fontColor: "white"
@@ -49,19 +79,8 @@ function initGraph() {
                 tickLength: 5,
                 tickThickness: 1,
                 gridColor: "white",
-                gridThickness: 1
-            },
-            axisY2: {
-                title: "truc2",
-                titleFontColor: "white",
-                lineColor: "white",
-                lineThickness: 1,
-                gridColor: "white",
                 gridThickness: 1,
-                labelFontColor: "white",
-                tickColor: "white",
-                tickLength: 5,
-                tickThickness: 1
+                labelAngle: -30
             },
             axisY: {
                 title: "Electric consumption(kW) of the fridge ",
@@ -73,18 +92,29 @@ function initGraph() {
                 labelFontColor: "white",
                 tickColor: "white",
                 tickLength: 5,
-                tickThickness: 1
+                tickThickness: 1,
+                includeZero:false
             },
             legend: {
                 verticalAlign: "bottom",
                 horizontalAlign: "center",
                 fontSize: 16,
-                fontColor: "white"
+                fontColor: "white",
+                cursor: "pointer",
+                itemclick: function (e) {
+                    if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                        e.dataSeries.visible = false;
+                    } else {
+                        e.dataSeries.visible = true;
+                    }
+
+                    e.chart.render();
+                }
             },
             toolTip: {
                 shared: true
             },
-            data: []
+            data: dataChart
         }
     );
 }
@@ -99,15 +129,10 @@ function getDataFromKubi(){
             {
                 var device = devices[d];
                 // add a curb describing the device on the chart
-                chart.options.data.push({type: "line", showInLegend: true, name: device.getName(), dataPoints: []});
-                dataPoints[device.getName()]=[];
+                dataSeries[device.getName()] = ({type: "line", showInLegend: true, name: device.getName(), title: device.getName(), dataPoints: []});
                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params){
                     if (params.length != 0) {
                         var param = params[0];
-                        param.parent().then(function (param12){
-//TODO : incompréhensible ..... il ne passe pas dans le addValuesPrevious dans le cas de l'ouverture de porte -- c'est l'erreur qui casse tout :'(
-                            console.log(param12.getName(),"----FIRST !!");
-                        });
                         param.listen(groupListenerID, function (param, metaTabl){
                             param.parent().then(function(parent) {
                                 var valueHasChanged = false;
@@ -115,9 +140,10 @@ function getDataFromKubi(){
                                 for (var m = 0; m < metaTabl.length; m++) {
                                     if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_VALUE) {
                                         valueHasChanged = true;
-                                    //} else if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_PERIOD) {
-                                    //    periodHasChanged = true;
                                     }
+                                    //if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_PERIOD) {
+                                    //    periodHasChanged = true;
+                                    //}
                                 }
                                 if (param.getValue() != undefined && valueHasChanged) {
                                     // the value of the parameter has changed => add the value to the graph data set
@@ -133,7 +159,7 @@ function getDataFromKubi(){
                                 //    }, parent.getName() + "_Period");
                                 //}
                             });
-                        });
+                        }); // end of listen
                         // add old data to the chart
                         param.jump(1428685739017).then(function (paramTimed){
                             param.parent().then(function (parent){
@@ -148,29 +174,22 @@ function getDataFromKubi(){
     });
 }
 function addPreviousValues(paramTimed, deviceName){
-    if((paramTimed.now() > 428599098412) && (paramTimed.getValue()!= undefined)) {
-        dataPoints[deviceName].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-        if(deviceName.equals("openCheck")){
-            try {
-                //console.log("---");
-            }catch (err){
-                console.error("_________"+err);
-//                    err.printStackTrace();
-            }
-        }
-        paramTimed.jump(paramTimed.now() - 2000).then(function (param1){
+    if((paramTimed.now() > 1428599090000) && (paramTimed.getValue()!= undefined)) {
+        dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
+        paramTimed.jump(paramTimed.now() - 35000).then(function (param1){
             addPreviousValues(param1, deviceName);
         });
     }
     else{
         console.log(deviceName,"-----in -addPreviousValues");
         // reverse the DataPoints set for the device given for the graph
-        var unsortedDataPoints = dataPoints[deviceName];
+        var unsortedDataPoints = dataSeries[deviceName].dataPoints;
         var sortedDataPoints = [];
         for(var i=0;i<unsortedDataPoints.length;i++){
             sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length-i-1,unsortedDataPoints.length-i)[0])
         }
-        addDataPointsWithSerieName(sortedDataPoints,deviceName);
+        dataSeries[deviceName].dataPoints = sortedDataPoints;
+        dataChart.push(dataSeries[deviceName]);
         chart.render();
     }
 }
@@ -206,40 +225,6 @@ function addPreviousValuesWithPeriod(paramTimed, deviceName){
     }
 }
 
-/**
- *Add a set of points to the chart
- * @param  value the set of poins
- * @param serieName the name of the serie that you want to add the points
- * [
- *     {x: new Date(timestamp), y: Float_value},
- *     {x: new Date(timestamp), y: Float_value}
- * ]
- **/
-function addDataPointsWithSerieName(values, serieName) {
-    var dpsCollection;
-    var index;
-    // this loop get the index of the serie in the data set named serieName
-    for(var d in chart.options.data){
-        data = chart.options.data[d];
-        if(data.name.equals(serieName)){
-            dpsCollection = data.dataPoints;
-            index = d;
-        }
-    }
-    if(dpsCollection != null && index != null) {
-        // add the values in the data set according to the size of the window chosen
-        for (var point in values) {
-            dpsCollection.push(values[point]);
-            if (dpsCollection.length > windowSize) {
-                dpsCollection.shift();
-            }
-        }
-    }
-    else{
-        console.error("Bad series name ",serieName, " : device not in the data set of the chart.");
-    }
-    this.chart.render();
-}
 
 /**
  * Add the point to the chart
@@ -249,26 +234,16 @@ function addDataPointsWithSerieName(values, serieName) {
  *     the name of the chart where you want to add the point (should be the name of the device)
  */
 function addDataPointWithSerie(point, serie) {
-    var dpsCollection;
-    var index;
-    // this loop get the index of the serie in the data set named serieName
     for(var i in chart.options.data){
-        data = chart.options.data[i];
-        if(data.name.equals(serie)){
-            dpsCollection = data.dataPoints;
-            index=i;
+        var d = chart.options.data[i];
+        if(d.name.equals(serie)){
+            chart.options.data[i].dataPoints.push(point);
+            if (chart.options.data[i].dataPoints.length > windowSize) {
+                chart.options.data[i].dataPoints.shift();
+            }
+            this.chart.render();
+            return;
         }
     }
-    if(dpsCollection != null && index!=null) {
-        // add the value in the data set according to the size of the window chosen
-        var dpsCollection = chart.options.data[index].dataPoints;
-        dpsCollection.push(point);
-        if (dpsCollection.length > windowSize) {
-            dpsCollection.shift();
-        }
-    }
-    else{
-        console.error("Bad series name (=",serie ,") : device not in the data set of the chart.");
-    }
-    this.chart.render();
+    console.error("Bad series name (=",serie ,") : device not in the data set of the chart.");
 }

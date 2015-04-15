@@ -55,14 +55,13 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
             public void on(KObject[] kObjects) {
                 Ecosystem ecosystem = (Ecosystem) kObjects[0];
                 ecosystem.traversal()
-                        .traverse(MetaEcosystem.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "ElectricConsommation")
+                        .traverse(MetaEcosystem.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "plug")
                         .traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name")
                         .done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
-                        Object[] values = null;
                         if(kObjects.length > 0){
-                            getPreviousValues((Parameter) kObjects[0], 50);
+                            getPreviousValues((Parameter) kObjects[0], 1050, 1428892490000L, 50000);
                         }
 
                     }
@@ -75,14 +74,14 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
      * Get an array with the numberOfValues last values of the Parameter parameter
      * from the time time jumping backward in the spaceTime of periodOfGets milliseconds
      * @param parameter
-     * @param numberOfValues
-     * @param time
-     * @param periodOfGets
+     * @param numberOfValues the number of values that you still have to get
+     * @param time the time of the next get of value
+     * @param periodOfGets time between the get of data (getDataAt(x) -> getDataAt(x-periodOfGets))
      * @return
      */
     public void getPreviousValues(Parameter parameter, int numberOfValues, long time, long periodOfGets) {
         List<Double> res = new ArrayList<Double>();
-        getPreviousValues(res, parameter, numberOfValues, System.currentTimeMillis(), periodOfGets);
+        getPreviousValues(res, parameter, numberOfValues, time, periodOfGets);
     }
 
     private void getPreviousValues(Parameter parameter, int numberOfValues) {
@@ -93,7 +92,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
         parameter.jump(time).then(new Callback<KObject>() {
             @Override
             public void on(KObject kObject) {
-                Parameter p = (Parameter)kObject;
+                Parameter p = (Parameter) kObject;
                 if (p!=null && numberOfValues>0 && p.getValue()!=null){
                     result.add(Double.parseDouble(p.getValue()));
                     getPreviousValues(result, p, numberOfValues - 1, time - periodOfGets, periodOfGets);
@@ -104,7 +103,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
             }
         });
     }
-
+int i=0;
     private void calculatePeriod(Object[] result, Parameter parameter) {
         int size = result.length%2==0 ? result.length : result.length-1 ;
         double[] observationsDouble = new double[size];
@@ -112,11 +111,17 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
             observationsDouble[i] = Double.parseDouble(result[i] + "");
         }
         System.out.println("Length-----------" + observationsDouble.length);
-        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, size/2);
+        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
+        System.out.println(JavaPeriodCalculatorFFT.getAllPeriods(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4));
         parameter.setPeriod(period + "");
 
         System.out.println("FFT........." + period + "______" + (new Date(parameter.now())).toString());
 
+        if(i%10==0) {
+            System.out.println(i);
+            i++;
+            System.out.println("Pearson........." + JavaPeriodCalculatorPearson.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4) + "______" + (new Date(parameter.now())).toString());
+        }
 
     }
 }

@@ -7,10 +7,10 @@ var last_timestamp = (new Date()).getTime();
 var kubiModel = new org.kubi.KubiModel();
 var chart;
 /**
- * Should contain the list of data for the graph
+ * Contain the list of data for the graph
  * dataChart[
  *      dataSeries{
- *          type: "line", title : "plop",
+ *          type: "line", title : "plug",
  *          dataPoints : [
  *              {x: ..., y:...},
  *              {x: ..., y:...}, ...
@@ -25,7 +25,7 @@ var dataChart = [];
  * <
  *  deviceName , dataSeries{
  *      type: "line",
- *      title : "plop",
+ *      title : "plug",
  *      dataPoints : [
  *          {x: ..., y:...},
  *          {x: ..., y:...}, ...
@@ -161,7 +161,7 @@ function getDataFromKubi(){
                             });
                         }); // end of listen
                         // add old data to the chart
-                        param.jump(1428997125841).then(function (paramTimed){
+                        param.jump(1428824570000).then(function (paramTimed){
                             param.parent().then(function (parent){
                                 //addPreviousValuesWithPeriod(paramTimed, parent.getName());
                                 addPreviousValues(paramTimed, parent.getName());
@@ -174,9 +174,10 @@ function getDataFromKubi(){
     });
 }
 function addPreviousValues(paramTimed, deviceName){
-    if((paramTimed.now() > 1428599097936) && (paramTimed.getValue()!= undefined)) {
+    //if((paramTimed.now() > 1428599097936) && (paramTimed.getValue()!= undefined)) {
+    if((paramTimed.now() > 1428773690000) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-        paramTimed.jump(paramTimed.now() - 35000).then(function (param1){
+        paramTimed.jump(paramTimed.now() - 50000).then(function (param1){
             addPreviousValues(param1, deviceName);
         });
     }
@@ -197,30 +198,34 @@ function addPreviousValues(paramTimed, deviceName){
  * Add some previous values and the periods calculated in the Java Plugin from these values
  */
 function addPreviousValuesWithPeriod(paramTimed, deviceName){
-    if((paramTimed.now() > 428599098412) && (paramTimed.getValue()!= undefined)) {
-        dataPoints[deviceName].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
+    if((paramTimed.now() > 1428599097936) && (paramTimed.getValue()!= undefined)) {
+        dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         if(paramTimed.getPeriod()!= undefined){
-            dataPoints[deviceName+"_Period"].push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
+            dataSeries[deviceName+"_Period"].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
         }
-        paramTimed.jump(paramTimed.now() - 2000).then(function (param1){
+        paramTimed.jump(paramTimed.now() - 95000).then(function (param1){
             addPreviousValuesWithPeriod(param1, deviceName);
         });
     }
     else{
-        var unsortedDataPoints = dataPoints[deviceName];
+        console.log(deviceName,"-----in -addPreviousValues");
+        // reverse the DataPoints set for the device given for the graph
+        var unsortedDataPoints = dataSeries[deviceName].dataPoints;
         var sortedDataPoints = [];
         for(var i=0;i<unsortedDataPoints.length;i++){
             sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length-i-1,unsortedDataPoints.length-i)[0])
         }
-        addDataPointsWithSerieName(sortedDataPoints,deviceName);
+        dataSeries[deviceName].dataPoints = sortedDataPoints;
+        dataChart.push(dataSeries[deviceName]);
 
-        var unsortedPeriodDataPoints  = dataPoints[deviceName+"_Period"];
+        var unsortedPeriodDataPoints  = dataSeries[deviceName+"_Period"].dataPoints;
         var sortedPeriodDataPoints = [];
         for(var i=0;i<unsortedPeriodDataPoints.length;i++){
             sortedPeriodDataPoints.push(unsortedPeriodDataPoints.slice(unsortedPeriodDataPoints.length-i-1,unsortedPeriodDataPoints.length-i)[0])
         }
-        addDataPointsWithSerieName(sortedPeriodDataPoints,deviceName+"_Period");
-        initPage();
+        dataSeries[deviceName+"_Period"].dataPoints = sortedPeriodDataPoints;
+        dataChart.push(dataSeries[deviceName+"_Period"]);
+
         chart.render();
     }
 }

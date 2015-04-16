@@ -1,7 +1,5 @@
 package org.kubi.periodAnalysis;
 
-import org.kevoree.brain.JavaPeriodCalculatorFFT;
-import org.kevoree.brain.JavaPeriodCalculatorPearson;
 import org.kevoree.brain.model.RisingEdge;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
@@ -12,15 +10,11 @@ import org.kubi.meta.MetaEcosystem;
 import org.kubi.meta.MetaParameter;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by duke on 20/03/15.
- */
 public class RisingEdgeAnalysisPlugin implements Plugin, Runnable {
 
     ScheduledExecutorService service = null;
@@ -84,7 +78,7 @@ public class RisingEdgeAnalysisPlugin implements Plugin, Runnable {
                     public void on(KObject[] kObjects) {
                         Object[] values = null;
                         if(kObjects.length > 0){
-                            getPreviousParameters((Parameter) kObjects[0], 1050, 1428824570000L, 50000);
+                            getPreviousParameters((Parameter) kObjects[0], 7961, 1428997126000L, 50000);
                         }
 
                     }
@@ -111,10 +105,6 @@ public class RisingEdgeAnalysisPlugin implements Plugin, Runnable {
     public void getPreviousParameters(Parameter parameter, int numberOfValues, long time, long periodOfGets) {
         List<Parameter> res = new ArrayList<>();
         getPreviousParameters(res, parameter, numberOfValues, time, periodOfGets);
-    }
-
-    private void getPreviousParameters(Parameter parameter, int numberOfValues) {
-        getPreviousParameters(parameter, numberOfValues, System.currentTimeMillis(), 1000);
     }
 
     private void getPreviousParameters(List<Parameter> result, Parameter parameter, int numberOfValues, long time, long periodOfGets) {
@@ -160,7 +150,6 @@ public class RisingEdgeAnalysisPlugin implements Plugin, Runnable {
                                                     Parameter parameterOfEdge = (Parameter) kObject;
                                                     if (! (new String("" + edge.getValue() / 1000000)).equals(parameterOfEdge.getValue())) {
                                                         parameterOfEdge.setValue("" + edge.getValue() / 1000000);
-                                                        System.out.println(edge);
                                                     }
                                                 } catch (Exception e1) {
                                                     System.err.println(edge);
@@ -194,7 +183,7 @@ public class RisingEdgeAnalysisPlugin implements Plugin, Runnable {
         for (Parameter p : parameters){
             if (Float.parseFloat(previous.getValue()) < Float.parseFloat(p.getValue())){
                 // add previous to be related to kubi way of filling blanks in the data set.
-                res.add(new RisingEdge(previous.now(), previous.now() - p.now()));
+                res.add(new RisingEdge(p.now(), previous.now() - p.now()));
             }
             if(Float.parseFloat(previous.getValue()) != Float.parseFloat(p.getValue())) {
                 previous = p;

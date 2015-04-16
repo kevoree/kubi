@@ -130,6 +130,8 @@ function getDataFromKubi(){
                 var device = devices[d];
                 // add a curb describing the device on the chart
                 dataSeries[device.getName()] = ({type: "line", showInLegend: true, name: device.getName(), title: device.getName(), dataPoints: []});
+                // add a curb describing the device period on the chart
+                dataSeries[device.getName()+"_Period"] = ({type: "line", showInLegend: true, name: device.getName()+"_Period", title: device.getName()+"_Period", dataPoints: []});
                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params){
                     if (params.length != 0) {
                         var param = params[0];
@@ -141,9 +143,9 @@ function getDataFromKubi(){
                                     if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_VALUE) {
                                         valueHasChanged = true;
                                     }
-                                    //if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_PERIOD) {
-                                    //    periodHasChanged = true;
-                                    //}
+                                    if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_PERIOD) {
+                                        periodHasChanged = true;
+                                    }
                                 }
                                 if (param.getValue() != undefined && valueHasChanged) {
                                     // the value of the parameter has changed => add the value to the graph data set
@@ -152,19 +154,20 @@ function getDataFromKubi(){
                                         y: parseFloat(param.getValue())
                                     }, parent.getName());
                                 }
-                                //if (param.getPeriod() != undefined && periodHasChanged) {
-                                //    addDataPointWithSerie({
-                                //        x: new Date(),
-                                //        y: parseFloat(param.getPeriod())
-                                //    }, parent.getName() + "_Period");
-                                //}
+                                if (param.getPeriod() != undefined && periodHasChanged && dataSeries[device.getName()+"_Period"].dataPoints.length >0) {
+                                    // the period of the parameter has changed => add the period to the graph data set
+                                    // /!\\ if the graph period doesn't exist the graph is not created
+                                    addDataPointWithSerie({
+                                        x: new Date(),
+                                        y: parseFloat(param.getPeriod())
+                                    }, parent.getName() + "_Period");
+                                }
                             });
                         }); // end of listen
                         // add old data to the chart
-                        param.jump(1428824570000).then(function (paramTimed){
+                        param.jump(1428997126000).then(function (paramTimed){
                             param.parent().then(function (parent){
-                                //addPreviousValuesWithPeriod(paramTimed, parent.getName());
-                                addPreviousValues(paramTimed, parent.getName());
+                                addPreviousValuesWithPeriod(paramTimed, parent.getName());
                             });
                         });
                     }
@@ -174,10 +177,9 @@ function getDataFromKubi(){
     });
 }
 function addPreviousValues(paramTimed, deviceName){
-    //if((paramTimed.now() > 1428599097936) && (paramTimed.getValue()!= undefined)) {
-    if((paramTimed.now() > 1428773690000) && (paramTimed.getValue()!= undefined)) {
+    if((paramTimed.now() > 1428599097000) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-        paramTimed.jump(paramTimed.now() - 50000).then(function (param1){
+        paramTimed.jump(paramTimed.now() - 60000).then(function (param1){
             addPreviousValues(param1, deviceName);
         });
     }
@@ -203,7 +205,7 @@ function addPreviousValuesWithPeriod(paramTimed, deviceName){
         if(paramTimed.getPeriod()!= undefined){
             dataSeries[deviceName+"_Period"].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
         }
-        paramTimed.jump(paramTimed.now() - 95000).then(function (param1){
+        paramTimed.jump(paramTimed.now() - 500000).then(function (param1){
             addPreviousValuesWithPeriod(param1, deviceName);
         });
     }
@@ -218,13 +220,15 @@ function addPreviousValuesWithPeriod(paramTimed, deviceName){
         dataSeries[deviceName].dataPoints = sortedDataPoints;
         dataChart.push(dataSeries[deviceName]);
 
-        var unsortedPeriodDataPoints  = dataSeries[deviceName+"_Period"].dataPoints;
-        var sortedPeriodDataPoints = [];
-        for(var i=0;i<unsortedPeriodDataPoints.length;i++){
-            sortedPeriodDataPoints.push(unsortedPeriodDataPoints.slice(unsortedPeriodDataPoints.length-i-1,unsortedPeriodDataPoints.length-i)[0])
+        if(dataSeries[deviceName+"_Period"] != undefined && dataSeries[deviceName+"_Period"].dataPoints.length != 0) {
+            var unsortedPeriodDataPoints = dataSeries[deviceName + "_Period"].dataPoints;
+            var sortedPeriodDataPoints = [];
+            for (var i = 0; i < unsortedPeriodDataPoints.length; i++) {
+                sortedPeriodDataPoints.push(unsortedPeriodDataPoints.slice(unsortedPeriodDataPoints.length - i - 1, unsortedPeriodDataPoints.length - i)[0])
+            }
+            dataSeries[deviceName + "_Period"].dataPoints = sortedPeriodDataPoints;
+            dataChart.push(dataSeries[deviceName + "_Period"]);
         }
-        dataSeries[deviceName+"_Period"].dataPoints = sortedPeriodDataPoints;
-        dataChart.push(dataSeries[deviceName+"_Period"]);
 
         chart.render();
     }

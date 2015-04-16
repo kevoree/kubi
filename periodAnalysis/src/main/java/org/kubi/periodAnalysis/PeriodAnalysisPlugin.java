@@ -1,22 +1,20 @@
 package org.kubi.periodAnalysis;
 
 import org.kevoree.brain.JavaPeriodCalculatorFFT;
-import org.kevoree.brain.JavaPeriodCalculatorPearson;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
-import org.kevoree.modeling.api.KOperation;
-import org.kevoree.modeling.api.meta.Meta;
 import org.kubi.*;
 import org.kubi.api.Plugin;
 import org.kubi.meta.MetaDevice;
 import org.kubi.meta.MetaEcosystem;
-import org.kubi.meta.MetaFunction;
 import org.kubi.meta.MetaParameter;
 
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by duke on 20/03/15.
@@ -26,6 +24,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
     ScheduledExecutorService service = null;
 
     private KubiModel model;
+    private final Lock lock = new ReentrantLock();
 
     @Override
     public void start(KubiModel model) {
@@ -61,7 +60,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length > 0){
-                            getPreviousValues((Parameter) kObjects[0], 1050, 1428892490000L, 50000);
+                            getPreviousValues((Parameter) kObjects[0], 7600, 1428997126000L, 50000);
                         }
 
                     }
@@ -84,10 +83,6 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
         getPreviousValues(res, parameter, numberOfValues, time, periodOfGets);
     }
 
-    private void getPreviousValues(Parameter parameter, int numberOfValues) {
-        getPreviousValues(parameter, numberOfValues, System.currentTimeMillis(), 1000);
-    }
-
     private void getPreviousValues(List<Double> result, Parameter parameter, int numberOfValues, long time, long periodOfGets) {
         parameter.jump(time).then(new Callback<KObject>() {
             @Override
@@ -95,33 +90,36 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
                 Parameter p = (Parameter) kObject;
                 if (p!=null && numberOfValues>0 && p.getValue()!=null){
                     result.add(Double.parseDouble(p.getValue()));
-                    getPreviousValues(result, p, numberOfValues - 1, time - periodOfGets, periodOfGets);
+
+                    List<Double> list = new ArrayList<Double>(result);
+                    getPreviousValues(list, p, numberOfValues - 1, time - periodOfGets, periodOfGets);
                 }
-                else{
-                    calculatePeriod(result.toArray(), p);
+                int frequencyOfCalculattionOfThePeriod = 100;
+                if(result.size()>=1300 && numberOfValues%frequencyOfCalculattionOfThePeriod == 0 && numberOfValues != 0){
+//                if(numberOfValues%500 == 0 && numberOfValues != 0){
+//                else{
+                        calculatePeriod(result.toArray(), p);
                 }
             }
         });
     }
-int i=0;
+
     private void calculatePeriod(Object[] result, Parameter parameter) {
-        int size = result.length%2==0 ? result.length : result.length-1 ;
+//        int size = result.length%2==0 ? result.length : result.length-1 ;
+        int size = 1300 ;
         double[] observationsDouble = new double[size];
         for (int i = 0; i<size; i++){
-            observationsDouble[i] = Double.parseDouble(result[i] + "");
+            observationsDouble[i] = Double.parseDouble(result[i + result.length - size] + "");
         }
-        System.out.println("Length-----------" + observationsDouble.length);
-        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
-        System.out.println(JavaPeriodCalculatorFFT.getAllPeriods(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4));
-        parameter.setPeriod(period + "");
-
-        System.out.println("FFT........." + period + "______" + (new Date(parameter.now())).toString());
-
-        if(i%10==0) {
-            System.out.println(i);
-            i++;
-            System.out.println("Pearson........." + JavaPeriodCalculatorPearson.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4) + "______" + (new Date(parameter.now())).toString());
+//        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
+//        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
+        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 150, 700);
+        if(parameter.getPeriod() == null) {
+            parameter.setPeriod(period + "");
+            model.save();
+            System.out.println("Length-_----------" + observationsDouble.length + "\tFFT........." + period + "______" + parameter.now());
         }
+
 
     }
 }

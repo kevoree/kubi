@@ -125,6 +125,7 @@ function getDataFromKubi(){
     var groupListenerID = kubiModel.nextGroup();
 
     currentView.getRoot().then(function (root) {
+
         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).done().then(function (devices){
             var d;
             for(d = 0; d< devices.length; d++)

@@ -60,37 +60,39 @@ function initGraph() {
         {
             width: 1000,
             height: 500,
-            backgroundColor: "#708090",
+            backgroundColor: "#F0F0F4",
             theme: "theme3",
+            colorSet: "colorSet2",
+            interactivityEnabled: true,
             zoomEnabled: true,
             animationEnabled: true,
             title: {
                 text: "Graph of the electric consumption of the fridge of the coffee place depending of the time(hour)",
-                fontColor: "white"
+                fontColor: "#121212"
             },
             axisX: {
                 valueFormatString: "HH:mm:ss",
                 interval: 21600,
                 intervalType: "second",
-                labelFontColor: "#white",
-                lineColor: "white",
+                labelFontColor: "black",
+                lineColor: "black",
                 lineThickness: 1,
-                tickColor: "white",
+                tickColor: "black",
                 tickLength: 5,
                 tickThickness: 1,
-                gridColor: "white",
+                gridColor: "grey",
                 gridThickness: 1,
                 labelAngle: -30
             },
             axisY: {
                 title: "Electric consumption(kW) of the fridge ",
-                titleFontColor: "white",
-                lineColor: "white",
+                titleFontColor: "black",
+                lineColor: "black",
                 lineThickness: 1,
-                gridColor: "white",
+                gridColor: "grey",
                 gridThickness: 1,
-                labelFontColor: "white",
-                tickColor: "white",
+                labelFontColor: "black",
+                tickColor: "black",
                 tickLength: 5,
                 tickThickness: 1,
                 includeZero:false
@@ -99,7 +101,7 @@ function initGraph() {
                 verticalAlign: "bottom",
                 horizontalAlign: "center",
                 fontSize: 16,
-                fontColor: "white",
+                fontColor: "black",
                 cursor: "pointer",
                 itemclick: function (e) {
                     if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
@@ -165,7 +167,7 @@ function getDataFromKubi(){
                             });
                         }); // end of listen
                         // add old data to the chart
-                        param.jump(1428997126000).then(function (paramTimed){
+                        param.jump(endTime).then(function (paramTimed){
                             param.parent().then(function (parent){
                                 addPreviousValuesWithPeriod(paramTimed, parent.getName());
                             });
@@ -176,10 +178,14 @@ function getDataFromKubi(){
         });
     });
 }
+var endTime = 1428997126000;
+var startTime = 1428599097936;
+var stepTime = 90000;
+
 function addPreviousValues(paramTimed, deviceName){
-    if((paramTimed.now() > 1428599097000) && (paramTimed.getValue()!= undefined)) {
+    if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-        paramTimed.jump(paramTimed.now() - 60000).then(function (param1){
+        paramTimed.jump(paramTimed.now() - stepTime).then(function (param1){
             addPreviousValues(param1, deviceName);
         });
     }
@@ -200,12 +206,12 @@ function addPreviousValues(paramTimed, deviceName){
  * Add some previous values and the periods calculated in the Java Plugin from these values
  */
 function addPreviousValuesWithPeriod(paramTimed, deviceName){
-    if((paramTimed.now() > 1428599097936) && (paramTimed.getValue()!= undefined)) {
+    if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         if(paramTimed.getPeriod()!= undefined){
             dataSeries[deviceName+"_Period"].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
         }
-        paramTimed.jump(paramTimed.now() - 500000).then(function (param1){
+        paramTimed.jump(paramTimed.now() - stepTime).then(function (param1){
             addPreviousValuesWithPeriod(param1, deviceName);
         });
     }

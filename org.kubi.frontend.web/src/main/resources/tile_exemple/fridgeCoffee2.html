@@ -6,12 +6,12 @@
     <title>SmartHome : tile style</title>
 
     <link rel="stylesheet" href="css/demo-styles.css" />
+    <script src="../canvasjs.min.js"></script>
     <script src="js/modernizr-1.5.min.js"></script>
 
     <script src="../nunjucks.js"></script>
     <script src="../org.kubi.model-all.js"></script>
     <script src="../org.kevoree.modeling.database.websocket.WebSocket.js"></script>
-    <script src="../canvasjs.min.js"></script>
 </head>
 
 <body>
@@ -24,7 +24,7 @@
     <div class="s-page random-restored-page">
             <h2 class="page-title">Economic move</h2>
             <div class="close-button s-close-button">x</div>
-            <div id="chartContainer"></div>
+            <div class="openpage" id="chartContainer"></div>
     </div>
     <div class="s-page custom-page">
         <h2 class="page-title">Thank You!</h2>
@@ -63,14 +63,9 @@
                                 <li>Air quality : 80%  (+6  % )</li>
                             </ul>
                         </div>
-                        <p class="tile-caption caption-left">Slide-out Caption from left</p>
+                        <p class="tile-caption caption-left">More details...</p>
                     </figure>
                 </li>
-                <!--
-              <li class="tile tile-small last tile-3" data-page-type="r-page" data-page-name="random-r-page">
-                <p class="icon-calendar-alt-fill"></p>
-              </li>
-                -->
                 <li class="tile tile-2xbig tile-2" data-page-type="r-page" data-page-name="random-r-page">
                     <div>
                         <p>Comfortable move : close the window in 2 hours.</p>

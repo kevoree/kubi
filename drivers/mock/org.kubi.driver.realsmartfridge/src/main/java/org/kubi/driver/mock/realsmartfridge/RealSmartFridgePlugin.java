@@ -89,8 +89,8 @@ public class RealSmartFridgePlugin implements Plugin, Runnable {
                                                             public void on(KObject kObject) {
                                                                 if (kObject != null) {
                                                                     try {
-                                                                        ((Parameter) kObject).setValue("" + (Double.parseDouble(data[2])>=0.1 ? 0.2 : 0));
-//                                                                        ((Parameter) kObject).setValue("" + (Double.parseDouble(data[2])));
+//                                                                        ((Parameter) kObject).setValue("" + (Double.parseDouble(data[2])>=0.1 ? 0.2 : 0));
+                                                                        ((Parameter) kObject).setValue("" + (Double.parseDouble(data[2])));
                                                                     } catch (Exception e1) {
                                                                         System.err.println(data[2]);
                                                                     }

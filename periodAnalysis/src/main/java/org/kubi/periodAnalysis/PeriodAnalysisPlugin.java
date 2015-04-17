@@ -13,18 +13,12 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Created by duke on 20/03/15.
- */
 public class PeriodAnalysisPlugin implements Plugin, Runnable {
 
     ScheduledExecutorService service = null;
 
     private KubiModel model;
-    private final Lock lock = new ReentrantLock();
 
     @Override
     public void start(KubiModel model) {
@@ -115,11 +109,9 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
         int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 150, 700);
         if(parameter.getPeriod() == null) {
-            parameter.setPeriod(period + "");
+            parameter.setPeriod(((double)period)/2000 + ""); // TODO : division par 2000 inutile (= good pour alligner les courbes sur le meme axe / meme ordre de grandeur).
             model.save();
             System.out.println("Length-_----------" + observationsDouble.length + "\tFFT........." + period + "______" + parameter.now());
         }
-
-
     }
 }

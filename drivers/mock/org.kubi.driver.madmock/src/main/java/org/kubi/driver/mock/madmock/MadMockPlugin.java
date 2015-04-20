@@ -5,7 +5,9 @@ import org.kevoree.modeling.api.KObject;
 import org.kubi.Device;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
-import org.kubi.api.Plugin;
+import org.kubi.Technology;
+import org.kubi.api.KubiKernel;
+import org.kubi.api.KubiPlugin;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -15,22 +17,21 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by duke on 20/03/15.
  */
-public class MadMockPlugin implements Plugin, Runnable {
+public class MadMockPlugin implements KubiPlugin, Runnable {
 
     ScheduledExecutorService service = null;
 
     private KubiModel model;
 
-    private Ecosystem madEchoSystem;
+    private Technology technology;
 
     @Override
-    public void start(KubiModel model) {
-        this.model = model;
+    public void start(KubiKernel kernel) {
+        System.out.println("MadMock Start ... ");
+        this.model = kernel.model();
         service = Executors.newScheduledThreadPool(1);
-        System.out.println("Kubi Mock Start ... ");
-        madEchoSystem = model.universe(0).time(System.currentTimeMillis()).createEcosystem();
-        madEchoSystem.setName("MadMockEcoSystem");
-        model.universe(0).time(System.currentTimeMillis()).setRoot(madEchoSystem);
+        technology = model.universe(kernel.currentUniverse()).time(System.currentTimeMillis()).createTechnology();
+        technology.setName("MadTechnology");
         model.save();
         service.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
     }
@@ -44,19 +45,19 @@ public class MadMockPlugin implements Plugin, Runnable {
     public void run() {
         //add devices or change values
         Random rand = new Random();
-        madEchoSystem.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
+        technology.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
             @Override
             public void on(KObject kObject) {
-                Ecosystem newEcoSystem = (Ecosystem) kObject;
+                Technology currentTechno = (Technology) kObject;
                 float addDeviceProba = rand.nextFloat();
                 if (addDeviceProba < 0.3) {
                     String deviceName = "Device_" + rand.nextInt(1000);
                     System.err.println("MadMock add a device ... named:" + deviceName);
-                    Device newDevice = newEcoSystem.view().createDevice();
+                    Device newDevice = currentTechno.view().createDevice();
                     newDevice.setName(deviceName);
-                    madEchoSystem.addDevices(newDevice);
+                    currentTechno.addDevices(newDevice);
                 }
-                newEcoSystem.getDevices().then(new Callback<Device[]>() {
+                currentTechno.getDevices().then(new Callback<Device[]>() {
                     @Override
                     public void on(Device[] devices) {
                         for (Device device : devices) {

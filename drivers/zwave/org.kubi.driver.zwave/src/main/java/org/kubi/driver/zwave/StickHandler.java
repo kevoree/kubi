@@ -28,29 +28,33 @@ import java.util.concurrent.Executors;
 /**
  * Created by gregory.nain on 18/02/15.
  */
-public class KeyHandler {
-
-    public static final String TECHNOLOGY = "ZWave";
+public class StickHandler {
 
     private ZWaveKey _key;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public void set_homeId(String _homeId) {
+        this._homeId = _homeId;
+    }
+
     private String _homeId;
     private KubiModel kubiModel;
-    private ZWaveProductsStoreModel productStore;
+    //private ZWaveProductsStoreModel productStore;
 
-    public KeyHandler(ZWaveKey key, KubiModel kubiModel, ZWaveProductsStoreModel productStore) {
+    public String homeId() {
+        return _homeId;
+    }
+
+    public StickHandler(ZWaveKey key, KubiModel kubiModel, StickPhysMapper mapper) {
         this._key = key;
         this.kubiModel = kubiModel;
-        this.productStore = productStore;
-
-        checkOrAddTechnology();
-
+        // this.productStore = productStore;
         _key.registerApplicationNodeInformationCallback(new ApplicationNodeInfoCallback(this));
         _key.registerApplicationCommandCallback(applicationCommandCallback);
         _key.addZWaveStateListener(new ZWaveStateListener() {
             public void stateChanged(ZWaveState zWaveState) {
                 if (zWaveState == ZWaveState.READY) {
-                    executor.execute(new UpdateGatewayTask(KeyHandler.this));
+                    executor.execute(new UpdateGatewayTask(StickHandler.this, mapper));
                 }
             }
         });
@@ -62,16 +66,6 @@ public class KeyHandler {
         _key.disconnect();
     }
 
-
-    public void setHomeId(String homeId) {
-        this._homeId = homeId;
-        executor.execute(launchDiscovery);
-    }
-
-    public String getHomeId() {
-        return _homeId;
-    }
-
     public ZWaveKey getKey() {
         return _key;
     }
@@ -80,30 +74,11 @@ public class KeyHandler {
         return kubiModel;
     }
 
-    public ZWaveProductsStoreModel getZwaveStorel() {
-        return productStore;
+    public void discoverDevices() {
+        executor.submit(launchDiscovery);
     }
 
-    private void checkOrAddTechnology() {
-        final KubiUniverse universe = kubiModel.universe(0);
-        final KubiView factory = universe.time(0);
-        factory.select("/technologies[name=" + TECHNOLOGY + "]").then(new Callback<KObject[]>() {
-            public void on(KObject[] kObjects) {
-                if (kObjects.length == 0) {
-                    factory.select("/").then(new Callback<KObject[]>() {
-                        public void on(KObject[] kObjects) {
-                            Log.trace("Adding Technology ZWave");
-                            Ecosystem kubiEcosystem = (Ecosystem) kObjects[0];
-                            kubiEcosystem.addTechnologies(factory.createTechnology().setName(TECHNOLOGY));
-                            kubiModel.save().then(StandardCallback.DISPLAY_ERROR);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-
+    //TODO, maybe do it periodically
     private Runnable launchDiscovery = new Runnable() {
         @Override
         public void run() {
@@ -132,7 +107,6 @@ public class KeyHandler {
                 }
             });
             _key.submitCommand(getInitialDataCommand);
-
         }
     };
 
@@ -145,12 +119,12 @@ public class KeyHandler {
             if (zw_applicationCommandHandler instanceof MultilevelSensorCommandClass) {
                 MultilevelSensorCommandClass valueUpdate = (MultilevelSensorCommandClass) zw_applicationCommandHandler;
                 float kW = (float) (valueUpdate.getValue() / 3412.142);
-                factory.select("/technologies[name=" + TECHNOLOGY + "]/devices[id=" + valueUpdate.getSourceNode() + "]/parameters[name=" + zw_applicationCommandHandler.getCommandClass().getName() + "]").then(new Callback<KObject[]>() {
+                factory.select("/technologies[name=" + ZWavePlugin.TECHNOLOGY + "]/devices[id=" + _homeId + "_" + valueUpdate.getSourceNode() + "]/stateParameters[name=" + zw_applicationCommandHandler.getCommandClass().getName() + "]").then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if (kObjects != null && kObjects.length > 0) {
-                            Parameter param = (Parameter) kObjects[0];
-                            //Log.trace("Parameter Resolved: {}", param);
+                            StateParameter param = (StateParameter) kObjects[0];
+                            Log.trace("Parameter Resolved: {}", param);
                             param.setValue("" + kW);
                             kubiModel.save().then(StandardCallback.DISPLAY_ERROR);
                         }
@@ -158,11 +132,11 @@ public class KeyHandler {
                 });
             } else if (zw_applicationCommandHandler instanceof SwitchBinaryCommandClass) {
                 SwitchBinaryCommandClass valueUpdate = (SwitchBinaryCommandClass) zw_applicationCommandHandler;
-                factory.select("/technologies[name=" + TECHNOLOGY + "]/devices[id=" + valueUpdate.getSourceNode() + "]/parameters[name=" + zw_applicationCommandHandler.getCommandClass().getName() + "]").then(new Callback<KObject[]>() {
+                factory.select("/technologies[name=" + ZWavePlugin.TECHNOLOGY + "]/devices[id=" + _homeId + "_" + valueUpdate.getSourceNode() + "]/actionParameters[name=" + zw_applicationCommandHandler.getCommandClass().getName() + "]").then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if (kObjects != null && kObjects.length > 0) {
-                            Parameter param = (Parameter) kObjects[0];
+                            StateParameter param = (StateParameter) kObjects[0];
                             param.setValue(Boolean.toString(valueUpdate.isOn()));
                             kubiModel.save().then(StandardCallback.DISPLAY_ERROR);
                         }

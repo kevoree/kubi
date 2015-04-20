@@ -42,6 +42,13 @@
             <version>${kmf.version}</version>
         </dependency>
 
+
+        <!-- BugsMain -->
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.bugsMain</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Comment under -->
         <!-- madmock
         <dependency>
@@ -90,6 +97,8 @@
             <artifactId>org.kubi.periodAnalysis</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+
     </dependencies>
 
 </project>

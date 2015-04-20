@@ -1,8 +1,13 @@
 package org.kubi.periodAnalysis;
 
 import org.kevoree.brain.JavaPeriodCalculatorFFT;
+import org.kevoree.brain.JavaPeriodCalculatorPearson;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.api.abs.AbstractKObject;
+import org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation;
+import org.kevoree.modeling.api.extrapolation.Extrapolation;
+import org.kevoree.modeling.api.meta.MetaAttribute;
 import org.kubi.*;
 import org.kubi.api.Plugin;
 import org.kubi.meta.MetaDevice;
@@ -53,7 +58,7 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
                         .done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
-                        if(kObjects.length > 0){
+                        if (kObjects.length > 0) {
                             getPreviousValues((Parameter) kObjects[0], 7600, 1428997126000L, 50000);
                         }
 
@@ -66,10 +71,11 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
     /**
      * Get an array with the numberOfValues last values of the Parameter parameter
      * from the time time jumping backward in the spaceTime of periodOfGets milliseconds
+     *
      * @param parameter
      * @param numberOfValues the number of values that you still have to get
-     * @param time the time of the next get of value
-     * @param periodOfGets time between the get of data (getDataAt(x) -> getDataAt(x-periodOfGets))
+     * @param time           the time of the next get of value
+     * @param periodOfGets   time between the get of data (getDataAt(x) -> getDataAt(x-periodOfGets))
      * @return
      */
     public void getPreviousValues(Parameter parameter, int numberOfValues, long time, long periodOfGets) {
@@ -82,17 +88,17 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
             @Override
             public void on(KObject kObject) {
                 Parameter p = (Parameter) kObject;
-                if (p!=null && numberOfValues>0 && p.getValue()!=null){
+                if (p != null && numberOfValues > 0 && p.getValue() != null) {
                     result.add(Double.parseDouble(p.getValue()));
 
                     List<Double> list = new ArrayList<Double>(result);
                     getPreviousValues(list, p, numberOfValues - 1, time - periodOfGets, periodOfGets);
                 }
                 int frequencyOfCalculattionOfThePeriod = 100;
-                if(result.size()>=1300 && numberOfValues%frequencyOfCalculattionOfThePeriod == 0 && numberOfValues != 0){
+                if (result.size() >= 1300 && numberOfValues % frequencyOfCalculattionOfThePeriod == 0 && numberOfValues != 0) {
 //                if(numberOfValues%500 == 0 && numberOfValues != 0){
 //                else{
-                        calculatePeriod(result.toArray(), p);
+                    calculatePeriod(result.toArray(), p);
                 }
             }
         });
@@ -100,16 +106,17 @@ public class PeriodAnalysisPlugin implements Plugin, Runnable {
 
     private void calculatePeriod(Object[] result, Parameter parameter) {
 //        int size = result.length%2==0 ? result.length : result.length-1 ;
-        int size = 1300 ;
+        int size = 1300;
         double[] observationsDouble = new double[size];
-        for (int i = 0; i<size; i++){
+        for (int i = 0; i < size; i++) {
             observationsDouble[i] = Double.parseDouble(result[i + result.length - size] + "");
         }
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
         int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 150, 700);
-        if(parameter.getPeriod() == null) {
-            parameter.setPeriod(((double)period)/2000 + ""); // TODO : division par 2000 inutile (= good pour alligner les courbes sur le meme axe / meme ordre de grandeur).
+        if (parameter.getPeriod() == null) {
+
+            parameter.setPeriod(((double) period) / 2000 + ""); // TODO : division par 2000 inutile (= good pour aligner les courbes sur le meme axe / meme ordre de grandeur).
             model.save();
             System.out.println("Length-_----------" + observationsDouble.length + "\tFFT........." + period + "______" + parameter.now());
         }

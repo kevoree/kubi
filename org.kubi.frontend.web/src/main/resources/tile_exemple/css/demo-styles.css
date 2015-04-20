@@ -128,8 +128,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 }
 .canvasjs-chart-canvas{
     border: dotted #d62728;
-    width: 80% !important;
-    height: auto !important;
 }
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////*/
@@ -648,7 +646,7 @@ header a {
     transition: all .3s ease
 }
 
-.tile div p {
+.tile div p{
     display: table-cell;
     vertical-align: middle;
 }

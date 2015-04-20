@@ -56,6 +56,9 @@
         <!-- Modules with real data -->
         <module>drivers/mock/org.kubi.driver.realsmartfridge</module>
 
+        <!-- Module for bugs detection -->
+        <module>org.kubi.bugsMain</module>
+
 
         <module>periodAnalysis</module>
 

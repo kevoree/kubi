@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>SmartHome : tile style</title>
+
+    <link rel="stylesheet" href="css/demo-styles.css"/>
+    <script src="../canvasjs.min.js"></script>
+    <script src="js/modernizr-1.5.min.js"></script>
+
+    <script src="../nunjucks.js"></script>
+    <script src="../org.kubi.model-all.js"></script>
+    <script src="../org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+</head>
+
+<body>
+<header>
+    <a href="http://wwwfr.uni.lu/snt" class="tutorial-link">Made by the SnT</a>
+    <a href="https://www.post.lu/" class="tutorial-link"> in partnership with Post</a>
+</header>
+<!--===============================Start Demo====================================================-->
+<div class="demo-wrapper">
+    <!-- classnames for the pages should include: 1) type of page 2) page name-->
+
+    <div class="s-page random-restored-page">
+        <h2 class="page-title">Economic move</h2>
+
+        <div class="close-button s-close-button">x</div>
+        <div class="openpage" id="chartContainer"></div>
+    </div>
+
+    <div class="s-page custom-page">
+        <h2 class="page-title">Thank You!</h2>
+
+        <div class="close-button s-close-button">x</div>
+    </div>
+    <div class="r-page random-r-page">
+
+        <div class="page-content">
+            <h2 class="page-title">App Screen</h2>
+
+            <p>Chew iPad power cord chew iPad power cord attack feet chase mice leave dead animals as gifts and stick
+                butt in face chew iPad power cord. Chase mice. Run in circles use lap as chair why must they do that.
+                Intrigued by the shower destroy couch leave hair everywhere sleep on keyboard chew iPad power cord. Use
+                lap as chair. Missing until dinner time stand in front of the computer screen, intently sniff hand. Find
+                something else more interesting. Destroy couch play time so inspect anything brought into the house hate
+                dog burrow under covers. Sleep on keyboard destroy couch so hate dog so hide when guests come over.
+                Chase mice destroy couch lick butt throwup on your pillow use lap as chair yet intrigued by the shower
+                but climb leg. Stare at ceiling make muffins or hunt anything that moves claw drapes. Intently sniff
+                hand intrigued by the shower. Why must they do that. Cat snacks leave dead animals as gifts or inspect
+                anything brought into the house sweet beast so stare at ceiling give attitude. Flop over claw drapes but
+                sun bathe lick butt, and chase mice. Rub face on everything lick butt leave hair everywhere lick butt,
+                missing until dinner time for use lap as chair lick butt. Make muffins leave dead animals as gifts play
+                time. Chew foot intrigued by the shower stare at ceiling inspect anything brought into the house yet
+                hopped up on goofballs.
+
+                Hunt anything that moves intently sniff hand for hunt anything that moves play time. Chew foot climb leg
+                throwup on your pillow so lick butt yet make muffins hate dog. Intrigued by the shower. Intently sniff
+                hand shake treat bag. Cat snacks burrow under covers make muffins but all of a sudden go crazy find
+                something else more interesting. Flop over chase mice. Give attitude. Inspect anything brought into the
+                house. Stick butt in face sun bathe so find something else more interesting and intrigued by the shower.
+                Rub face on everything use lap as chair.
+
+                Under the bed claw drapes chase mice but leave hair everywhere yet make muffins yet claw drapes. Use lap
+                as chair. Find something else more interesting stretch for under the bed. Nap all day intrigued by the
+                shower, hate dog sweet beast intently sniff hand so hate dog nap all day. Swat at dog hide when guests
+                come over and mark territory chase mice for cat snacks. Use lap as chair. Lick butt throwup on your
+                pillow need to chase tail.
+
+                Mark territory. Stick butt in face shake treat bag yet hunt anything that moves, yet hopped up on
+                goofballs yet stare at ceiling under the bed. Give attitude chase imaginary bugs stretch so hunt
+                anything that moves so hide when guests come over but intrigued by the shower find something else more
+                interesting. Make muffins behind the couch for chew foot. Sweet beast flop over but throwup on your
+                pillow. Intently sniff hand use lap as chair and missing until dinner time and chase imaginary bugs.
+            </p>
+        </div>
+
+        <div class="close-button r-close-button">x</div>
+    </div>
+    <!--each tile should specify what page type it opens (to determine which animation) and the corresponding page name it should open-->
+    <div class="dashboard clearfix">
+        <ul class="tiles">
+            <div class="col1 clearfix">
+                <li class="tile tile-big tile-1 slideTextUp">
+                    <a href="index.html" class="tutorial-link">
+                        <div><p>I don't want to do anything. I'm the one in charge !</p></div>
+                        <div><p>Close</p></div>
+                    </a>
+                </li>
+                <li class="tile tile-2xbig tile-2" data-page-type="s-page" data-page-name="random-restored-page">
+                    <figure>
+                        <div>
+                            <p>Economic move : close the window in 10 minutes.</p>
+
+                            <ul id="ecosystem"></ul>
+                            <script id="ecosystem-template" type="text/x-handlebars-template">
+                                {% asyncEach device in ecosystem.devices %}
+                                    {% asyncEach param in device.parameters %}
+                                        <li>
+                                            <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
+                                                Value : {{param.value}} -
+                                                Period :{{param.period}}
+                                            </p>
+                                        </li>
+                                    {% endeach %}
+                                {% endeach %}
+                            </script>
+                        </div>
+                        <p class="tile-caption caption-left">More details...</p>
+                    </figure>
+                </li>
+
+                <li class="tile tile-2xbig tile-2" data-page-type="r-page" data-page-name="random-r-page">
+                    <div>
+                        <p>Comfortable move : close the window in 2 hours.</p>
+                        <ul>
+                            <li>Temperature : 20°C (-0.5°C)</li>
+                            <li>Air quality : 80% (+6 % )</li>
+                        </ul>
+                    </div>
+                </li>
+            </div>
+        </ul>
+    </div>
+    <!--end dashboard-->
+</div>
+<!--====================================end demo wrapper================================================-->
+<script src="js/jquery-1.8.2.min.js"></script>
+<script src="js/scripts.js"></script>
+<script src="js/kubi_.jscript2.js"></script>
+
+
+</body>
+</html>

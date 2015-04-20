@@ -1,6 +1,5 @@
 package org.kubi.driver.mock.realsmartfridge;
 
-import com.sun.tools.classfile.StackMapTable_attribute;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
 import org.kubi.*;

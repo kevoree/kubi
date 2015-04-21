@@ -52,6 +52,7 @@ function init() {
             initGraph();
             getDataFromKubi();
         }
+        sliderInit();
     });
 }
 
@@ -186,10 +187,13 @@ function getDataFromKubi(){
                                 }
                             });
                         }); // end of listen
+                        var endTime = 1428997126000;
                         // add old data to the chart
                         param.jump(endTime).then(function (paramTimed){
                             param.parent().then(function (parent){
-                                addPreviousValuesWithPeriod(paramTimed, parent.getName());
+                                var startTime = 1428599097936;
+                                var stepTime = 90000;
+                                addPreviousValuesWithPeriod(paramTimed, parent.getName(), startTime ,stepTime);
                             });
                         });
                     }
@@ -198,15 +202,12 @@ function getDataFromKubi(){
         });
     });
 }
-var endTime = 1428997126000;
-var startTime = 1428599097936;
-var stepTime = 90000;
 
-function addPreviousValues(paramTimed, deviceName){
+function addPreviousValues(paramTimed, deviceName,startTime, stepTime){
     if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         paramTimed.jump(paramTimed.now() - stepTime).then(function (param1){
-            addPreviousValues(param1, deviceName);
+            addPreviousValues(param1, deviceName, startTime, stepTime);
         });
     }
     else{
@@ -225,14 +226,14 @@ function addPreviousValues(paramTimed, deviceName){
 /**
  * Add some previous values and the periods calculated in the Java Plugin from these values
  */
-function addPreviousValuesWithPeriod(paramTimed, deviceName){
+function addPreviousValuesWithPeriod(paramTimed, deviceName, startTime, stepTime){
     if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         if(paramTimed.getPeriod()!= undefined){
             dataSeries[deviceName+"_Period"].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
         }
         paramTimed.jump(paramTimed.now() - stepTime).then(function (param1){
-            addPreviousValuesWithPeriod(param1, deviceName);
+            addPreviousValuesWithPeriod(param1, deviceName, startTime, stepTime);
         });
     }
     else{
@@ -281,4 +282,44 @@ function addDataPointWithSerie(point, serie) {
         }
     }
     console.error("Bad series name (=",serie ,") : device not in the data set of the chart.");
+}
+
+
+/**
+ * Get the value of the parameter named name of the device plug at the temps
+ * @param time
+ * @returns
+ */
+function getDeviceValue(time){
+    var currentView = kubiModel.universe(universeNumber).time(time*1000);
+    currentView.getRoot().then(function(root){
+        if(root!= null){
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "plug")
+                            .traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name")
+                            .done().then(function (kObecjts){
+               if(kObecjts.length >0){
+                   var res = kObecjts[0].getValue();
+                   $("#valDevice").html(res == undefined?"null":res);
+               }
+            });
+        }
+    })
+}
+
+
+
+function sliderInit() {
+    $("#update").click(function () {
+        var choosenValue = $("#seekTo").val();
+        $("#val").html(choosenValue);
+        getDeviceValue(choosenValue);
+    });
+
+    $("#slider").change(function(){
+        var value = $("#slider").val();
+        $("#val").html(value);
+        $("#seekTo").html(value);
+        getDeviceValue(value);
+    });
+
 }

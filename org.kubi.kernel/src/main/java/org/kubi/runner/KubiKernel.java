@@ -106,4 +106,7 @@ public class KubiKernel {
         }
     }
 
+    public KubiModel getKubiModel() {
+        return kubiModel;
+    }
 }

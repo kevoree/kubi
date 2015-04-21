@@ -130,6 +130,35 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     border: dotted #d62728;
 }
 
+
+#mapDiv {
+    padding:0;
+    margin:0;
+}
+
+#mapDiv {
+    position: relative;
+}
+
+#bottomPanel {
+    left: 50%;
+    margin: 0 auto;
+    margin-left: -500px;
+    position: absolute;
+    bottom: 2.5em;
+}
+
+#timeInfo{
+    border-radius: 4px;
+    border: solid 2px #ccc;
+    background-color: #fff;
+    display: block;
+    padding: 5px;
+    position: relative;
+    text-align: center;
+    width: 1000px;
+    z-index: 99;
+}
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 .slidePageInFromLeft {

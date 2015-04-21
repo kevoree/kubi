@@ -52,6 +52,7 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                     device.addParameters(kv.createParameter().setName("name"));
                     e.addDevices(device);
 
+
                     /*
                      * The device deviceVirtual is the device containing the peiord calculated by the FFT algorithm
                      * The value at a time T is the period calculated between T-x and T+x (in the middle of the segment).
@@ -62,49 +63,13 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                     e.addDevices(deviceVirtual);
                     // KubiUniverse kuparallele = ku.diverge();
 
-                    final PolynomialLaw polynomialLaw = new PolynomialLaw(0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353);
-                    final long start = System.currentTimeMillis();
-                    Thread t = new Thread(new Runnable() {
+                    device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
                         @Override
-                        public void run() {
-                            while (true) {
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e1) {
-                                    e1.printStackTrace();
-                                }
-                                //System.err.println("Simulate modification...");
-                                device.traversal().traverse(MetaDevice.REF_PARAMETERS).withAttribute(MetaParameter.ATT_NAME, "name").done().then(new Callback<KObject[]>() {
-                                    @Override
-                                    public void on(KObject[] kObjects) {
-                                        if (kObjects.length != 0) {
-                                            Parameter parameter = ((Parameter) kObjects[0]);
-                                            parameter.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
-                                                @Override
-                                                public void on(KObject kObject) {
-                                                    ((Parameter) kObject).setValue(polynomialLaw.evaluate(Double.parseDouble(((System.currentTimeMillis() - start) / 1000) % 11 + "")) + "");
-                                                    model.save();
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
-                                //device2.setVersion(System.currentTimeMillis() + "");
-                                //km.save();
-                            }
-                        }
-                    });
-                    t.start();
-
-
-                    model.setOperation(MetaFunction.OP_EXEC, new KOperation() {
-                        @Override
-                        public void on(KObject source, Object[] params, Callback<Object> result) {
-                            if (((Function) source).getName().equals("sayEcho")) {
-                                result.on("banane");
-                            } else {
-                                result.on(Arrays.asList(params));
-                            }
+                        public void on(KObject[] kObjects) {
+                            Parameter parameter = (Parameter) kObjects[0];
+                            // the getter of the parameter return values following the PolynomialExtrapolation
+                            parameter.metaClass().attribute(parameter.getName()).setExtrapolation(new PolynomialExtrapolation());
+                            model.save();
                         }
                     });
                     kv.setRoot(e).then(new Callback<Throwable>() {
@@ -128,5 +93,9 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                 }
             }
         });
+    }
+
+    public KubiModel getModel() {
+        return model;
     }
 }

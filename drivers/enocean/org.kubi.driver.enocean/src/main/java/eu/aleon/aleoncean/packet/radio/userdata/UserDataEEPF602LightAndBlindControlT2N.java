@@ -26,7 +26,7 @@ import eu.aleon.aleoncean.values.RockerSwitchButton;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public abstract class UserDataEEPF602LightAndBlindControlT2N extends UserDataRPS {
 

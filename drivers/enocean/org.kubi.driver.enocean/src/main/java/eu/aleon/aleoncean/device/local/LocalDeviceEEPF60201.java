@@ -22,7 +22,7 @@ import eu.aleon.aleoncean.rxtx.ESP3Connector;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class LocalDeviceEEPF60201 extends DeviceEEPF60201 implements LocalDevice {
 

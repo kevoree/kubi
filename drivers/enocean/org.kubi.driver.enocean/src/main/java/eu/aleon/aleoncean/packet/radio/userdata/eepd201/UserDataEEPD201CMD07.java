@@ -20,7 +20,7 @@ import eu.aleon.aleoncean.util.CalculationUtil;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPD201CMD07 extends UserDataEEPD201 {
 

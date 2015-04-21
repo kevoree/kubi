@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class DeviceParameterUpdatedSupport {
 
@@ -85,9 +85,7 @@ public class DeviceParameterUpdatedSupport {
         if (fireChangesOnly
             && ((oldValue == null && newValue == null)
                 || (oldValue != null && oldValue.equals(newValue)))) {
-
-            //LOGGER.debug("Do not fire parameter updated: oldValue: {}, newValue: {}, equals: {}",
-            //             oldValue, newValue, oldValue == null ? "--" : oldValue.equals(newValue));
+            LOGGER.debug("Do not fire parameter updated: oldValue: {}, newValue: {}, equals: {}"+oldValue, newValue, oldValue == null ? "--" : oldValue.equals(newValue));
             return;
         }
 

@@ -23,7 +23,7 @@ package eu.aleon.aleoncean.values;
  * Perhaps a better EEP will be introduced used later, that could support to differ LEFT or RIGHT.
  * Till then, we do not introduce this values (could be added later, too).
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public enum WindowHandlePosition {
 

@@ -21,7 +21,7 @@ import eu.aleon.aleoncean.packet.RadioPacket;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public interface Device extends Comparable<Device> {
 
@@ -48,7 +48,7 @@ public interface Device extends Comparable<Device> {
      *
      * @param parameter The parameter that value should be returned.
      * @return Return the value of the device parameter.
-     * @throws eu.aleon.aleoncean.device.IllegalDeviceParameterException if the device parameter could not be handled.
+     * @throws IllegalDeviceParameterException if the device parameter could not be handled.
      */
     public Object getByParameter(final DeviceParameter parameter) throws IllegalDeviceParameterException;
 
@@ -57,7 +57,7 @@ public interface Device extends Comparable<Device> {
      *
      * @param parameter The parameter that value should be changed.
      * @param value     The value that should be set.
-     * @throws eu.aleon.aleoncean.device.IllegalDeviceParameterException if the device parameter could not be handled.
+     * @throws IllegalDeviceParameterException if the device parameter could not be handled.
      */
     public void setByParameter(final DeviceParameter parameter, final Object value) throws IllegalDeviceParameterException;
 

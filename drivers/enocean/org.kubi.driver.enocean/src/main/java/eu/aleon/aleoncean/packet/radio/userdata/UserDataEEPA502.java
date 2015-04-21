@@ -19,7 +19,7 @@ import eu.aleon.aleoncean.values.Unit;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPA502 extends UserData4BS {
 
@@ -93,7 +93,7 @@ public class UserDataEEPA502 extends UserData4BS {
      * Delivering the temperature value, which is current set in the user data.
      *
      * @return The temperature value of the user data.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException
+     * @throws UserDataScaleValueException
      */
     public double getTemperature() throws UserDataScaleValueException {
         return getScaleValue(tempStartDB, tempStartBit, tempEndDB, tempEndBit,
@@ -105,7 +105,7 @@ public class UserDataEEPA502 extends UserData4BS {
      * Set the given temperature value to user data
      *
      * @param temperature The temperature value to be set in the user data
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException
+     * @throws UserDataScaleValueException
      */
     public void setTemperature(final double temperature) throws UserDataScaleValueException {
         final long range = getRangeValue(temperature, tempScaleMin, tempScaleMax,

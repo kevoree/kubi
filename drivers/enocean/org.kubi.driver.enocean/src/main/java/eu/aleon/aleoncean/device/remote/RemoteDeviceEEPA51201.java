@@ -11,7 +11,6 @@ import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
 import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
-import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.radio.RadioPacket4BS;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataEEPA51201;
 import eu.aleon.aleoncean.rxtx.ESP3Connector;
@@ -47,7 +46,7 @@ public class RemoteDeviceEEPA51201 extends StandardDevice implements RemoteDevic
         fireParameterChanged(DeviceParameter.POWER_W, initiation, oldPower, power);
     }
 
-    private void parseRadioPacket4BS(final RadioPacket4BS packet) {
+    protected void parseRadioPacket4BS(final RadioPacket4BS packet) {
         if (packet.isTeachIn()) {
             LOGGER.debug("Ignore teach-in packets.");
             return;
@@ -65,15 +64,6 @@ public class RemoteDeviceEEPA51201 extends StandardDevice implements RemoteDevic
             default:
                 LOGGER.warn("Unhandled unit '{}'.", userData.getUnit());
                 break;
-        }
-    }
-
-    @Override
-    public void parseRadioPacket(final RadioPacket packet) {
-        if (packet instanceof RadioPacket4BS) {
-            parseRadioPacket4BS((RadioPacket4BS) packet);
-        } else {
-            LOGGER.warn("Don't know how to handle radio choice {}", String.format("0x%02X", packet.getChoice()));
         }
     }
 

@@ -64,7 +64,7 @@ public abstract class ByteBuffer {
      * Fetch the next available byte.
      *
      * @return Return the next byte from the buffer.
-     * @throws java.io.EOFException if the buffer is empty.
+     * @throws EOFException if the buffer is empty.
      */
     public abstract byte get() throws EOFException;
 
@@ -123,7 +123,7 @@ public abstract class ByteBuffer {
      * Fetch a four byte value from the buffer.
      *
      * @return Return a 32-bit integer (little-endian) that is read from the buffer.
-     * @throws java.io.EOFException if the buffer does not contain at least four bytes.
+     * @throws EOFException if the buffer does not contain at least four bytes.
      */
     public int getInt() throws EOFException {
         final int b0 = get() & 0xFF;
@@ -137,7 +137,7 @@ public abstract class ByteBuffer {
      * Put a byte into the buffer.
      *
      * @param b The byte that should be inserted into the buffer.
-     * @throws java.nio.BufferOverflowException if the buffer is already full.
+     * @throws BufferOverflowException if the buffer is already full.
      */
     public abstract void put(byte b) throws BufferOverflowException;
 
@@ -196,7 +196,7 @@ public abstract class ByteBuffer {
      * Put a four byte value into the buffer.
      *
      * @param x A 32-bit integer that is put (little-endian) to the buffer.
-     * @throws java.nio.BufferOverflowException if the buffer could not be filled with all four bytes.
+     * @throws BufferOverflowException if the buffer could not be filled with all four bytes.
      */
     public void putInt(final int x) throws BufferOverflowException {
         put((byte) x);

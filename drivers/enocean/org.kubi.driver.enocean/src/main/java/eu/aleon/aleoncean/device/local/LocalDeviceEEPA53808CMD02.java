@@ -16,22 +16,23 @@
 package eu.aleon.aleoncean.device.local;
 
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import eu.aleon.aleoncean.device.DeviceParameter;
 import eu.aleon.aleoncean.device.DeviceParameterUpdatedInitiation;
 import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
 import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
-import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException;
 import eu.aleon.aleoncean.packet.radio.userdata.eepa53808.DimmingRange;
 import eu.aleon.aleoncean.packet.radio.userdata.eepa53808.UserDataEEPA53808CMD02;
 import eu.aleon.aleoncean.rxtx.ESP3Connector;
 
 /**
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class LocalDeviceEEPA53808CMD02 extends StandardDevice implements RemoteDevice {
 
@@ -66,11 +67,6 @@ public class LocalDeviceEEPA53808CMD02 extends StandardDevice implements RemoteD
         final Boolean old = this.on;
         this.on = on;
         fireParameterChanged(DeviceParameter.SWITCH, initiation, old, dimmingValue);
-    }
-
-    @Override
-    public void parseRadioPacket(final RadioPacket packet) {
-        LOGGER.warn("Ey, I should not receive any packets.");
     }
 
     private void sendPacket() {

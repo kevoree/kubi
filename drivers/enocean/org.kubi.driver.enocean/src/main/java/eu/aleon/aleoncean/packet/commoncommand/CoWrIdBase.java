@@ -26,7 +26,7 @@ import eu.aleon.aleoncean.packet.response.UnknownResponseException;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class CoWrIdBase extends CommonCommandPacket {
 

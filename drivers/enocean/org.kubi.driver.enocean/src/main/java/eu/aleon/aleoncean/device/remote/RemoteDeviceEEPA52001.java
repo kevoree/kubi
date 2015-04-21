@@ -26,7 +26,6 @@ import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
 import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
-import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.radio.RadioPacket4BS;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException;
 import eu.aleon.aleoncean.packet.radio.userdata.eepa520.Function;
@@ -67,7 +66,7 @@ import eu.aleon.aleoncean.values.LearnType4BS;
  * - TMP_SEND_VALVE_CLOSED,
  * - TMP_SEND_REDUCED_ENERGY_CONSUMPTION
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class RemoteDeviceEEPA52001 extends StandardDevice implements RemoteDevice {
 
@@ -428,20 +427,11 @@ public class RemoteDeviceEEPA52001 extends StandardDevice implements RemoteDevic
         send(userData);
     }
 
-    private void parseRadioPacket4BS(final RadioPacket4BS packet) {
+    protected void parseRadioPacket4BS(final RadioPacket4BS packet) {
         if (packet.isTeachIn()) {
             handleIncomingTeachIn(packet);
         } else {
             handleIncomingData(packet);
-        }
-    }
-
-    @Override
-    public void parseRadioPacket(final RadioPacket packet) {
-        if (packet instanceof RadioPacket4BS) {
-            parseRadioPacket4BS((RadioPacket4BS) packet);
-        } else {
-            LOGGER.warn("Don't know how to handle radio choice {}", String.format("0x%02X", packet.getChoice()));
         }
     }
 

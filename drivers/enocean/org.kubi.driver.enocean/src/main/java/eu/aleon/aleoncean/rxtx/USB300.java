@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class USB300 implements ESP3Connector {
 
@@ -198,7 +198,7 @@ public class USB300 implements ESP3Connector {
     public ESP3Packet read(final long timeout, final TimeUnit unit) throws ReaderShutdownException {
         if (inputQueue == null) {
             LOGGER.warn("Cancel read: It seems I am not connected.");
-            return null;
+            throw new ReaderShutdownException("Input queue is empty, so it seems I am not connected.");
         }
 
         try {
@@ -209,7 +209,7 @@ public class USB300 implements ESP3Connector {
             }
 
             if (raw.length == 0) {
-                throw new ReaderShutdownException();
+                throw new ReaderShutdownException("Got a message with length 0, this is a shutdown indication.");
             }
 
             return ESP3PacketFactory.fromRaw(raw);

@@ -26,7 +26,6 @@ import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
 import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
-import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.radio.RadioPacketMSC;
 import eu.aleon.aleoncean.packet.radio.RadioPacketUTE;
 import eu.aleon.aleoncean.packet.radio.RadioPacketVLD;
@@ -69,7 +68,7 @@ import eu.aleon.aleoncean.util.ThreadUtil;
  * Tested with device(s):
  * - Telefunken FS1
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class RemoteDeviceEEPD20108 extends StandardDevice implements RemoteDevice {
 
@@ -333,7 +332,13 @@ public class RemoteDeviceEEPD20108 extends StandardDevice implements RemoteDevic
         LOGGER.warn("This command (0x%02X) should be sent to an actuator... Skip it.", userData.getCmd());
     }
 
-    private void parseRadioPacketVLD(final RadioPacketVLD packet) {
+    protected void parseRadioPacketVLD(final RadioPacketVLD packet) {
+        // if (!packet.getSenderId().equals(getAddressRemote())) {
+        // LOGGER.warn("Got a package that sender ID does not fit (senderId={}, expected={}).", packet.getSenderId(),
+        // getAddressRemote());
+        // return;
+        // }
+
         final UserDataEEPD201 userData = UserDataEEPD201Factory.createFromUserDataRaw(packet.getUserDataRaw());
 
         if (userData instanceof UserDataEEPD201CMD01) {
@@ -355,29 +360,18 @@ public class RemoteDeviceEEPD20108 extends StandardDevice implements RemoteDevic
         }
     }
 
-    private void parseRadioPacketUTE(final RadioPacketUTE packet) {
+    protected void parseRadioPacketUTE(final RadioPacketUTE packet) {
+        // if (!packet.getSenderId().equals(getAddressRemote())) {
+        // LOGGER.warn("Got a package that sender ID does not fit (senderId={}, expected={}).", packet.getSenderId(),
+        // getAddressRemote());
+        // return;
+        // }
+
         final UserDataUTE userData = UserDataUTEFactory.createFromUserDataRaw(packet.getUserDataRaw());
         if (userData instanceof UserDataUTEQuery) {
             sendTeachInResponse((UserDataUTEQuery) userData);
         } else {
             LOGGER.warn("Got a UTE message, that is not a query.");
-        }
-    }
-
-    @Override
-    public void parseRadioPacket(final RadioPacket packet) {
-        if (!packet.getSenderId().equals(getAddressRemote())) {
-            LOGGER.warn("Got a package that sender ID does not fit (senderId={}, expected={}).", packet.getSenderId(),
-                    getAddressRemote());
-            return;
-        }
-
-        if (packet instanceof RadioPacketVLD) {
-            parseRadioPacketVLD((RadioPacketVLD) packet);
-        } else if (packet instanceof RadioPacketUTE) {
-            parseRadioPacketUTE((RadioPacketUTE) packet);
-        } else {
-            LOGGER.warn("Don't know how to handle radio choice {}", String.format("0x%02X", packet.getChoice()));
         }
     }
 
@@ -418,6 +412,7 @@ public class RemoteDeviceEEPD20108 extends StandardDevice implements RemoteDevic
                 break;
             default:
                 super.setByParameter(parameter, value);
+                break;
         }
     }
 }

@@ -16,13 +16,15 @@
 package eu.aleon.aleoncean.device.remote;
 
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import eu.aleon.aleoncean.device.DeviceParameter;
 import eu.aleon.aleoncean.device.DeviceParameterUpdatedInitiation;
-import eu.aleon.aleoncean.device.DeviceRPS;
 import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
+import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
 import eu.aleon.aleoncean.packet.radio.RadioPacketRPS;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataEEPF61000Factory;
@@ -34,9 +36,9 @@ import eu.aleon.aleoncean.values.WindowHandlePosition;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
-public class RemoteDeviceEEPF61000 extends DeviceRPS implements RemoteDevice {
+public class RemoteDeviceEEPF61000 extends StandardDevice implements RemoteDevice {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDeviceEEPF61000.class);
 
@@ -65,7 +67,7 @@ public class RemoteDeviceEEPF61000 extends DeviceRPS implements RemoteDevice {
     }
 
     @Override
-    public void parseRadioPacketRPS(final RadioPacketRPS packet) {
+    protected void parseRadioPacketRPS(final RadioPacketRPS packet) {
         final UserDataRPS userData = UserDataEEPF61000Factory.getPacketData(packet);
         if (userData instanceof UserDataEEPF61000T2U) {
             parseT2U((UserDataEEPF61000T2U) userData);

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class USB300ReaderThread extends USB300Reader implements Runnable {
 

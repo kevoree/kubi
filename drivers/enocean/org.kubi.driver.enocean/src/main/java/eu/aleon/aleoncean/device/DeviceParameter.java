@@ -18,6 +18,7 @@ package eu.aleon.aleoncean.device;
 import java.util.HashMap;
 import java.util.Map;
 
+import eu.aleon.aleoncean.values.OpenClosed;
 import eu.aleon.aleoncean.values.RockerSwitchAction;
 import eu.aleon.aleoncean.values.WindowHandlePosition;
 
@@ -44,7 +45,7 @@ import eu.aleon.aleoncean.values.WindowHandlePosition;
  * - TEMPERATURE_CONTROL_CUR_TEMP: double, the current temperature used for a temperature control algorithm
  * - WINDOW_HANDLE_POSITION: WindowHandlePosition
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public enum DeviceParameter {
 
@@ -55,6 +56,7 @@ public enum DeviceParameter {
     ILLUMINATION_LUX("ILLUMINATION_LUX", Double.class),
     MOTION("MOTION", Boolean.class),
     OCCUPANCY_BUTTON("OCCUPANCY_BUTTON", Boolean.class),
+    OPEN_CLOSED(OpenClosed.class),
     POSITION_PERCENT(Integer.class),
     POWER_W(Double.class),
     SETPOINT_POSITION_PERCENT(Integer.class),

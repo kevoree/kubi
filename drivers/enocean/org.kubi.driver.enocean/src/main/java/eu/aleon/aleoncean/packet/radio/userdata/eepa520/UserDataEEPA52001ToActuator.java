@@ -21,7 +21,7 @@ import eu.aleon.aleoncean.util.Bits;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPA52001ToActuator extends UserData4BS {
 
@@ -91,7 +91,7 @@ public class UserDataEEPA52001ToActuator extends UserData4BS {
      * You have to check the set point selection, if valve position is used.
      *
      * @return Return the current valve position.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the data does not fit in expected range.
+     * @throws UserDataScaleValueException if the data does not fit in expected range.
      */
     public int getValvePosition() throws UserDataScaleValueException {
         // The getScaleValue function will already test the ranges (min, max).
@@ -104,7 +104,7 @@ public class UserDataEEPA52001ToActuator extends UserData4BS {
      * You have to set the set point selection to valve position mode.
      *
      * @param position The current valve position.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the data does not fit in expected range.
+     * @throws UserDataScaleValueException if the data does not fit in expected range.
      */
     public void setValvePosition(final int position) throws UserDataScaleValueException {
         // The getRangeValue function will already test the ranges (min, max).
@@ -117,7 +117,7 @@ public class UserDataEEPA52001ToActuator extends UserData4BS {
      * You have to check the set point selection, if temperature setpoint is used.
      *
      * @return Return the current temperature set point.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the data does not fit in expected range.
+     * @throws UserDataScaleValueException if the data does not fit in expected range.
      */
     public double getTemperatureSetpoint() throws UserDataScaleValueException {
         // The getScaleValue function will already test the ranges (min, max).
@@ -130,7 +130,7 @@ public class UserDataEEPA52001ToActuator extends UserData4BS {
      * You have to set the set point selection to temperature mode.
      *
      * @param temperature The current temperature set point.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the data does not fit in expected range.
+     * @throws UserDataScaleValueException if the data does not fit in expected range.
      */
     public void setTemperatureSetpoint(final double temperature) throws UserDataScaleValueException {
         // The getRangeValue function will already test the ranges (min, max).

@@ -21,7 +21,7 @@ import eu.aleon.aleoncean.util.Bits;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPA52001FromActuator extends UserData4BS {
 
@@ -81,7 +81,7 @@ public class UserDataEEPA52001FromActuator extends UserData4BS {
      * Get the current valve position value in percent.
      *
      * @return Return the current valve position value in percent.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the value does not fit in defined range.
+     * @throws UserDataScaleValueException if the value does not fit in defined range.
      */
     public int getCurrentValue() throws UserDataScaleValueException {
         // The getScaleValue function will already test the ranges (min, max).
@@ -92,7 +92,7 @@ public class UserDataEEPA52001FromActuator extends UserData4BS {
      * Set the current valve position value in percent.
      *
      * @param percent The current valve position value in percent.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the value does not fit in defined range.
+     * @throws UserDataScaleValueException if the value does not fit in defined range.
      */
     public void setCurrentValue(final int percent) throws UserDataScaleValueException {
         // The getRangeValue function will already test the ranges (min, max).
@@ -175,7 +175,7 @@ public class UserDataEEPA52001FromActuator extends UserData4BS {
      * Get the current temperature (linear).
      *
      * @return The current temperature (linear).
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the value does not fit in defined range.
+     * @throws UserDataScaleValueException if the value does not fit in defined range.
      */
     public double getTemperature() throws UserDataScaleValueException {
         // The getScaleValue function will already test the ranges (min, max).
@@ -186,7 +186,7 @@ public class UserDataEEPA52001FromActuator extends UserData4BS {
      * Set the current temperature (linear).
      *
      * @param temperature The current temperature (linear).
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException if the value does not fit in defined range.
+     * @throws UserDataScaleValueException if the value does not fit in defined range.
      */
     public void setTemperature(final double temperature) throws UserDataScaleValueException {
         // The getRangeValue function will already test the ranges (min, max).

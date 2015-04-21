@@ -18,17 +18,30 @@ package eu.aleon.aleoncean.device;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.aleon.aleoncean.packet.EnOceanId;
 import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.ResponsePacket;
+import eu.aleon.aleoncean.packet.radio.RadioPacket1BS;
+import eu.aleon.aleoncean.packet.radio.RadioPacket4BS;
+import eu.aleon.aleoncean.packet.radio.RadioPacketADT;
+import eu.aleon.aleoncean.packet.radio.RadioPacketMSC;
+import eu.aleon.aleoncean.packet.radio.RadioPacketRPS;
+import eu.aleon.aleoncean.packet.radio.RadioPacketUTE;
+import eu.aleon.aleoncean.packet.radio.RadioPacketVLD;
 import eu.aleon.aleoncean.packet.radio.userdata.UserData;
 import eu.aleon.aleoncean.rxtx.ESP3Connector;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public abstract class StandardDevice implements Device {
+
+    private final Logger logger = LoggerFactory.getLogger(StandardDevice.class);
 
     protected final DeviceParameterUpdatedSupport parameterChangedSupport;
 
@@ -36,9 +49,7 @@ public abstract class StandardDevice implements Device {
     private final EnOceanId addressRemote;
     private final EnOceanId addressLocal;
 
-    public StandardDevice(final ESP3Connector conn,
-                          final EnOceanId addressRemote,
-                          final EnOceanId addressLocal) {
+    public StandardDevice(final ESP3Connector conn, final EnOceanId addressRemote, final EnOceanId addressLocal) {
         this.parameterChangedSupport = new DeviceParameterUpdatedSupport(this, true);
         this.conn = conn;
         this.addressRemote = addressRemote;
@@ -127,11 +138,72 @@ public abstract class StandardDevice implements Device {
             return getClass().toString().compareTo(o.getClass().toString());
         }
 
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
+    }
+
+    private void parseRadioPacketUnhandled(final RadioPacket packet) {
+        logger.warn("Don't know how to handle radio choice {}. {}", String.format("0x%02X", packet.getChoice()), packet);
+    }
+
+    protected void parseRadioPacket1BS(final RadioPacket1BS packet) {
+        parseRadioPacketUnhandled(packet);
+    }
+
+    protected void parseRadioPacket4BS(final RadioPacket4BS packet) {
+        parseRadioPacketUnhandled(packet);
+    }
+
+    protected void parseRadioPacketADT(final RadioPacketADT packet) {
+        parseRadioPacketUnhandled(packet);
+    }
+
+    protected void parseRadioPacketMSC(final RadioPacketMSC packet) {
+        parseRadioPacketUnhandled(packet);
+    }
+
+    protected void parseRadioPacketRPS(final RadioPacketRPS packet) {
+        parseRadioPacketUnhandled(packet);
+    }
+
+    protected void parseRadioPacketUTE(final RadioPacketUTE packet) {
+        parseRadioPacketUnhandled(packet);
+    }
+
+    protected void parseRadioPacketVLD(final RadioPacketVLD packet) {
+        parseRadioPacketUnhandled(packet);
     }
 
     @Override
-    public Set<DeviceParameter> getParameters() {
+    public final void parseRadioPacket(final RadioPacket packet) {
+        if (!packet.getSenderId().equals(getAddressRemote())) {
+            logger.warn("Got a package that sender ID does not fit (senderId={}, expected={}). {}"+packet.getSenderId(), getAddressRemote(), packet);
+        }
+        if (!packet.getDestinationId().equals(getAddressLocal())) {
+            logger.warn("Got a package that destination ID does not fit (destinationId={}, expected={}). {}" + packet.getDestinationId(), getAddressLocal(), packet);
+        }
+
+        if (packet instanceof RadioPacket1BS) {
+            parseRadioPacket1BS((RadioPacket1BS) packet);
+        } else if (packet instanceof RadioPacket4BS) {
+            parseRadioPacket4BS((RadioPacket4BS) packet);
+        } else if (packet instanceof RadioPacketADT) {
+            parseRadioPacketADT((RadioPacketADT) packet);
+        } else if (packet instanceof RadioPacketMSC) {
+            parseRadioPacketMSC((RadioPacketMSC) packet);
+        } else if (packet instanceof RadioPacketRPS) {
+            parseRadioPacketRPS((RadioPacketRPS) packet);
+        } else if (packet instanceof RadioPacketUTE) {
+            parseRadioPacketUTE((RadioPacketUTE) packet);
+        } else if (packet instanceof RadioPacketVLD) {
+            parseRadioPacketVLD((RadioPacketVLD) packet);
+        } else {
+            logger.warn("Unknown radio packet choice {}. {}", String.format("0x%02X", packet.getChoice()), packet);
+        }
+    }
+
+    @Override
+    public final Set<DeviceParameter> getParameters() {
         final Set<DeviceParameter> params = new HashSet<>();
         fillParameters(params);
         return params;
@@ -143,23 +215,25 @@ public abstract class StandardDevice implements Device {
     }
 
     @Override
-    public void setByParameter(final DeviceParameter parameter, final Object value) throws IllegalDeviceParameterException {
+    public void setByParameter(final DeviceParameter parameter, final Object value)
+            throws IllegalDeviceParameterException {
         throw new IllegalDeviceParameterException(String.format("Given parameter (%s) is not supported.", parameter));
     }
 
     protected abstract void fillParameters(final Set<DeviceParameter> params);
 
     @Override
-    public void addParameterUpdatedListener(final DeviceParameterUpdatedListener listener) {
+    public final void addParameterUpdatedListener(final DeviceParameterUpdatedListener listener) {
         parameterChangedSupport.addParameterUpdatedListener(listener);
     }
 
     @Override
-    public void removeParameterUpdatedListener(final DeviceParameterUpdatedListener listener) {
+    public final void removeParameterUpdatedListener(final DeviceParameterUpdatedListener listener) {
         parameterChangedSupport.removeParameterUpdatedListener(listener);
     }
 
-    protected void fireParameterChanged(final DeviceParameter parameter, final DeviceParameterUpdatedInitiation initiation, final Object oldValue, final Object newValue) {
+    protected final void fireParameterChanged(final DeviceParameter parameter,
+            final DeviceParameterUpdatedInitiation initiation, final Object oldValue, final Object newValue) {
         parameterChangedSupport.fireParameterUpdated(parameter, initiation, oldValue, newValue);
     }
 

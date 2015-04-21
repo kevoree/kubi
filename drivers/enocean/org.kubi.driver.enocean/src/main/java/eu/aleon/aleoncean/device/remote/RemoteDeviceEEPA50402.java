@@ -24,7 +24,7 @@ import eu.aleon.aleoncean.rxtx.ESP3Connector;
 
 /**
  * Implementation for EPP A5-04-02.
- * @author Stephan Meyer <smeyersdev@gmail.com>
+ * @author Stephan Meyer {@literal <smeyersdev@gmail.com>}
  */
 public class RemoteDeviceEEPA50402 extends RemoteDeviceEEPA504 {
 

@@ -13,22 +13,13 @@
  * Contributors:
  *    Markus Rathgeb - initial API and implementation and/or initial documentation
  */
-package eu.aleon.aleoncean.packet.radio.userdata.teachin4bs;
-
-import eu.aleon.aleoncean.values.LearnType4BS;
+package eu.aleon.aleoncean.values;
 
 /**
+ *
  * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
-public class UserData4BSTeachInVariant2 extends UserData4BSTeachIn {
-
-    public UserData4BSTeachInVariant2() {
-        super();
-        setLearnType(LearnType4BS.WITH_EEP_NUM_WITH_MANU_ID);
-    }
-
-    public UserData4BSTeachInVariant2(final byte[] data) {
-        super(data);
-    }
-
+public enum OpenClosed {
+    OPEN,
+    CLOSED
 }

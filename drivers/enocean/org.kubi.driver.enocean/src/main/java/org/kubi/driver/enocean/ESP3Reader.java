@@ -1,6 +1,8 @@
 package org.kubi.driver.enocean;
 
 import eu.aleon.aleoncean.packet.ESP3Packet;
+import eu.aleon.aleoncean.packet.radio.RadioPacketRPS;
+import eu.aleon.aleoncean.packet.radio.userdata.*;
 import eu.aleon.aleoncean.rxtx.ESP3Connector;
 import eu.aleon.aleoncean.rxtx.ReaderShutdownException;
 import org.slf4j.Logger;
@@ -37,8 +39,27 @@ public class ESP3Reader implements Runnable {
             if (packet == null) {
                 LOGGER.warn("Received a null package.");
             } else {
-                System.err.println(packet);
+
                 //workerQueue.add(new WorkerItemPacket(packet));
+/*
+                if(packet instanceof RadioPacketRPS){
+                    UserDataRPS rawRPS = UserDataEEPF60202Factory.getPacketData((RadioPacketRPS) packet);
+                    if(rawRPS instanceof UserDataEEPF60202T2N){
+                        UserDataEEPF60202T2N rps = (UserDataEEPF60202T2N) UserDataEEPF60202Factory.getPacketData((RadioPacketRPS) packet);
+                        System.err.println(rps.dimLightDownA());
+                        System.err.println(rps.dimLightUpA());
+                        System.err.println(rps.dimLightDownB());
+                        System.err.println(rps.dimLightUpB());
+                    } else if(rawRPS instanceof UserDataEEPF60202T2U) {
+                        UserDataEEPF60202T2U rps = (UserDataEEPF60202T2U) UserDataEEPF60202Factory.getPacketData((RadioPacketRPS) packet);
+                        System.err.println(rps);
+                    }
+                }
+*/
+                System.err.println(packet);
+
+
+
             }
         }
     }

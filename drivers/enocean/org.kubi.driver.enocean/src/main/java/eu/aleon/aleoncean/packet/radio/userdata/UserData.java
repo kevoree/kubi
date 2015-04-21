@@ -22,7 +22,7 @@ import eu.aleon.aleoncean.util.CalculationUtil;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public abstract class UserData {
 
@@ -123,7 +123,7 @@ public abstract class UserData {
      * @param scaleMin The lower limit of the scaled value.
      * @param scaleMax The upper limit of the scaled value.
      * @return Return a scaled value that does fit in given range.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException This exception is raised if the value extracted from given bit range does
+     * @throws UserDataScaleValueException This exception is raised if the value extracted from given bit range does
      *                                     not fit in range.
      */
     protected double getScaleValue(final int startDB, final int startBit, final int endDB, final int endBit,
@@ -143,7 +143,7 @@ public abstract class UserData {
      * @param scaleMin The lower limit of the scaled value.
      * @param scaleMax The upper limit of the scaled value.
      * @return Return a scaled value that does fit in given range.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException This exception is raised if the given value does not fit in range.
+     * @throws UserDataScaleValueException This exception is raised if the given value does not fit in range.
      */
     protected double getScaleValue(final long raw,
                                    final long rangeMin, final long rangeMax,
@@ -171,7 +171,7 @@ public abstract class UserData {
      * @param rangeMin The lower limit of the raw value.
      * @param rangeMax The upper limit of the raw value.
      * @return Return a raw value that does fit in given range.
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException This exception is raised if the given value does not fit in range.
+     * @throws UserDataScaleValueException This exception is raised if the given value does not fit in range.
      */
     protected long getRangeValue(final double scale,
                                  final double scaleMin, final double scaleMax,

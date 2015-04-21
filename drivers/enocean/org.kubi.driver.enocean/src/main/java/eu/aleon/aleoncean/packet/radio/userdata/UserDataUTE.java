@@ -19,7 +19,7 @@ import eu.aleon.aleoncean.packet.radio.RadioPacketUTE;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataUTE extends UserData {
 
@@ -110,7 +110,7 @@ public class UserDataUTE extends UserData {
      * 0x00 - 0xFE: Number of individual channels to be taught in.
      * 0xFF: Teach-in all channels supported by the device.
      *
-     * @return Return a value between 0x00 and 0xFF. Short is used to signal an value > 0.
+     * @return Return a value between 0x00 and 0xFF. Short is used to signal an value &gt; 0.
      */
     public short getNumOfChannels() {
         return (short) (getDb(5) & 0xFF);

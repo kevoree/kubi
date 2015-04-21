@@ -27,7 +27,6 @@ import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
 import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
-import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.radio.RadioPacket4BS;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataEEPA504;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException;
@@ -35,8 +34,8 @@ import eu.aleon.aleoncean.rxtx.ESP3Connector;
 
 /**
  * Abstract base class for EEP A504.. 
- * @author Markus Rathgeb <maggu2810@gmail.com>
- * @author Stephan Meyer <smeyersdev@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
+ * @author Stephan Meyer {@literal <smeyersdev@gmail.com>}
  */
 public abstract class RemoteDeviceEEPA504 extends StandardDevice implements RemoteDevice {
 
@@ -73,7 +72,7 @@ public abstract class RemoteDeviceEEPA504 extends StandardDevice implements Remo
         fireParameterChanged(DeviceParameter.TEMPERATURE_CELSIUS, initiation, oldTemperature, temperature);
     }
 
-    private void parseRadioPacket4BS(final RadioPacket4BS packet) {
+    protected void parseRadioPacket4BS(final RadioPacket4BS packet) {
         if (packet.isTeachIn()) {
             LOGGER.debug("Ignore teach-in packets.");
             return;
@@ -90,15 +89,6 @@ public abstract class RemoteDeviceEEPA504 extends StandardDevice implements Remo
             setTemperature(DeviceParameterUpdatedInitiation.RADIO_PACKET, userData.getTemperature());
         } catch (final UserDataScaleValueException ex) {
             LOGGER.warn("Received temperature is invalid.");
-        }
-    }
-
-    @Override
-    public void parseRadioPacket(final RadioPacket packet) {
-        if (packet instanceof RadioPacket4BS) {
-            parseRadioPacket4BS((RadioPacket4BS) packet);
-        } else {
-            LOGGER.warn("Don't know how to handle radio choice {}", String.format("0x%02X", packet.getChoice()));
         }
     }
 

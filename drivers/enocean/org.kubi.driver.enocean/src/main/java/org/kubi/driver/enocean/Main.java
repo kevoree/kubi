@@ -1,6 +1,7 @@
 package org.kubi.driver.enocean;
 
 import eu.aleon.aleoncean.rxtx.USB300;
+import org.kevoree.log.Log;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -10,6 +11,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Main {
 
     public static void main(String[] args) {
+
+        Log.DEBUG();
+
         USB300 usb300 = new USB300();
         usb300.connect("/dev/tty.usbserial-FTXGRVZF");
         LinkedBlockingQueue readQueue = new LinkedBlockingQueue();

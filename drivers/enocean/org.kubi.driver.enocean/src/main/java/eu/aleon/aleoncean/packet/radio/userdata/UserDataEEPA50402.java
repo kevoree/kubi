@@ -2,7 +2,7 @@ package eu.aleon.aleoncean.packet.radio.userdata;
 
 /**
  *
- * @author Stephan Meyer <smeyersdev@gmail.com>
+ * @author Stephan Meyer {@literal <smeyersdev@gmail.com>}
  */
 public class UserDataEEPA50402 extends UserDataEEPA504 {
 

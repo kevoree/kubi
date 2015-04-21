@@ -19,7 +19,7 @@ import eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException;
 import eu.aleon.aleoncean.util.Bits;
 
 /**
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPA53808CMD02 extends UserDataEEPA53808 {
 

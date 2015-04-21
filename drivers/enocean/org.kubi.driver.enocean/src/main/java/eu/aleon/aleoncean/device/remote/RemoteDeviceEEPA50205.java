@@ -16,15 +16,16 @@
 package eu.aleon.aleoncean.device.remote;
 
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import eu.aleon.aleoncean.device.DeviceParameter;
 import eu.aleon.aleoncean.device.DeviceParameterUpdatedInitiation;
 import eu.aleon.aleoncean.device.IllegalDeviceParameterException;
 import eu.aleon.aleoncean.device.RemoteDevice;
 import eu.aleon.aleoncean.device.StandardDevice;
 import eu.aleon.aleoncean.packet.EnOceanId;
-import eu.aleon.aleoncean.packet.RadioPacket;
 import eu.aleon.aleoncean.packet.radio.RadioPacket4BS;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataEEPA50205;
 import eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException;
@@ -32,7 +33,7 @@ import eu.aleon.aleoncean.rxtx.ESP3Connector;
 
 /**
  *
- * @author Thomas Stezaly <thomas.stezaly@aleon.eu>
+ * @author Thomas Stezaly {@literal <thomas.stezaly@aleon.eu>}
  */
 public class RemoteDeviceEEPA50205 extends StandardDevice implements RemoteDevice {
 
@@ -56,7 +57,7 @@ public class RemoteDeviceEEPA50205 extends StandardDevice implements RemoteDevic
         fireParameterChanged(DeviceParameter.TEMPERATURE_CELSIUS, initiation, oldTemperature, temperature);
     }
 
-    private void parseRadioPacket4BS(final RadioPacket4BS packet) {
+    protected void parseRadioPacket4BS(final RadioPacket4BS packet) {
         if (packet.isTeachIn()) {
             LOGGER.debug("Ignore teach-in packets.");
             return;
@@ -68,15 +69,6 @@ public class RemoteDeviceEEPA50205 extends StandardDevice implements RemoteDevic
             setTemperature(DeviceParameterUpdatedInitiation.RADIO_PACKET, userData.getTemperature());
         } catch (final UserDataScaleValueException ex) {
             LOGGER.warn("Received temperature is invalid.");
-        }
-    }
-
-    @Override
-    public void parseRadioPacket(final RadioPacket packet) {
-        if (packet instanceof RadioPacket4BS) {
-            parseRadioPacket4BS((RadioPacket4BS) packet);
-        } else {
-            LOGGER.warn("Don't know how to handle radio choice {}", String.format("0x%02X", packet.getChoice()));
         }
     }
 

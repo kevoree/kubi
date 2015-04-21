@@ -28,6 +28,7 @@ import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPA50802;
 import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPA51201;
 import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPA52001;
 import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPD20108;
+import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPD50001;
 import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPF60201;
 import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPF60202;
 import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPF61000;
@@ -38,7 +39,7 @@ import eu.aleon.aleoncean.device.remote.RemoteDeviceEEPF61001;
  * RD (remote device) or LD (local device) _ EEP (separator is a dash character).
  * So, for example LD_F6-02-01, RD_D2-01-08, ...
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public enum SupportedDevice {
     LD_A53808CMD2("LD_A5-38-08_CMD02", LocalDeviceEEPA53808CMD02.class),
@@ -51,6 +52,7 @@ public enum SupportedDevice {
     RD_A51201("RD_A5-12-01", RemoteDeviceEEPA51201.class),
     RD_A52001("RD_A5-20-01", RemoteDeviceEEPA52001.class),
     RD_D20108("RD_D2-01-08", RemoteDeviceEEPD20108.class),
+    RD_D50001("RD_D5-00-01", RemoteDeviceEEPD50001.class),
     RD_F60201("RD_F6-02-01", RemoteDeviceEEPF60201.class),
     RD_F60202("RD_F6-02-02", RemoteDeviceEEPF60202.class),
     RD_F61000("RD_F6-10-00", RemoteDeviceEEPF61000.class),

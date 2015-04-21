@@ -24,7 +24,7 @@ import eu.aleon.aleoncean.packet.ResponsePacket;
  *
  * This interface should describe how we abstract the hardware communication e.g. with a EnOcean stick.
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public interface ESP3Connector {
 
@@ -60,7 +60,7 @@ public interface ESP3Connector {
      * @param timeout How long to wait before giving up, in units of unit.
      * @param unit    A TimeUnit determining how to interpret the timeout parameter.
      * @return Return the next ESP3Packet that was read. Null if no packet was received in given timeout.
-     * @throws ReaderShutdownException This exception is thrown, if the read end was shut down.
+     * @throws eu.aleon.aleoncean.rxtx.ReaderShutdownException This exception is thrown, if the read end was shut down.
      */
     public ESP3Packet read(long timeout, TimeUnit unit) throws ReaderShutdownException;
 }

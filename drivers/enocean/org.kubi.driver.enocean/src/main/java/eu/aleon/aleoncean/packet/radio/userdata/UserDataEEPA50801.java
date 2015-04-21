@@ -17,7 +17,7 @@ package eu.aleon.aleoncean.packet.radio.userdata;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPA50801 extends UserDataEEPA508 {
 

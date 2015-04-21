@@ -20,7 +20,7 @@ import eu.aleon.aleoncean.values.LearnType4BS;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public abstract class UserData4BSTeachIn extends UserData4BS {
 

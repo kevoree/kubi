@@ -18,7 +18,7 @@ package eu.aleon.aleoncean.packet.radio.userdata.teachin4bs;
 import eu.aleon.aleoncean.values.LearnType4BS;
 
 /**
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserData4BSTeachInVariant1 extends UserData4BSTeachIn {
 

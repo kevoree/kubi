@@ -21,7 +21,7 @@ import eu.aleon.aleoncean.util.CalculationUtil;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class UserDataEEPD201CMD05 extends UserDataEEPD201 {
 
@@ -153,7 +153,7 @@ public class UserDataEEPD201CMD05 extends UserDataEEPD201 {
      * The value must fit in range of from {@value #MAT_SCALE_MIN} to {@value #MAT_SCALE_MAX}.
      *
      * @param value The maximum time between two subsequent actuator reports in seconds (see range above).
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException This exception if thrown, if the value does not fit in range (see above).
+     * @throws UserDataScaleValueException This exception if thrown, if the value does not fit in range (see above).
      */
     public void setMaximumTimeBetweenTwoSubsequentActuator(final int value) throws UserDataScaleValueException {
         final long raw = getRangeValue(value, MAT_SCALE_MIN, MAT_SCALE_MAX, MAT_RANGE_MIN, MAT_RANGE_MAX);
@@ -172,7 +172,7 @@ public class UserDataEEPD201CMD05 extends UserDataEEPD201 {
      * The value must fit in range of from {@value #MIT_SCALE_MIN} to {@value #MIT_SCALE_MAX}.
      *
      * @param value The minimum time between two subsequent actuator reports in seconds (see range above).
-     * @throws eu.aleon.aleoncean.packet.radio.userdata.UserDataScaleValueException This exception if thrown, if the value does not fit in range (see above).
+     * @throws UserDataScaleValueException This exception if thrown, if the value does not fit in range (see above).
      */
     public void setMinimumTimeBetweenTwoSubsequentActuator(final int value) throws UserDataScaleValueException {
         final long raw = getRangeValue(value, MIT_SCALE_MIN, MIT_SCALE_MAX, MIT_RANGE_MIN, MIT_RANGE_MAX);

@@ -33,9 +33,9 @@ import eu.aleon.aleoncean.values.RockerSwitchState;
 
 /**
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
-public abstract class DeviceRPSLightAndBlindControlAppStyle extends DeviceRPS {
+public abstract class DeviceRPSLightAndBlindControlAppStyle extends StandardDevice {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRPSLightAndBlindControlAppStyle.class);
 
@@ -231,7 +231,7 @@ public abstract class DeviceRPSLightAndBlindControlAppStyle extends DeviceRPS {
     }
 
     @Override
-    public void parseRadioPacketRPS(final RadioPacketRPS packet) {
+    protected void parseRadioPacketRPS(final RadioPacketRPS packet) {
         switch (packet.getT21State()) {
             case PTM_TYPE2:
                 parseT2(packet);

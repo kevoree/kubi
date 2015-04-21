@@ -41,7 +41,7 @@ import eu.aleon.aleoncean.util.CRC8;
  * 6 + x; y byte: optional data
  * 6 + x + y; 1 byte: CRC8 data (+ optional data)
  *
- * @author Markus Rathgeb <maggu2810@gmail.com>
+ * @author Markus Rathgeb {@literal <maggu2810@gmail.com>}
  */
 public class ESP3Packet {
 

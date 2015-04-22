@@ -326,22 +326,16 @@ function sliderInit() {
 }
 
 function sliderGraphInit() {
-    $("#update1").click(function () {
-        var choosenValue = $("#seekTo1").val();
-        $("#val1").html(choosenValue);
-    });
-
-    $("#slider1").change(function(){
-        var value = $("#slider1").val();
-        $("#val1").html(value);
-        $("#seekTo1").html(value);
-
-        var start = value * 1000;
-        var end = start+86400000;
-        var step = 3600000;
+    $("#slider1").click(function(){
+        var value = $("#slider1").val() * 1000;
+        var range = $("#selectScale")[0].value;
+        var deviceName = "plug"; // TODO : generalisation
+        var start = value - range;
+        var end = parseInt(value) + parseInt(range);
+        var step = range / 500;
+        console.log(start,"-----", end, "_____", range, "_____", step);
         //var end = ( end==0 ? start-86400000 : end  );
         //var step = ( step==0 ? 3600000 : step );
-        var deviceName = "plug"; // TODO : generalisation
         var currentView = kubiModel.universe(universeNumber).time(start);
         currentView.getRoot().then(function(root) {
             if (root != null) {
@@ -351,7 +345,6 @@ function sliderGraphInit() {
                         var device = kObjects[0];
                         device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (parameters){
                             if(parameters.length >0){
-                                console.log("__-------___---____");
                                 var param = parameters[0];
                                 // emptying the dataset of the device
                                 dataSeries[device.getName()] = ({
@@ -391,8 +384,9 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
                     y: parseFloat(paramTimed.getValue())
                 });
                 if (paramTimed.getPeriod() != undefined) {
-                    if (dataSeries[deviceName() + "_Period"] == null) {
-                        dataSeries[deviceName() + "_Period"] = ({
+                    if (dataSeries[deviceName + "_Period"] == null) {
+                        console.log("chocolat");
+                        dataSeries[deviceName + "_Period"] = ({
                             type: "line",
                             showInLegend: true,
                             name: deviceName,

@@ -35,13 +35,21 @@
         <h2 class="page-title">Economic move</h2>
 
         <div class="close-button s-close-button">x</div>
+            <div class="input-field col s12 openpage">
+                <select id="selectScale" class="browser-default">
+                    <option value="31536000000">Yearly</option>
+                    <option value="604800000">Weekly</option>
+                    <option value="86400000">Daily</option>
+                    <option value="3600000">Hourly</option>
+                </select>
+                <label>Choose the scale</label>
+            </div>
         <div class="openpage" id="chartContainer"></div>
-        <p class="range-field">
-            <input type="range" id="slider1" value="1428887547,1429087547" min="1428550000" max="1429100000" step="100" multiple/>
+        <p class="range-field openpage">
+            <input type="range" id="slider1" value="1428887547" min="1428000000" max="1429100000" step="100" multiple/>
         </p>
-        Seek To : <input id="seekTo1" type="text" value="1429187547"/>
-        <input id="update1" type="button" value="Update"/>
-        Current Value : <p id="val1">0</p>
+        
+
     </div>
 
     <div class="s-page custom-page">
@@ -55,7 +63,7 @@
             <h2 class="page-title">App Screen</h2>
 
             <p class="range-field">
-                <input type="range" id="slider" value="1428887547,1429087547" min="1428550000" max="1429100000" step="100" multiple/>
+                <input type="range" id="slider" value="1428887547,1429087547" min="1428754400" max="1429100000" step="100" multiple/>
             </p>
             Seek To : <input id="seekTo" type="text" value="1429187547"/>
             <input id="update" type="button" value="Update"/>
@@ -65,6 +73,8 @@
 
         <div class="close-button r-close-button">x</div>
     </div>
+
+
     <!--each tile should specify what page type it opens (to determine which animation) and the corresponding page name it should open-->
     <div class="dashboard clearfix">
         <ul class="tiles">

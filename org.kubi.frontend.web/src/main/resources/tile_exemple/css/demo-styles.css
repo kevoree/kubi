@@ -121,7 +121,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 #chartContainer{
     /* TODO : remove this part  */
-    margin-left: 2%;
+    margin: 3em;
+    margin-bottom: 15em;
     border: double #2ca02c thick;
     padding: 10px;
     background-color: #3EC7F3;

@@ -53,6 +53,7 @@ function init() {
             getDataFromKubi();
         }
         sliderInit();
+        sliderGraphInit();
     });
 }
 
@@ -303,7 +304,7 @@ function getDeviceValue(time){
                }
             });
         }
-    })
+    });
 }
 
 
@@ -322,4 +323,130 @@ function sliderInit() {
         getDeviceValue(value);
     });
 
+}
+
+function sliderGraphInit() {
+    $("#update1").click(function () {
+        var choosenValue = $("#seekTo1").val();
+        $("#val1").html(choosenValue);
+    });
+
+    $("#slider1").change(function(){
+        var value = $("#slider1").val();
+        $("#val1").html(value);
+        $("#seekTo1").html(value);
+
+        var start = value * 1000;
+        var end = start+86400000;
+        var step = 3600000;
+        //var end = ( end==0 ? start-86400000 : end  );
+        //var step = ( step==0 ? 3600000 : step );
+        var deviceName = "plug"; // TODO : generalisation
+        var currentView = kubiModel.universe(universeNumber).time(start);
+        currentView.getRoot().then(function(root) {
+            if (root != null) {
+                root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceName).done().then(function (kObjects) {
+                    if (kObjects.length > 0) {
+                        // TODO : useful ?? maybe if it doesn't not exist, we can just create it ?
+                        var device = kObjects[0];
+                        device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (parameters){
+                            if(parameters.length >0){
+                                console.log("__-------___---____");
+                                var param = parameters[0];
+                                // emptying the dataset of the device
+                                dataSeries[device.getName()] = ({
+                                    type: "line",
+                                    showInLegend: true,
+                                    name: device.getName(),
+                                    title: device.getName(),
+                                    dataPoints: []
+                                });
+                                if (dataSeries[device.getName() + "_Period"] != null) {
+                                    dataSeries[device.getName() + "_Period"] = ({
+                                        type: "line",
+                                        showInLegend: true,
+                                        name: device.getName() + "_Period",
+                                        title: device.getName() + "_Period",
+                                        dataPoints: []
+                                    });
+                                }
+
+                                setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+}
+
+function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, step){
+    if(start<end){
+        param.jump(end).then(function(paramTimed){
+            if(paramTimed != null && paramTimed.getValue()!= undefined) {
+                dataSeries[deviceName].dataPoints.push({
+                    x: new Date(paramTimed.now()),
+                    y: parseFloat(paramTimed.getValue())
+                });
+                if (paramTimed.getPeriod() != undefined) {
+                    if (dataSeries[deviceName() + "_Period"] == null) {
+                        dataSeries[deviceName() + "_Period"] = ({
+                            type: "line",
+                            showInLegend: true,
+                            name: deviceName,
+                            title: deviceName,
+                            dataPoints: []
+                        });
+                    }
+                    dataSeries[deviceName + "_Period"].dataPoints.push({
+                        x: new Date(paramTimed.now()),
+                        y: parseFloat(paramTimed.getPeriod())
+                    });
+                }
+                setInGraphDeviceRangeValuesWithPeriod(deviceName, paramTimed, start , end - step, step);
+            }
+        });
+    }
+    else{
+        // add in graph
+        console.log(deviceName,"-----in -setInGraphDeviceRangeValuesWithPeriod");
+        // reverse the DataPoints set for the device given for the graph
+        var unsortedDataPoints = dataSeries[deviceName].dataPoints;
+        var sortedDataPoints = [];
+        for(var i=0;i<unsortedDataPoints.length;i++){
+            sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length-i-1,unsortedDataPoints.length-i)[0])
+        }
+        dataSeries[deviceName].dataPoints = sortedDataPoints;
+        createOrReplaceValuesSetInChart(dataSeries[deviceName], deviceName);
+
+        if(dataSeries[deviceName+"_Period"] != undefined && dataSeries[deviceName+"_Period"].dataPoints.length != 0) {
+            var unsortedPeriodDataPoints = dataSeries[deviceName + "_Period"].dataPoints;
+            var sortedPeriodDataPoints = [];
+            for (var i = 0; i < unsortedPeriodDataPoints.length; i++) {
+                sortedPeriodDataPoints.push(unsortedPeriodDataPoints.slice(unsortedPeriodDataPoints.length - i - 1, unsortedPeriodDataPoints.length - i)[0])
+            }
+            createOrReplaceValuesSetInChart(dataSeries[deviceName + "_Period"], deviceName + "_Period");
+        }
+
+        chart.render();
+    }
+}
+
+/**
+ * if there is no data in the dataChart named according to the seriesName in parameter ==> push the values into the dataChart
+ * if there is a set of data having the same name as the seriesName in parameter ==> replace this set of values into the dataChart
+ * @param values the values to add into the dataChart
+ * @param seriesName the name of the series of values
+ */
+function createOrReplaceValuesSetInChart(values, seriesName){
+    console.log("_____",values);
+    for(var i in dataChart){
+        if(seriesName.equals(dataChart[i].name)){
+            dataChart[i] = values;
+            return;
+        }
+    }
+    dataChart.push(values);
 }

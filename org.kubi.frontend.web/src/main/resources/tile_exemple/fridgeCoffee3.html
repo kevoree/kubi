@@ -20,7 +20,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
 
-
 </head>
 
 <body>
@@ -37,6 +36,12 @@
 
         <div class="close-button s-close-button">x</div>
         <div class="openpage" id="chartContainer"></div>
+        <p class="range-field">
+            <input type="range" id="slider1" value="1428887547,1429087547" min="1428550000" max="1429100000" step="100" multiple/>
+        </p>
+        Seek To : <input id="seekTo1" type="text" value="1429187547"/>
+        <input id="update1" type="button" value="Update"/>
+        Current Value : <p id="val1">0</p>
     </div>
 
     <div class="s-page custom-page">
@@ -49,13 +54,11 @@
         <div class="page-content">
             <h2 class="page-title">App Screen</h2>
 
-            <form action="slider">
-                <p class="range-field">
-                    <input type="range" id="slider" value="slider"  min="1428550000" max="1429100000" step="100" />
-                </p>
-            </form>
-            Seek To : <input id="seekTo" type="text" value="1429187547" />
-            <input id="update" type="button" value="Update"  />
+            <p class="range-field">
+                <input type="range" id="slider" value="1428887547,1429087547" min="1428550000" max="1429100000" step="100" multiple/>
+            </p>
+            Seek To : <input id="seekTo" type="text" value="1429187547"/>
+            <input id="update" type="button" value="Update"/>
             Current Value : <p id="val">0</p>
             Current Device Value : <p id="valDevice">0</p>
         </div>
@@ -80,14 +83,14 @@
                             <ul id="ecosystem"></ul>
                             <script id="ecosystem-template" type="text/x-handlebars-template">
                                 {% asyncEach device in ecosystem.devices %}
-                                    {% asyncEach param in device.parameters %}
-                                        <li>
-                                            <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
-                                                Value : {{param.value}} -
-                                                Period :{{param.period}}
-                                            </p>
-                                        </li>
-                                    {% endeach %}
+                                {% asyncEach param in device.parameters %}
+                                <li>
+                                    <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
+                                        Value : {{param.value}} -
+                                        Period :{{param.period}}
+                                    </p>
+                                </li>
+                                {% endeach %}
                                 {% endeach %}
                             </script>
                         </div>
@@ -115,7 +118,6 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 <script src="js/kubi_.jscript2.js"></script>
-
 
 
 </body>

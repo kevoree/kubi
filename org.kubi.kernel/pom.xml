@@ -74,18 +74,26 @@
         -->
 
         <!-- smartfridge
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.driver.smartfridge</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
 
         <!-- REAL smartfridge
         -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.driver.realsmartfridge</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Polynomial Reader
+        -->
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.reader.polynomialReader</artifactId>
             <version>${project.version}</version>
         </dependency>
 

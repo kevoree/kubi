@@ -1,13 +1,8 @@
 package org.kubi.periodAnalysis;
 
 import org.kevoree.brain.JavaPeriodCalculatorFFT;
-import org.kevoree.brain.JavaPeriodCalculatorPearson;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KObject;
-import org.kevoree.modeling.api.abs.AbstractKObject;
-import org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation;
-import org.kevoree.modeling.api.extrapolation.Extrapolation;
-import org.kevoree.modeling.api.meta.MetaAttribute;
 import org.kubi.*;
 import org.kubi.api.Plugin;
 import org.kubi.meta.MetaDevice;

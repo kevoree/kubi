@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <parent>
         <artifactId>org.kubi.root</artifactId>
         <groupId>org.kubi</groupId>
@@ -11,8 +10,8 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.kubi.driver.smartfridge</artifactId>
-    <name>Kubi :: Driver :: SmartFridge</name>
+    <artifactId>org.kubi.reader.polynomialReader</artifactId>
+    <name>Kubi :: Driver :: polynomialReader</name>
 
     <dependencies>
         <dependency>
@@ -26,11 +25,6 @@
             <artifactId>org.kevoree.modeling.microframework.drivers.websocket</artifactId>
             <version>${kmf.version}</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
+
 </project>

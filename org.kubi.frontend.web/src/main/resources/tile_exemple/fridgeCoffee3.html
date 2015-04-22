@@ -39,16 +39,34 @@
                 <select id="selectScale" class="browser-default">
                     <option value="31536000000">Yearly</option>
                     <option value="604800000">Weekly</option>
-                    <option value="86400000">Daily</option>
+                    <option value="172800000" selected="selected">2 days</option>
+                    <option value="86400000" selected="selected">Daily</option>
                     <option value="3600000">Hourly</option>
                 </select>
                 <label>Choose the scale</label>
             </div>
         <div class="openpage" id="chartContainer"></div>
         <p class="range-field openpage">
-            <input type="range" id="slider1" value="1428887547" min="1428000000" max="1429100000" step="100" multiple/>
+            <input type="range" id="slider1" value="1428887547" min="1428000000" max="1429100000" step="100"/>
         </p>
-        
+        <form action="#">
+            <p>
+                <input name="group1" type="radio" id="test1" />
+                <label for="test1">Red</label>
+            </p>
+            <p>
+                <input name="group1" type="radio" id="test2" />
+                <label for="test2">Yellow</label>
+            </p>
+            <p>
+                <input class="with-gap" name="group1" type="radio" id="test3"  />
+                <label for="test3">Green</label>
+            </p>
+            <p>
+                <input name="group1" type="radio" id="test4" disabled="disabled" />
+                <label for="test4">Brown</label>
+            </p>
+        </form>
 
     </div>
 
@@ -88,7 +106,7 @@
                 <li class="tile tile-2xbig tile-2" data-page-type="s-page" data-page-name="random-restored-page">
                     <figure>
                         <div>
-                            <p>Economic move : close the window in 10 minutes.</p>
+                            <p>Scenario 1</p>
 
                             <ul id="ecosystem"></ul>
                             <script id="ecosystem-template" type="text/x-handlebars-template">
@@ -110,7 +128,7 @@
 
                 <li class="tile tile-2xbig tile-2" data-page-type="r-page" data-page-name="random-r-page">
                     <div>
-                        <p>Comfortable move : close the window in 2 hours.</p>
+                        <p>Scenario 2</p>
                         <ul>
                             <li>Temperature : 20°C (-0.5°C)</li>
                             <li>Air quality : 80% (+6 % )</li>

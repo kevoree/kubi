@@ -56,11 +56,14 @@
         <!-- Modules with real data -->
         <module>drivers/mock/org.kubi.driver.realsmartfridge</module>
 
+        <!-- Module reader -->
+        <module>drivers/reader/org.kubi.reader.polynomialReader</module>
+
         <!-- Module for bugs detection -->
         <module>org.kubi.bugsMain</module>
 
 
-        <module>periodAnalysis</module>
+        <module>drivers/reader/org.kubi.periodAnalysis</module>
 
         <module>org.kubi.frontend.web</module>
         <module>org.kubi.kernel</module>

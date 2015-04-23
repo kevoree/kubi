@@ -49,25 +49,15 @@
         <p class="range-field openpage">
             <input type="range" id="slider1" value="1428887547" min="1428000000" max="1429100000" step="100"/>
         </p>
-        <form action="#">
-            <p>
-                <input name="group1" type="radio" id="test1" />
-                <label for="test1">Red</label>
-            </p>
-            <p>
-                <input name="group1" type="radio" id="test2" />
-                <label for="test2">Yellow</label>
-            </p>
-            <p>
-                <input class="with-gap" name="group1" type="radio" id="test3"  />
-                <label for="test3">Green</label>
-            </p>
-            <p>
-                <input name="group1" type="radio" id="test4" disabled="disabled" />
-                <label for="test4">Brown</label>
-            </p>
-        </form>
-
+        <form id="radioDevicePicker" action="#"></form>
+        <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
+            {% asyncEach device in ecosystem.devices %}
+                <p>
+                    <input name="radioDevicePicker-group" class="with-gap" value="{{device.name}}" type="radio" id="radio{{device.name}}" />
+                    <label for="radio{{device.name}}">{{device.name}}</label>
+                </p>
+            {% endeach %}
+        </script>
     </div>
 
     <div class="s-page custom-page">

@@ -141,6 +141,18 @@ function getDataFromKubi(){
                     }
                     $("#ecosystem").html(res);
                 });
+                nunjucks.configure({autoescape: true});
+                // init the graph
+                nunjucks.renderString($("#radioDevicePicker-template").html(), {
+                    ecosystem: rootNow,
+                    autoRefresh: true,
+                    autoNow: true
+                }, function (err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    $("#radioDevicePicker").html(res);
+                });
             }catch (e){
                 e.printStackTrace();
             }
@@ -296,13 +308,13 @@ function getDeviceValue(time){
     currentView.getRoot().then(function(root){
         if(root!= null){
             root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "plug")
-                            .traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name")
-                            .done().then(function (kObecjts){
-               if(kObecjts.length >0){
-                   var res = kObecjts[0].getValue();
-                   $("#valDevice").html(res == undefined?"null":res);
-               }
-            });
+                .traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name")
+                .done().then(function (kObecjts){
+                    if(kObecjts.length >0){
+                        var res = kObecjts[0].getValue();
+                        $("#valDevice").html(res == undefined?"null":res);
+                    }
+                });
         }
     });
 }
@@ -329,7 +341,7 @@ function sliderGraphInit() {
     $("#slider1").click(function(){
         var value = $("#slider1").val() * 1000;
         var range = $("#selectScale")[0].value;
-        var deviceName = "plug"; // TODO : generalisation
+        var deviceName = "plug"; // TODO : generalisation get radio.* value
         var start = value - range;
         var end = parseInt(value) + parseInt(range);
         var step = range / 500;
@@ -385,7 +397,6 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
                 });
                 if (paramTimed.getPeriod() != undefined) {
                     if (dataSeries[deviceName + "_Period"] == null) {
-                        console.log("chocolat");
                         dataSeries[deviceName + "_Period"] = ({
                             type: "line",
                             showInLegend: true,

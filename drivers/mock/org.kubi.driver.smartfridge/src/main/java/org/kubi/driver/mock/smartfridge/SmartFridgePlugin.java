@@ -68,6 +68,7 @@ public class SmartFridgePlugin implements Plugin, Runnable {
                         public void on(KObject[] kObjects) {
                             Parameter parameter = (Parameter) kObjects[0];
                             // the getter of the parameter return values following the PolynomialExtrapolation
+                            System.out.println("bob=================================");
                             parameter.metaClass().attribute(parameter.getName()).setExtrapolation(new PolynomialExtrapolation());
                             model.save();
                         }

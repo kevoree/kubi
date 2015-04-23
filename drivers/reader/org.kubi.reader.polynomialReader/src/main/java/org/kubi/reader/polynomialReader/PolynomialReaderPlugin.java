@@ -72,6 +72,7 @@ public class PolynomialReaderPlugin implements Runnable, Plugin {
                                     public void on(KObject kObject) {
                                         Parameter parameter = (Parameter) kObject;
                                         Double extrapolation = polynomialLaw.evaluate((double) ((time / 1000) % 11));
+                                        parameter.getValue();
                                         System.out.println(extrapolation + "..........." + parameter.getValue());
                                         System.out.println(extrapolation.equals(parameter.getValue()));
                                     }

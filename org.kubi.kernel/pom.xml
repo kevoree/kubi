@@ -81,6 +81,15 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Polynomial Reader
+        -->
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.reader.polynomialReader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
         <!-- REAL smartfridge
         -->
         <dependency>
@@ -89,13 +98,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Polynomial Reader
-        -->
-        <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.reader.polynomialReader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
 
         <!-- periodAnalysis

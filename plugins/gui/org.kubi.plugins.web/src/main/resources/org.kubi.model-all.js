@@ -294,13 +294,6 @@ var java;
             };
             List.prototype.toArray = function (a) {
                 return this;
-                /*
-                for (var ik in this) {
-                    if (this.hasOwnProperty(ik) && ik != "length") {
-                        a.push(this[ik]);
-                    }
-                }
-                return a;*/
             };
             List.prototype.size = function () {
                 return this.length;
@@ -500,6 +493,7 @@ var org;
         junit.Assert = Assert;
     })(junit = org.junit || (org.junit = {}));
 })(org || (org = {}));
+//# sourceMappingURL=java.js.map
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2383,7 +2377,12 @@ var org;
                             };
                             KCacheLayer.prototype.resolve = function (p_key, current) {
                                 if (current == org.kevoree.modeling.api.KConfig.KEY_SIZE - 1) {
-                                    return this._cachedObjects.get(p_key.part(current));
+                                    if (this._cachedObjects != null) {
+                                        return this._cachedObjects.get(p_key.part(current));
+                                    }
+                                    else {
+                                        return null;
+                                    }
                                 }
                                 else {
                                     if (this._nestedLayers != null) {
@@ -3182,7 +3181,6 @@ var org;
                                     var needUniverseCopy = accessMode.equals(org.kevoree.modeling.api.data.manager.AccessMode.WRITE) && (resolvedUniverse != origin.universe().key());
                                     var entry = this._cache.get(org.kevoree.modeling.api.data.cache.KContentKey.createObject(resolvedUniverse, resolvedTime, origin.uuid()));
                                     if (entry == null) {
-                                        System.err.println(DefaultKDataManager.OUT_OF_CACHE_MESSAGE);
                                         return null;
                                     }
                                     if (accessMode.equals(org.kevoree.modeling.api.data.manager.AccessMode.DELETE)) {
@@ -3197,6 +3195,7 @@ var org;
                                     }
                                     else {
                                         var clonedEntry = entry.clone();
+                                        this._cache.put(org.kevoree.modeling.api.data.cache.KContentKey.createObject(origin.universe().key(), origin.now(), origin.uuid()), clonedEntry);
                                         if (!needUniverseCopy) {
                                             timeTree.insert(origin.now());
                                         }
@@ -3206,7 +3205,6 @@ var org;
                                             this._cache.put(org.kevoree.modeling.api.data.cache.KContentKey.createTimeTree(origin.universe().key(), origin.uuid()), newTemporalTree);
                                             objectUniverseTree.put(origin.universe().key(), origin.now());
                                         }
-                                        this._cache.put(org.kevoree.modeling.api.data.cache.KContentKey.createObject(origin.universe().key(), origin.now(), origin.uuid()), clonedEntry);
                                         entry.dec();
                                         return clonedEntry;
                                     }
@@ -7708,6 +7706,9 @@ var org;
                             this._previousOrEqualsCacheValues = null;
                             this._counter = 0;
                             this._dirty = false;
+                            this._previousOrEqualsCacheKeys = new Array();
+                            this._previousOrEqualsCacheValues = new Array();
+                            this._nextCacheElem = 0;
                         }
                         IndexRBTree.prototype.size = function () {
                             return this._size;
@@ -7723,7 +7724,7 @@ var org;
                         };
                         IndexRBTree.prototype.tryPreviousOrEqualsCache = function (key) {
                             if (this._previousOrEqualsCacheKeys != null && this._previousOrEqualsCacheValues != null) {
-                                for (var i = 0; i < org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE; i++) {
+                                for (var i = 0; i < this._nextCacheElem; i++) {
                                     if (this._previousOrEqualsCacheKeys[i] != null && key == this._previousOrEqualsCacheKeys[i]) {
                                         return this._previousOrEqualsCacheValues[i];
                                     }
@@ -7735,20 +7736,11 @@ var org;
                             }
                         };
                         IndexRBTree.prototype.resetCache = function () {
-                            this._previousOrEqualsCacheKeys = null;
-                            this._previousOrEqualsCacheValues = null;
                             this._nextCacheElem = 0;
                         };
                         IndexRBTree.prototype.putInPreviousOrEqualsCache = function (key, resolved) {
-                            if (this._previousOrEqualsCacheKeys == null || this._previousOrEqualsCacheValues == null) {
-                                this._previousOrEqualsCacheKeys = new Array();
-                                this._previousOrEqualsCacheValues = new Array();
+                            if (this._nextCacheElem == org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE) {
                                 this._nextCacheElem = 0;
-                            }
-                            else {
-                                if (this._nextCacheElem == org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE) {
-                                    this._nextCacheElem = 0;
-                                }
                             }
                             this._previousOrEqualsCacheKeys[this._nextCacheElem] = key;
                             this._previousOrEqualsCacheValues[this._nextCacheElem] = resolved;
@@ -8219,6 +8211,12 @@ var org;
                             this._previousOrEqualsCacheValues = null;
                             this._lookupCacheKeys = null;
                             this._lookupCacheValues = null;
+                            this._lookupCacheKeys = new Array();
+                            this._lookupCacheValues = new Array();
+                            this._previousOrEqualsCacheKeys = new Array();
+                            this._previousOrEqualsCacheValues = new Array();
+                            this._previousOrEqualsNextCacheElem = 0;
+                            this._lookupNextCacheElem = 0;
                         }
                         LongRBTree.prototype.size = function () {
                             return this._size;
@@ -8248,7 +8246,7 @@ var org;
                         };
                         LongRBTree.prototype.tryPreviousOrEqualsCache = function (key) {
                             if (this._previousOrEqualsCacheKeys != null && this._previousOrEqualsCacheValues != null) {
-                                for (var i = 0; i < org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE; i++) {
+                                for (var i = 0; i < this._previousOrEqualsNextCacheElem; i++) {
                                     if (this._previousOrEqualsCacheKeys[i] != null && key == this._previousOrEqualsCacheKeys[i]) {
                                         return this._previousOrEqualsCacheValues[i];
                                     }
@@ -8258,7 +8256,7 @@ var org;
                         };
                         LongRBTree.prototype.tryLookupCache = function (key) {
                             if (this._lookupCacheKeys != null && this._lookupCacheValues != null) {
-                                for (var i = 0; i < org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE; i++) {
+                                for (var i = 0; i < this._lookupNextCacheElem; i++) {
                                     if (this._lookupCacheKeys[i] != null && key == this._lookupCacheKeys[i]) {
                                         return this._lookupCacheValues[i];
                                     }
@@ -8267,42 +8265,24 @@ var org;
                             return null;
                         };
                         LongRBTree.prototype.resetCache = function () {
-                            this._previousOrEqualsCacheKeys = null;
-                            this._previousOrEqualsCacheValues = null;
-                            this._lookupCacheKeys = null;
-                            this._lookupCacheValues = null;
-                            this._nextCacheElem = 0;
-                            this._lookupCacheElem = 0;
+                            this._previousOrEqualsNextCacheElem = 0;
+                            this._lookupNextCacheElem = 0;
                         };
                         LongRBTree.prototype.putInPreviousOrEqualsCache = function (key, resolved) {
-                            if (this._previousOrEqualsCacheKeys == null || this._previousOrEqualsCacheValues == null) {
-                                this._previousOrEqualsCacheKeys = new Array();
-                                this._previousOrEqualsCacheValues = new Array();
-                                this._nextCacheElem = 0;
+                            if (this._previousOrEqualsNextCacheElem == org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE) {
+                                this._previousOrEqualsNextCacheElem = 0;
                             }
-                            else {
-                                if (this._nextCacheElem == org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE) {
-                                    this._nextCacheElem = 0;
-                                }
-                            }
-                            this._previousOrEqualsCacheKeys[this._nextCacheElem] = key;
-                            this._previousOrEqualsCacheValues[this._nextCacheElem] = resolved;
-                            this._nextCacheElem++;
+                            this._previousOrEqualsCacheKeys[this._previousOrEqualsNextCacheElem] = key;
+                            this._previousOrEqualsCacheValues[this._previousOrEqualsNextCacheElem] = resolved;
+                            this._previousOrEqualsNextCacheElem++;
                         };
                         LongRBTree.prototype.putInLookupCache = function (key, resolved) {
-                            if (this._lookupCacheKeys == null || this._lookupCacheValues == null) {
-                                this._lookupCacheKeys = new Array();
-                                this._lookupCacheValues = new Array();
-                                this._lookupCacheElem = 0;
+                            if (this._lookupNextCacheElem == org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE) {
+                                this._lookupNextCacheElem = 0;
                             }
-                            else {
-                                if (this._lookupCacheElem == org.kevoree.modeling.api.KConfig.TREE_CACHE_SIZE) {
-                                    this._lookupCacheElem = 0;
-                                }
-                            }
-                            this._lookupCacheKeys[this._lookupCacheElem] = key;
-                            this._lookupCacheValues[this._lookupCacheElem] = resolved;
-                            this._lookupCacheElem++;
+                            this._lookupCacheKeys[this._lookupNextCacheElem] = key;
+                            this._lookupCacheValues[this._lookupNextCacheElem] = resolved;
+                            this._lookupNextCacheElem++;
                         };
                         LongRBTree.prototype.setClean = function () {
                             this._dirty = false;
@@ -11702,6 +11682,13 @@ var org;
                 function ActionParameterImpl(p_factory, p_uuid, p_metaClass) {
                     _super.call(this, p_factory, p_uuid, p_metaClass);
                 }
+                ActionParameterImpl.prototype.getPeriod = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_PERIOD);
+                };
+                ActionParameterImpl.prototype.setPeriod = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_PERIOD, p_obj);
+                    return this;
+                };
                 ActionParameterImpl.prototype.getUnit = function () {
                     return this.get(org.kubi.meta.MetaActionParameter.ATT_UNIT);
                 };
@@ -12093,15 +12080,15 @@ var org;
                 function StateParameterImpl(p_factory, p_uuid, p_metaClass) {
                     _super.call(this, p_factory, p_uuid, p_metaClass);
                 }
-                ParameterImpl.prototype.getPeriod = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_PERIOD);
+                StateParameterImpl.prototype.getPeriod = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_PERIOD);
                 };
-                ParameterImpl.prototype.setPeriod = function (p_obj) {
-                    this.set(org.kubi.meta.MetaParameter.ATT_PERIOD, p_obj);
+                StateParameterImpl.prototype.setPeriod = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_PERIOD, p_obj);
                     return this;
                 };
-                ParameterImpl.prototype.getUnit = function () {
-                    return this.get(org.kubi.meta.MetaParameter.ATT_UNIT);
+                StateParameterImpl.prototype.getUnit = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_UNIT);
                 };
                 StateParameterImpl.prototype.setUnit = function (p_obj) {
                     this.set(org.kubi.meta.MetaStateParameter.ATT_UNIT, p_obj);
@@ -12196,13 +12183,14 @@ var org;
                 function MetaActionParameter() {
                     _super.call(this, "org.kubi.ActionParameter", 5);
                     var temp_all = new Array();
-                    temp_all[0] = MetaActionParameter.ATT_UNIT;
-                    temp_all[1] = MetaActionParameter.ATT_DESIRED;
-                    temp_all[2] = MetaActionParameter.ATT_VALUETYPE;
-                    temp_all[3] = MetaActionParameter.ATT_PRECISION;
-                    temp_all[4] = MetaActionParameter.ATT_NAME;
-                    temp_all[5] = MetaActionParameter.ATT_RANGE;
-                    temp_all[6] = MetaActionParameter.ATT_VALUE;
+                    temp_all[0] = MetaActionParameter.ATT_PERIOD;
+                    temp_all[1] = MetaActionParameter.ATT_UNIT;
+                    temp_all[2] = MetaActionParameter.ATT_DESIRED;
+                    temp_all[3] = MetaActionParameter.ATT_VALUETYPE;
+                    temp_all[4] = MetaActionParameter.ATT_PRECISION;
+                    temp_all[5] = MetaActionParameter.ATT_NAME;
+                    temp_all[6] = MetaActionParameter.ATT_RANGE;
+                    temp_all[7] = MetaActionParameter.ATT_VALUE;
                     var temp_references = new Array();
                     var temp_operations = new Array();
                     this.init(temp_all);
@@ -12214,13 +12202,14 @@ var org;
                     return MetaActionParameter.INSTANCE;
                 };
                 MetaActionParameter.INSTANCE = null;
-                MetaActionParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_DESIRED = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("desired", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 10, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_PERIOD = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("period", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_DESIRED = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("desired", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 10, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 11, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
                 return MetaActionParameter;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaActionParameter = MetaActionParameter;
@@ -12362,13 +12351,13 @@ var org;
                 function MetaStateParameter() {
                     _super.call(this, "org.kubi.StateParameter", 4);
                     var temp_all = new Array();
-                    temp_all[0] = MetaParameter.ATT_PERIOD;
-                    temp_all[1] = MetaParameter.ATT_UNIT;
-                    temp_all[2] = MetaParameter.ATT_VALUETYPE;
-                    temp_all[3] = MetaParameter.ATT_PRECISION;
-                    temp_all[4] = MetaParameter.ATT_NAME;
-                    temp_all[5] = MetaParameter.ATT_RANGE;
-                    temp_all[6] = MetaParameter.ATT_VALUE;
+                    temp_all[0] = MetaStateParameter.ATT_PERIOD;
+                    temp_all[1] = MetaStateParameter.ATT_UNIT;
+                    temp_all[2] = MetaStateParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaStateParameter.ATT_PRECISION;
+                    temp_all[4] = MetaStateParameter.ATT_NAME;
+                    temp_all[5] = MetaStateParameter.ATT_RANGE;
+                    temp_all[6] = MetaStateParameter.ATT_VALUE;
                     var temp_references = new Array();
                     var temp_operations = new Array();
                     this.init(temp_all);
@@ -12379,15 +12368,15 @@ var org;
                     }
                     return MetaStateParameter.INSTANCE;
                 };
-                MetaParameter.INSTANCE = null;
-                MetaParameter.ATT_PERIOD = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("period", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                MetaParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 10, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
-                return MetaParameter;
+                MetaStateParameter.INSTANCE = null;
+                MetaStateParameter.ATT_PERIOD = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("period", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 10, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                return MetaStateParameter;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaStateParameter = MetaStateParameter;
             var MetaTechnology = (function (_super) {

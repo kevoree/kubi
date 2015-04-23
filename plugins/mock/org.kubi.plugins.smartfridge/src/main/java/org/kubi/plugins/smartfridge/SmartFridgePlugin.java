@@ -26,14 +26,22 @@ public class SmartFridgePlugin implements KubiPlugin {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
+
                 currentTechnology = ecosystem.view().createTechnology().setName(SmartFridgePlugin.class.getSimpleName());
                 ecosystem.addTechnologies(currentTechnology);
-                Device device = ecosystem.view().createDevice().setName("Fridge");
-                StateParameter temperatureParam = device.view().createStateParameter().setName("temperature").setUnit("celsius");
-                StateParameter openParam = device.view().createStateParameter().setName("open");
+
+                Device device = ecosystem.view().createDevice().setName("plug");
+
+                StateParameter temperatureParam = device.view().createStateParameter().setName("name").setUnit("kW");
                 device.addStateParameters(temperatureParam);
-                device.addStateParameters(openParam);
+
+                Device device2 = ecosystem.view().createDevice().setName("openCheck");
+
+                StateParameter openParam = device.view().createStateParameter().setName("name");
+                device2.addStateParameters(openParam);
+
                 currentTechnology.addDevices(device);
+                currentTechnology.addDevices(device2);
                 long[] stateKeys = new long[2];
                 stateKeys[0] = temperatureParam.uuid();
                 stateKeys[1] = openParam.uuid();

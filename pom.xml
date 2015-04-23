@@ -41,35 +41,32 @@
     <modules>
         <module>org.kubi.model</module>
         <module>org.kubi.api</module>
+        <module>org.kubi.kernel</module>
 
         <!-- Plugins -->
         <module>plugins/gui/org.kubi.plugins.web</module>
 
         <!-- ZWave driver -->
-        <module>drivers/zwave/org.kubi.driver.zwave</module>
-        <module>drivers/zwave/org.kubi.driver.zwave.productstore</module>
+        <module>plugins/zwave/org.kubi.plugins.zwave</module>
+        <module>plugins/zwave/org.kubi.driver.zwave.productstore</module>
         <!-- EnOcean driver -->
-        <module>drivers/enocean/org.kubi.driver.enocean</module>
-        <!-- EchoMock driver -->
-        <module>drivers/mock/org.kubi.driver.madmock</module>
-        <module>drivers/mock/org.kubi.driver.smartcampus</module>
-        <module>drivers/mock/org.kubi.driver.smartwindow</module>
-        <module>drivers/mock/org.kubi.driver.smartfridge</module>
+        <module>plugins/enocean/org.kubi.driver.enocean</module>
+
+        <!-- Mock driver -->
+        <module>plugins/mock/org.kubi.plugins.madmock</module>
+        <module>plugins/mock/org.kubi.plugins.smartfridge</module>
         <!-- Modules with real data -->
-        <module>drivers/mock/org.kubi.driver.realsmartfridge</module>
+        <module>plugins/mock/org.kubi.plugins.simulsmartfridge</module>
 
         <!-- Module reader -->
-        <module>drivers/reader/org.kubi.reader.polynomialReader</module>
+        <module>plugins/reader/org.kubi.reader.polynomialReader</module>
+        <module>plugins/reader/org.kubi.reader.periodAnalysis</module>
 
         <!-- Module for bugs detection -->
         <module>org.kubi.bugsMain</module>
 
 
-        <module>drivers/reader/org.kubi.periodAnalysis</module>
         <!-- End Plugins -->
-
-        <module>org.kubi.kernel</module>
-
     </modules>
 
     <developers>

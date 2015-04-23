@@ -1,8 +1,9 @@
 package org.kubi.runner;
 
+import org.kevoree.log.Log;
 import org.kevoree.modeling.api.Callback;
+import org.kevoree.modeling.api.KConfig;
 import org.kevoree.modeling.api.scheduler.ExecutorServiceScheduler;
-import org.kevoree.modeling.databases.websocket.WebSocketWrapper;
 import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
@@ -23,13 +24,11 @@ public class KubiKernelImpl implements KubiKernel {
 
     private KubiModel kubiModel;
 
-    public KubiKernelImpl(String dbPath, int port) throws IOException {
+    public KubiKernelImpl(String dbPath) throws IOException {
         kubiModel = new KubiModel();
         kubiModel.setScheduler(new ExecutorServiceScheduler());
         LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(dbPath);
-        WebSocketWrapper webSocketWrapper = new WebSocketWrapper(leveldb, port);
-        webSocketWrapper.exposeResourcesOf(KubiRunner.class.getClassLoader());
-        kubiModel.setContentDeliveryDriver(webSocketWrapper);
+        kubiModel.setContentDeliveryDriver(leveldb);
     }
 
     private boolean isConnected = false;
@@ -44,14 +43,15 @@ public class KubiKernelImpl implements KubiKernel {
                 @Override
                 public void on(Throwable throwable) {
 
-                    Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(System.currentTimeMillis()).createEcosystem();
+                    Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).createEcosystem();
                     ecosystem.setName("KubiRoot");
-                    kubiModel.universe(currentUniverse()).time(System.currentTimeMillis()).setRoot(ecosystem);
+                    kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).setRoot(ecosystem);
 
                     executorService = Executors.newCachedThreadPool();
                     isConnected = true;
                     pluginLoaders = ServiceLoader.load(KubiPlugin.class);
                     for (KubiPlugin plugin : pluginLoaders) {
+                        Log.info("Found plugin: {}",plugin.getClass().getSimpleName());
                         try {
                             addDriver(plugin);
                         } catch (Exception e) {
@@ -65,7 +65,7 @@ public class KubiKernelImpl implements KubiKernel {
 
     public synchronized void stop() throws InterruptedException {
         if (isConnected) {
-            for (KubiPlugin plugin : plugins) {
+            for (KubiPlugin plugin : plugins.toArray(new KubiPlugin[plugins.size()])) {
                 try {
                     removeDriver(plugin);
                 } catch (Exception e) {

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <artifactId>org.kubi.root</artifactId>
+        <groupId>org.kubi</groupId>
+        <version>1-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>org.kubi.plugins.web</artifactId>
+    <name>Kubi :: Plugins :: Web</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.modeling</groupId>
+            <artifactId>org.kevoree.modeling.microframework.addons.nunjucks</artifactId>
+            <version>${kmf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.modeling</groupId>
+            <artifactId>org.kevoree.modeling.microframework.drivers.websocket</artifactId>
+            <version>${kmf.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.kevoree.modeling</groupId>
+                <artifactId>org.kevoree.modeling.java2typescript.mavenplugin</artifactId>
+                <version>${java2typescript.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>genDep</id>
+                        <goals>
+                            <goal>extract</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>.*\.ts</exclude>
+                                <exclude>java.js</exclude>
+                                <exclude>org.kevoree.modeling.microframework.typescript.js</exclude>
+                                <exclude>tsc.js</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

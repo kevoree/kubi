@@ -17,9 +17,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.frontend.web</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.kevoree.log</groupId>
+            <artifactId>org.kevoree.log</artifactId>
+            <version>${kevoree.log.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kubi</groupId>
@@ -36,11 +36,6 @@
             <artifactId>org.kevoree.modeling.microframework.drivers.leveldb</artifactId>
             <version>${kmf.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.kevoree.modeling</groupId>
-            <artifactId>org.kevoree.modeling.microframework.drivers.websocket</artifactId>
-            <version>${kmf.version}</version>
-        </dependency>
 
 
         <!-- BugsMain -->
@@ -51,6 +46,29 @@
         </dependency>
         <!-- Comment under -->
         <!-- madmock
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.smartfridge</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.zwave</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.madmock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.driver.madmock</artifactId>

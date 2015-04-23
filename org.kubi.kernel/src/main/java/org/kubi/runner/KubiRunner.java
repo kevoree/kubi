@@ -6,13 +6,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class KubiRunner {
 
-    private static int PORT = 8080;
-
     private static final String DB_NAME = "kubiDB";
 
     public static void main(String[] args) throws IOException {
         clearDB();
-        KubiKernel kernel = new KubiKernel(DB_NAME, PORT);
+        KubiKernelImpl kernel = new KubiKernelImpl(DB_NAME);
         kernel.start();
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -42,7 +40,6 @@ public class KubiRunner {
                         Files.delete(dir);
                         return FileVisitResult.CONTINUE;
                     }
-
                 });
             }
         } catch (IOException e) {

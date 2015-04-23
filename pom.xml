@@ -31,17 +31,19 @@
     </parent>
 
     <properties>
-        <kmf.version>4.17.1</kmf.version>
+        <kmf.version>4.18.1</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <undertow.version>1.1.3.Final</undertow.version>
-        <eclipse.json.version>0.9.2</eclipse.json.version>
         <kevoree.log.version>1</kevoree.log.version>
-        <java2typescript.plugin.version>21</java2typescript.plugin.version>
+        <java2typescript.plugin.version>27</java2typescript.plugin.version>
     </properties>
 
     <modules>
         <module>org.kubi.model</module>
         <module>org.kubi.api</module>
+
+        <!-- Plugins -->
+        <module>plugins/gui/org.kubi.plugins.web</module>
 
         <!-- ZWave driver -->
         <module>drivers/zwave/org.kubi.driver.zwave</module>
@@ -64,8 +66,8 @@
 
 
         <module>drivers/reader/org.kubi.periodAnalysis</module>
+        <!-- End Plugins -->
 
-        <module>org.kubi.frontend.web</module>
         <module>org.kubi.kernel</module>
 
     </modules>

@@ -4,19 +4,22 @@ class org.kubi.Ecosystem {
     @contained
     groupes : org.kubi.Group[0,*]
     @contained
-    devices : org.kubi.Device[0,*]
-    @contained
     technologies : org.kubi.Technology[0,*]
 }
 
 class org.kubi.Group {
     @id
     name : String
+    @contained
+    groupes : org.kubi.Group[0,*]
+    devices : org.kubi.Device[0,*] oppositeOf groupes
 }
 
 class org.kubi.Device {
     @id
     id : String
+    homeId : String
+    groupes : org.kubi.Group[0,*] oppositeOf devices
 
     links : org.kubi.Device[0,*]
     name : String
@@ -25,12 +28,12 @@ class org.kubi.Device {
     manufacturer : String
     technology : org.kubi.Technology
     @contained
-    parameters : org.kubi.Parameter[0,*]
+    stateParameters : org.kubi.StateParameter[0,*]
     @contained
-    functions : org.kubi.Function[0,*]
+    actionParameters : org.kubi.ActionParameter[0,*]
 }
 
-class org.kubi.Parameter {
+class org.kubi.StateParameter {
     name : String
     value : String
     // The value of the period at a time T is the period calculated between T and T+x (at the beginning of the segment).
@@ -41,18 +44,13 @@ class org.kubi.Parameter {
     range : String
 }
 
-class org.kubi.Function {
-    name : String
-    device : org.kubi.Device oppositeOf functions
-    @contained
-    returnType : org.kubi.Parameter
-    @contained
-    parameters : org.kubi.Parameter[0,*]
-    func exec(jsonInput : String) : String
+class org.kubi.ActionParameter : org.kubi.StateParameter {
+    desired : String
 }
 
 class org.kubi.Technology {
     @id
     name : String
+    @contained
     devices : org.kubi.Device[0,*] oppositeOf technology
 }

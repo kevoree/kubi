@@ -1531,10 +1531,10 @@ var org;
                         AbstractKObject.prototype.toJSON = function () {
                             var raw = this.view().universe().model().manager().entry(this, org.kevoree.modeling.api.data.manager.AccessMode.READ);
                             if (raw != null) {
-                                return org.kevoree.modeling.api.data.manager.JsonRaw.encode(raw, this._uuid, this._metaClass, true, false);
+                                return org.kevoree.modeling.api.data.manager.JsonRaw.encode(raw, this._uuid, this._metaClass, false);
                             }
                             else {
-                                return "";
+                                return null;
                             }
                         };
                         AbstractKObject.prototype.toString = function () {
@@ -2278,7 +2278,7 @@ var org;
                                 }
                             };
                             KCacheEntry.prototype.serialize = function () {
-                                return org.kevoree.modeling.api.data.manager.JsonRaw.encode(this, org.kevoree.modeling.api.KConfig.NULL_LONG, this.metaClass, true, false);
+                                return org.kevoree.modeling.api.data.manager.JsonRaw.encode(this, org.kevoree.modeling.api.KConfig.NULL_LONG, this.metaClass, false);
                             };
                             KCacheEntry.prototype.setClean = function () {
                                 this._dirty = false;
@@ -3610,7 +3610,7 @@ var org;
                                     return true;
                                 }
                             };
-                            JsonRaw.encode = function (raw, uuid, p_metaClass, endline, isRoot) {
+                            JsonRaw.encode = function (raw, uuid, p_metaClass, isRoot) {
                                 var builder = {};
                                 builder[org.kevoree.modeling.api.json.JsonFormat.KEY_META] = p_metaClass.metaName();
                                 if (uuid != null) {
@@ -3634,13 +3634,14 @@ var org;
                                 var metaElements = p_metaClass.metaElements();
                                 var payload_res;
                                 for (var i = 0; i < metaElements.length; i++) {
-                                    if (metaElements[i]['attributeType'] != undefined && metaElements[i]['attributeType']() == org.kevoree.modeling.api.meta.PrimitiveTypes.TRANSIENT) {
+                                    if (metaElements[i] != null && metaElements[i].metaType().equals(org.kevoree.modeling.api.meta.MetaType.ATTRIBUTE)) {
+                                        if (metaElements[i]['attributeType']() != org.kevoree.modeling.api.meta.PrimitiveTypes.TRANSIENT) {
+                                            var attrsPayload = metaElements[i]['strategy']().save(payload_res, metaElements[i]);
+                                            builder[metaElements[i].metaName()] = attrsPayload;
+                                        }
                                     }
                                     else {
-                                        payload_res = raw.get(metaElements[i].index());
-                                        if (payload_res != null) {
-                                            builder[metaElements[i].metaName()] = payload_res;
-                                        }
+                                        builder[metaElements[i].metaName()] = payload_res;
                                     }
                                 }
                                 return JSON.stringify(builder);
@@ -5496,9 +5497,7 @@ var org;
                                         }
                                         else {
                                             if (metaKey.equals(org.kevoree.modeling.api.json.JsonFormat.KEY_ROOT)) {
-                                                if ("true".equals(payload_content)) {
-                                                    p_rootElem[0] = current;
-                                                }
+                                                p_rootElem[0] = current;
                                             }
                                             else {
                                                 var metaElement = metaClass.metaByName(metaKey);
@@ -5590,7 +5589,7 @@ var org;
                             if (elem != null) {
                                 var raw = elem.view().universe().model().manager().entry(elem, org.kevoree.modeling.api.data.manager.AccessMode.READ);
                                 if (raw != null) {
-                                    builder.append(org.kevoree.modeling.api.data.manager.JsonRaw.encode(raw, elem.uuid(), elem.metaClass(), false, isRoot));
+                                    builder.append(org.kevoree.modeling.api.data.manager.JsonRaw.encode(raw, elem.uuid(), elem.metaClass(), isRoot));
                                 }
                             }
                         };

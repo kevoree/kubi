@@ -51,11 +51,13 @@
         </p>
         <form id="radioDevicePicker" action="#"></form>
         <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
-            {% asyncEach device in ecosystem.devices %}
-                <p>
-                    <input name="radioDevicePicker-group" class="with-gap" value="{{device.name}}" type="radio" id="radio{{device.name}}" />
-                    <label for="radio{{device.name}}">{{device.name}}</label>
-                </p>
+            {% asyncEach techno in ecosystem.technologies %}
+                {% asyncEach device in techno.devices %}
+                    <p>
+                        <input name="radioDevicePicker-group" class="with-gap" value="{{device.name}}" type="radio" id="radio{{device.name}}" />
+                        <label for="radio{{device.name}}">{{device.name}}</label>
+                    </p>
+                {% endeach %}
             {% endeach %}
         </script>
     </div>
@@ -100,14 +102,16 @@
 
                             <ul id="ecosystem"></ul>
                             <script id="ecosystem-template" type="text/x-handlebars-template">
-                                {% asyncEach device in ecosystem.devices %}
-                                {% asyncEach param in device.parameters %}
+                                {% asyncEach techno in ecosystem.technologies %}
+                                {% asyncEach device in techno.devices %}
+                                {% asyncEach param in device.stateParameters %}
                                 <li>
                                     <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
                                         Value : {{param.value}} -
                                         Period :{{param.period}}
                                     </p>
                                 </li>
+                                {% endeach %}
                                 {% endeach %}
                                 {% endeach %}
                             </script>

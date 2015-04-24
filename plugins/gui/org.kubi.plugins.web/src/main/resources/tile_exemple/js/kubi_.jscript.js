@@ -126,7 +126,7 @@ function getDataFromKubi(){
 
     currentView.getRoot().then(function (root) {
 
-        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).done().then(function (devices){
+        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices){
             var d;
             for(d = 0; d< devices.length; d++)
             {
@@ -135,7 +135,7 @@ function getDataFromKubi(){
                 dataSeries[device.getName()] = ({type: "line", showInLegend: true, name: device.getName(), title: device.getName(), dataPoints: []});
                 // add a curb describing the device period on the chart
                 dataSeries[device.getName()+"_Period"] = ({type: "line", showInLegend: true, name: device.getName()+"_Period", title: device.getName()+"_Period", dataPoints: []});
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params){
+                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params){
                     if (params.length != 0) {
                         var param = params[0];
                         param.listen(groupListenerID, function (param, metaTabl){
@@ -143,10 +143,10 @@ function getDataFromKubi(){
                                 var valueHasChanged = false;
                                 var periodHasChanged = false;
                                 for (var m = 0; m < metaTabl.length; m++) {
-                                    if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_VALUE) {
+                                    if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_VALUE) {
                                         valueHasChanged = true;
                                     }
-                                    if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_PERIOD) {
+                                    if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_PERIOD) {
                                         periodHasChanged = true;
                                     }
                                 }

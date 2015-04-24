@@ -159,7 +159,8 @@ function getDataFromKubi(){
         });
 
 
-        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).done().then(function (devices){
+        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+            .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices){
             var d;
             for(d = 0; d< devices.length; d++)
             {
@@ -168,7 +169,7 @@ function getDataFromKubi(){
                 dataSeries[device.getName()] = ({type: "line", showInLegend: true, name: device.getName(), title: device.getName(), dataPoints: []});
                 // add a curb describing the device period on the chart
                 dataSeries[device.getName()+"_Period"] = ({type: "line", showInLegend: true, name: device.getName()+"_Period", title: device.getName()+"_Period", dataPoints: []});
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (params){
+                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params){
                     if (params.length != 0) {
                         var param = params[0];
                         param.listen(groupListenerID, function (param, metaTabl){
@@ -176,10 +177,10 @@ function getDataFromKubi(){
                                 var valueHasChanged = false;
                                 var periodHasChanged = false;
                                 for (var m = 0; m < metaTabl.length; m++) {
-                                    if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_VALUE) {
+                                    if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_VALUE) {
                                         valueHasChanged = true;
                                     }
-                                    if (metaTabl[m] == org.kubi.meta.MetaParameter.ATT_PERIOD) {
+                                    if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_PERIOD) {
                                         periodHasChanged = true;
                                     }
                                 }
@@ -307,8 +308,9 @@ function getDeviceValue(time){
     var currentView = kubiModel.universe(universeNumber).time(time*1000);
     currentView.getRoot().then(function(root){
         if(root!= null){
-            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "plug")
-                .traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name")
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).
+                traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "plug")
+                .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name")
                 .done().then(function (kObecjts){
                     if(kObecjts.length >0){
                         var res = kObecjts[0].getValue();
@@ -351,11 +353,12 @@ function sliderGraphInit() {
         var currentView = kubiModel.universe(universeNumber).time(start);
         currentView.getRoot().then(function(root) {
             if (root != null) {
-                root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceName).done().then(function (kObjects) {
+                root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceName).done().then(function (kObjects) {
                     if (kObjects.length > 0) {
                         // TODO : useful ?? maybe if it doesn't not exist, we can just create it ?
                         var device = kObjects[0];
-                        device.traversal().traverse(org.kubi.meta.MetaDevice.REF_PARAMETERS).withAttribute(org.kubi.meta.MetaParameter.ATT_NAME, "name").done().then(function (parameters){
+                        device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters){
                             if(parameters.length >0){
                                 var param = parameters[0];
                                 // emptying the dataset of the device

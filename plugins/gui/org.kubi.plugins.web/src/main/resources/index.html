@@ -19,7 +19,8 @@
     <h1>EcoSystem {{ecosystem.name}}</h1>
     <div class="body">
         <ul>
-            {% asyncEach device in ecosystem.devices %}
+            {% asyncEach techno in ecosystem.technologies %}
+            {% asyncEach device in techno.devices %}
             <li>{{device.name}} ({{device.version}}) {{device | field('name')}} {{device | field('version')}}
                 <ul>
                     {% asyncEach ff in device.functions %}
@@ -42,6 +43,7 @@
                 </ul>
             </li>
             </li>
+            {% endeach %}
             {% endeach %}
         </ul>
     </div>

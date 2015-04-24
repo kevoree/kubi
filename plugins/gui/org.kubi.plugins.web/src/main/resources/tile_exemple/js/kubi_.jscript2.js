@@ -180,7 +180,7 @@ function getDataFromKubi(){
                                     if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_VALUE) {
                                         valueHasChanged = true;
                                     }
-                                    if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_PERIOD) {
+                                    if (metaTabl[m] == org.kubi.meta.MetaPeriod.ATT_PERIOD) {
                                         periodHasChanged = true;
                                     }
                                 }
@@ -191,14 +191,19 @@ function getDataFromKubi(){
                                         y: parseFloat(param.getValue())
                                     }, parent.getName());
                                 }
-                                if (param.getPeriod() != undefined && periodHasChanged && dataSeries[device.getName()+"_Period"].dataPoints.length >0) {
-                                    // the period of the parameter has changed => add the period to the graph data set
-                                    // /!\\ if the graph period doesn't exist the graph is not created
-                                    addDataPointWithSerie({
-                                        x: new Date(),
-                                        y: parseFloat(param.getPeriod())
-                                    }, parent.getName() + "_Period");
+                                if(periodHasChanged && dataSeries[device.getName()+"_Period"].dataPoints.length >=0) {
+                                    param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
+                                        if (periods.length > 0 && periods[0].getPeriod() != undefined) {
+                                            // the period of the parameter has changed => add the period to the graph data set
+                                            // /!\\ if the graph period doesn't exist the graph is not created
+                                            addDataPointWithSerie({
+                                                x: new Date(),
+                                                y: parseFloat(param.getPeriod())
+                                            }, parent.getName() + "_Period");
+                                        }
+                                    });
                                 }
+
                             });
                         }); // end of listen
                         var endTime = 1428997126000;
@@ -243,9 +248,11 @@ function addPreviousValues(paramTimed, deviceName,startTime, stepTime){
 function addPreviousValuesWithPeriod(paramTimed, deviceName, startTime, stepTime){
     if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
-        if(paramTimed.getPeriod()!= undefined){
-            dataSeries[deviceName+"_Period"].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getPeriod())});
-        }
+        paramTimed.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods){
+            if(periods.length > 0 && periods[0].getPeriod()!= undefined){
+                dataSeries[deviceName+"_Period"].dataPoints.push({x: new Date(periods[0].now()), y: parseFloat(periods[0].getPeriod())});
+            }
+        });
         paramTimed.jump(paramTimed.now() - stepTime).then(function (param1){
             addPreviousValuesWithPeriod(param1, deviceName, startTime, stepTime);
         });
@@ -397,22 +404,25 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
                 dataSeries[deviceName].dataPoints.push({
                     x: new Date(paramTimed.now()),
                     y: parseFloat(paramTimed.getValue())
-                });
-                if (paramTimed.getPeriod() != undefined) {
-                    if (dataSeries[deviceName + "_Period"] == null) {
-                        dataSeries[deviceName + "_Period"] = ({
-                            type: "line",
-                            showInLegend: true,
-                            name: deviceName,
-                            title: deviceName,
-                            dataPoints: []
+                })
+                paramTimed.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods){
+                    if (periods.length > 0 && periods[0].getPeriod() != undefined) {
+                        if (dataSeries[deviceName + "_Period"] == null) {
+                            dataSeries[deviceName + "_Period"] = ({
+                                type: "line",
+                                showInLegend: true,
+                                name: deviceName,
+                                title: deviceName,
+                                dataPoints: []
+                            });
+                        }
+                        dataSeries[deviceName + "_Period"].dataPoints.push({
+                            x: new Date(periods[0].now()),
+                            y: parseFloat(periods[0].getPeriod())
                         });
                     }
-                    dataSeries[deviceName + "_Period"].dataPoints.push({
-                        x: new Date(paramTimed.now()),
-                        y: parseFloat(paramTimed.getPeriod())
-                    });
-                }
+                });
+
                 setInGraphDeviceRangeValuesWithPeriod(deviceName, paramTimed, start , end - step, step);
             }
         });

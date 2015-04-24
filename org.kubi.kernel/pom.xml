@@ -69,6 +69,11 @@
             <version>${project.version}</version>
         </dependency>
         -->
+ 		<dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.fakemock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- simulated smartfridge
         <dependency>
             <groupId>org.kubi</groupId>

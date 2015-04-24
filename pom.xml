@@ -54,6 +54,7 @@
 
         <!-- Mock driver -->
         <module>plugins/mock/org.kubi.plugins.madmock</module>
+        <module>plugins/mock/org.kubi.plugins.fakemock</module>
         <module>plugins/mock/org.kubi.plugins.smartfridge</module>
         <!-- Modules with real data -->
         <module>plugins/mock/org.kubi.plugins.simulsmartfridge</module>

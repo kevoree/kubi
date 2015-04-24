@@ -94,12 +94,12 @@
         </dependency>
 
         <!-- BugsMain
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.bugsMain</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
     </dependencies>
 
 </project>

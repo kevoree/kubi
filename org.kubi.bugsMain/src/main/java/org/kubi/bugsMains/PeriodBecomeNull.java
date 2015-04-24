@@ -12,6 +12,7 @@ import org.kubi.meta.MetaStateParameter;
 import org.kubi.meta.MetaTechnology;
 
 import javax.sql.rowset.serial.SerialRef;
+import java.beans.PersistenceDelegate;
 
 
 /**
@@ -35,22 +36,23 @@ public class PeriodBecomeNull implements KubiPlugin {
                         .traverse(MetaEcosystem.REF_TECHNOLOGIES)
                         .traverse(MetaTechnology.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "plug")
                         .traverse(MetaDevice.REF_STATEPARAMETERS).withAttribute(MetaStateParameter.ATT_NAME, "name")
+                        .traverse(MetaStateParameter.REF_PERIOD)
                         .done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length > 0){
-                            StateParameter parameter = ((StateParameter) kObjects[0]);
-                            parameter.jump(1428932146000L).then(new Callback<KObject>() {
+                            Period kPeriod = ((Period) kObjects[0]);
+                            kPeriod.jump(1428932146000L).then(new Callback<KObject>() {
                                 @Override
                                 public void on(KObject kObject) {
-                                    System.out.println("_______________________________________________________"+((StateParameter) kObject).getPeriod()
+                                    System.out.println("__________________________________________________"+((Period) kObject).getPeriod()
                                             +"______________  AT ____________________"+(kObject).now());
                                 }
                             });
-                            parameter.jump(1428935656000L).then(new Callback<KObject>() {
+                            kPeriod.jump(1428935656000L).then(new Callback<KObject>() {
                                 @Override
                                 public void on(KObject kObject) {
-                                    System.out.println("_______________________________________________________"+((StateParameter) kObject).getPeriod()
+                                    System.out.println("__________________________________________________"+((Period) kObject).getPeriod()
                                             +"____________  AT _____________________"+(kObject).now());
                                 }
                             });

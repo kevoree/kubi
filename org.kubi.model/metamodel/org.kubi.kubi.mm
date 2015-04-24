@@ -36,12 +36,12 @@ class org.kubi.Device {
 class org.kubi.StateParameter {
     name : String
     value : String
-    // The value of the period at a time T is the period calculated between T and T+x (at the beginning of the segment).
-    period : String
     valueType : String
     precision : Float
     unit : String
     range : String
+    @contained
+    period : org.kubi.Period
 }
 
 class org.kubi.ActionParameter : org.kubi.StateParameter {
@@ -53,4 +53,9 @@ class org.kubi.Technology {
     name : String
     @contained
     devices : org.kubi.Device[0,*] oppositeOf technology
+}
+
+class org.kubi.Period{
+    // The value of the period at a time T is the period calculated between T and T+x (at the beginning of the segment).
+    period : String
 }

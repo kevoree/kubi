@@ -36,6 +36,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                         .done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
+                        // TODO : check if the Period is null or not
                         if(kObjects.length >0) {
                             getPreviousValues((StateParameter) kObjects[0], 7600, 1428997126000L, 50000);
                         }else {
@@ -98,11 +99,21 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
         int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 150, 700);
-        if (parameter.getPeriod() == null) {
+        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).done().then(new Callback<KObject[]>() {
+            @Override
+            public void on(KObject[] kObjects) {
+                if(kObjects.length > 0) {
+                    Period kPeriod = ((Period) kObjects[0]);
+                    if (kPeriod.getPeriod() == null) {
+                        kPeriod.setPeriod(((double) period) / 2000 + ""); // TODO : division par 2000 inutile (= good pour aligner les courbes sur le meme axe / meme ordre de grandeur).
+                        kPeriod.view().universe().model().save();
+                        System.out.println("Length-_----------" + observationsDouble.length + "\tFFT........." + period + "______" + parameter.now());
+                    }
+                    else
+                        System.out.println(kPeriod.getPeriod());
+                }
+            }
+        });
 
-            parameter.setPeriod(((double) period) / 2000 + ""); // TODO : division par 2000 inutile (= good pour aligner les courbes sur le meme axe / meme ordre de grandeur).
-            parameter.view().universe().model().save();
-            System.out.println("Length-_----------" + observationsDouble.length + "\tFFT........." + period + "______" + parameter.now());
-        }
     }
 }

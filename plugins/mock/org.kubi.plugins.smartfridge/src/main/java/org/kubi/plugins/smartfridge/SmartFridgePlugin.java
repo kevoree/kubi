@@ -33,7 +33,9 @@ public class SmartFridgePlugin implements KubiPlugin {
                 Device device = ecosystem.view().createDevice().setName("plug");
 
                 StateParameter temperatureParam = device.view().createStateParameter().setName("name").setUnit("kW");
+                temperatureParam.setPeriod(temperatureParam.view().createPeriod());
                 device.addStateParameters(temperatureParam);
+
 
                 Device device2 = ecosystem.view().createDevice().setName("openCheck");
 

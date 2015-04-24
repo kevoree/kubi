@@ -3,7 +3,7 @@
 <head>
     <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="nunjucks.js"></script>
-    <script src="org.kubi.model-all2.js"></script>
+    <script src="org.kubi.model-all.js"></script>
     <script src="org.kevoree.modeling.database.websocket.WebSocket.js"></script>
 </head>
 <body>
@@ -65,7 +65,6 @@
         } else {
             var currentView = kubiModel.universe(0).time(last_timestamp);
             currentView.getRoot().then(function (root) {
-
                 nunjucks.configure({autoescape: true});
                 var env = new nunjucks.Environment();
                 env.addFilter('field', function (src, attName) {

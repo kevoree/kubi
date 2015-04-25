@@ -23,18 +23,16 @@ public class PolynomialReaderPlugin implements KubiPlugin {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        long initialTime = KConfig.BEGINNING_OF_TIME;
         final long time = System.currentTimeMillis();
         PolynomialLaw polynomialLaw = new PolynomialLaw(0.285796339, - 2736.016278, 7546.363798, -7460.92177, 3798.572543, - 1136.920265, 211.264638, - 24.65403975, 1.756913793, - 0.06983998705, 0.001186431353);
-        double delta = 0.1;
-        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(time).getRoot().then(new Callback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
                 ecosystem.traversal()
                         .traverse(MetaEcosystem.REF_TECHNOLOGIES)
                         .traverse(MetaTechnology.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "ElectricConsommation")
-                        .traverse(MetaDevice.REF_STATEPARAMETERS).withAttribute(MetaStateParameter.ATT_NAME, "name")
+                        .traverse(MetaDevice.REF_STATEPARAMETERS)//.withAttribute(MetaStateParameter.ATT_NAME, "name")
                         .done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
@@ -44,11 +42,9 @@ public class PolynomialReaderPlugin implements KubiPlugin {
                             kObjects[0].jump(time).then(new Callback<KObject>() {
                                 @Override
                                 public void on(KObject kObject) {
-                                    StateParameter parameter = (StateParameter) kObject;
-                                    Double extrapolation = polynomialLaw.evaluate((double) ((time / 1000) % 11));
-                                    parameter.getValue();
-                                    System.out.print("Extrapollation :" + extrapolation + "..........." + parameter.getValue());
-                                    System.out.println(",,,," + extrapolation.equals(parameter.getValue()));
+                                    StateParameter parameter = (SimulatedParameter) kObject;
+                                    String extrapolation = "" + polynomialLaw.evaluate((double) ((time / 1000) % 11));
+                                    System.out.println("Extrapollation :" + extrapolation + "..value: " + parameter.getValue() + " ==> " + extrapolation.equals(parameter.getValue()));
                                 }
                             });
                         }

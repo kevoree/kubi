@@ -30,8 +30,8 @@ public class SimulSmartFridgePlugin implements KubiPlugin {
 
                     Device electricDevice = e.view().createDevice().setName("ElectricConsommation");
 
-                    StateParameter electricParameter = electricDevice.view().createStateParameter().setName("name").setUnit("kW");
-                    electricParameter.metaClass().attribute(electricParameter.getName()).setExtrapolation(new PolynomialExtrapolation());
+                    SimulatedParameter electricParameter = electricDevice.view().createSimulatedParameter().setName("name").setUnit("kW");
+                    electricParameter.view().universe().model().metaModel().metaClass("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new PolynomialExtrapolation());
                     electricDevice.addStateParameters(electricParameter);
                     currentTechnology.addDevices(electricDevice);
                     e.view().universe().model().save();

@@ -69,34 +69,36 @@
             <version>${project.version}</version>
         </dependency>
         -->
+        <!-- fakemock
  		<dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.fakemock</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
         <!-- simulated smartfridge
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.simulsmartfridge</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
 
         <!-- Polynomial Reader
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.reader.polynomialReader</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
 
         <!-- periodAnalysis
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.reader.periodAnalysis</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
 
         <!-- BugsMain
         <dependency>

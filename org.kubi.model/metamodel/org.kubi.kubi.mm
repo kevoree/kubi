@@ -48,6 +48,9 @@ class org.kubi.ActionParameter : org.kubi.StateParameter {
     desired : String
 }
 
+class org.kubi.SimulatedParameter : org.kubi.StateParameter {
+}
+
 class org.kubi.Technology {
     @id
     name : String

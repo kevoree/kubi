@@ -1,10 +1,15 @@
-/**
- * Created by jerome on 13/04/15.
- */
+/// <reference path="org.kubi.model.d.ts" />
+/// <reference path="org.kevoree.modeling.database.websocket.WebSocket.d.ts" />
 
+var nunjucks;
+declare module CanvasJS{
+    class Chart{
+        constructor(x: string, y: any);
+    }
+}
 
-var last_timestamp = (new Date()).getTime();
-var kubiModel = new org.kubi.KubiModel();
+var last_timestamp : number = (new Date()).getTime();
+var kubiModel :org.kubi.KubiModel = new org.kubi.KubiModel();
 var chart;
 /**
  * Contain the list of data for the graph
@@ -35,13 +40,10 @@ var dataChart = [];
  * @type {Array}
  */
 var dataSeries = [];
-windowSize = 1000000;
-
-var universeNumber = 0;
+var windowSize :number = 1000000;
+var universeNumber :number = 0;
 
 init();
-
-
 
 function init() {
     kubiModel.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
@@ -56,7 +58,9 @@ function init() {
         sliderGraphInit();
     });
 }
-
+/**
+ * Initialize the graph empty
+ */
 function initGraph() {
     chart = new CanvasJS.Chart("chartContainer",
         {
@@ -131,7 +135,7 @@ function getDataFromKubi(){
             nunjucks.configure({autoescape: true});
             try {
                 // init the graph
-                nunjucks.renderString($("#ecosystem-template").html(), {
+                nunjucks.renderString(this.get("#ecosystem-template").html(), {
                     ecosystem: rootNow,
                     autoRefresh: true,
                     autoNow: true
@@ -139,11 +143,11 @@ function getDataFromKubi(){
                     if (err) {
                         console.log(err);
                     }
-                    $("#ecosystem").html(res);
+                    this.get("#ecosystem").html(res);
                 });
                 nunjucks.configure({autoescape: true});
                 // init the graph
-                nunjucks.renderString($("#radioDevicePicker-template").html(), {
+                nunjucks.renderString(this.get("#radioDevicePicker-template").html(), {
                     ecosystem: rootNow,
                     autoRefresh: true,
                     autoNow: true
@@ -151,7 +155,7 @@ function getDataFromKubi(){
                     if (err) {
                         console.log(err);
                     }
-                    $("#radioDevicePicker").html(res);
+                    this.get("#radioDevicePicker").html(res);
                 });
             }catch (e){
                 e.printStackTrace();
@@ -161,68 +165,68 @@ function getDataFromKubi(){
 
         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
             .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices){
-            var d;
-            for(d = 0; d< devices.length; d++)
-            {
-                var device = devices[d];
-                // add a curb describing the device on the chart
-                dataSeries[device.getName()] = ({type: "line", showInLegend: true, name: device.getName(), title: device.getName(), dataPoints: []});
-                // add a curb describing the device period on the chart
-                dataSeries[device.getName()+"_Period"] = ({type: "line", showInLegend: true, name: device.getName()+"_Period", title: device.getName()+"_Period", dataPoints: []});
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params){
-                    if (params.length != 0) {
-                        var param = params[0];
-                        param.listen(groupListenerID, function (param, metaTabl){
-                            param.parent().then(function(parent) {
-                                var valueHasChanged = false;
-                                var periodHasChanged = false;
-                                for (var m = 0; m < metaTabl.length; m++) {
-                                    if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_VALUE) {
-                                        valueHasChanged = true;
-                                    }
-                                    if (metaTabl[m] == org.kubi.meta.MetaPeriod.ATT_PERIOD) {
-                                        periodHasChanged = true;
-                                    }
-                                }
-                                if (param.getValue() != undefined && valueHasChanged) {
-                                    // the value of the parameter has changed => add the value to the graph data set
-                                    addDataPointWithSerie({
-                                        x: new Date(param.now()),
-                                        y: parseFloat(param.getValue())
-                                    }, parent.getName());
-                                }
-                                if(periodHasChanged && dataSeries[device.getName()+"_Period"].dataPoints.length >=0) {
-                                    param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
-                                        if (periods.length > 0 && periods[0].getPeriod() != undefined) {
-                                            // the period of the parameter has changed => add the period to the graph data set
-                                            // /!\\ if the graph period doesn't exist the graph is not created
-                                            addDataPointWithSerie({
-                                                x: new Date(),
-                                                y: parseFloat(param.getPeriod())
-                                            }, parent.getName() + "_Period");
+                var d;
+                for(d = 0; d< devices.length; d++)
+                {
+                    var device = devices[d];
+                    // add a curb describing the device on the chart
+                    dataSeries[device.getName()] = ({type: "line", showInLegend: true, name: device.getName(), title: device.getName(), dataPoints: []});
+                    // add a curb describing the device period on the chart
+                    dataSeries[device.getName()+"_Period"] = ({type: "line", showInLegend: true, name: device.getName()+"_Period", title: device.getName()+"_Period", dataPoints: []});
+                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params){
+                        if (params.length != 0) {
+                            var param :org.kubi.StateParameter = params[0];
+                            param.listen(groupListenerID, function (param2, metaTabl){
+                                param2.parent().then(function(parent) {
+                                    var valueHasChanged = false;
+                                    var periodHasChanged = false;
+                                    for (var m = 0; m < metaTabl.length; m++) {
+                                        if (metaTabl[m] == org.kubi.meta.MetaStateParameter.ATT_VALUE) {
+                                            valueHasChanged = true;
                                         }
-                                    });
-                                }
+                                        if (metaTabl[m] == org.kubi.meta.MetaPeriod.ATT_PERIOD) {
+                                            periodHasChanged = true;
+                                        }
+                                    }
+                                    if ((<org.kubi.StateParameter>param2).getValue() != undefined && valueHasChanged) {
+                                        // the value of the parameter has changed => add the value to the graph data set
+                                        addDataPointWithSerie({
+                                            x: new Date(param.now()),
+                                            y: parseFloat(param.getValue())
+                                        }, parent.getName());
+                                    }
+                                    if(periodHasChanged && dataSeries[device.getName()+"_Period"].dataPoints.length >=0) {
+                                        param2.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
+                                            if (periods.length > 0 && periods[0].getPeriod() != undefined) {
+                                                // the period of the parameter has changed => add the period to the graph data set
+                                                // /!\\ if the graph period doesn't exist the graph is not created
+                                                /*addDataPointWithSerie({
+                                                    x: new Date(),
+                                                    y: parseFloat((<org.kubi.StateParameter>param2).getPeriod())
+                                                }, parent.getName() + "_Period");*/ // TODO uncomment A VOIR
+                                            }
+                                        });
+                                    }
 
+                                });
+                            }); // end of listen
+                            var endTime = 1428997126000;
+                            // add old data to the chart
+                            param.jump(endTime).then(function (paramTimed){
+                                param.parent().then(function (parent){
+                                    var startTime = 1428599097936;
+                                    var stepTime = 90000;
+                                    addPreviousValuesWithPeriod(paramTimed, parent.getName(), startTime ,stepTime);
+                                });
                             });
-                        }); // end of listen
-                        var endTime = 1428997126000;
-                        // add old data to the chart
-                        param.jump(endTime).then(function (paramTimed){
-                            param.parent().then(function (parent){
-                                var startTime = 1428599097936;
-                                var stepTime = 90000;
-                                addPreviousValuesWithPeriod(paramTimed, parent.getName(), startTime ,stepTime);
-                            });
-                        });
-                    }
-                });
-            }
-        });
+                        }
+                    });
+                }
+            });
     });
 }
 
-function addPreviousValues(paramTimed, deviceName,startTime, stepTime){
+function addPreviousValues(paramTimed, deviceName : string ,startTime : number, stepTime : number){
     if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         paramTimed.jump(paramTimed.now() - stepTime).then(function (param1){
@@ -245,7 +249,7 @@ function addPreviousValues(paramTimed, deviceName,startTime, stepTime){
 /**
  * Add some previous values and the periods calculated in the Java Plugin from these values
  */
-function addPreviousValuesWithPeriod(paramTimed, deviceName, startTime, stepTime){
+function addPreviousValuesWithPeriod(paramTimed, deviceName :string, startTime : number, stepTime: number){
     if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         paramTimed.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods){
@@ -321,7 +325,7 @@ function getDeviceValue(time){
                 .done().then(function (kObecjts){
                     if(kObecjts.length >0){
                         var res = kObecjts[0].getValue();
-                        $("#valDevice").html(res == undefined?"null":res);
+                        this.get("#valDevice").html(res == undefined?"null":res);
                     }
                 });
         }
@@ -331,78 +335,69 @@ function getDeviceValue(time){
 
 
 function sliderInit() {
-    $("#update").click(function () {
-        var choosenValue = $("#seekTo").val();
-        $("#val").html(choosenValue);
+    this.get("#update").click(function () {
+        var choosenValue = this.get("#seekTo").val();
+        this.get("#val").html(choosenValue);
         getDeviceValue(choosenValue);
     });
 
-    $("#slider").change(function(){
-        var value = $("#slider").val();
-        $("#val").html(value);
-        $("#seekTo").html(value);
+    this.get("#slider").change(function(){
+        var value = this.get("#slider").val();
+        this.get("#val").html(value);
+        this.get("#seekTo").html(value);
         getDeviceValue(value);
     });
+
 }
-
-function bob(value){
-    console.log("coucou !!!",value);
-    $("#val").html(value);
-    $("#seekTo").html(value);
-    getDeviceValue(value);
-}
-
-function truc(){
-    var value = $("#slider1").val() * 1000;
-    var range = $("#selectScale")[0].value;
-    var deviceName = "plug"; // TODO : generalisation get radio.* value
-    var start = value - range;
-    var end = value + parseInt(range);
-    var step = range / 500;
-    console.log(start,"-----", end, "_____", range, "_____", step);
-    //var end = ( end==0 ? start-86400000 : end  );
-    //var step = ( step==0 ? 3600000 : step );
-    var currentView = kubiModel.universe(universeNumber).time(start);
-    currentView.getRoot().then(function(root) {
-        if (root != null) {
-            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceName).done().then(function (kObjects) {
-                    if (kObjects.length > 0) {
-                        // TODO : useful ?? maybe if it doesn't not exist, we can just create it ?
-                        var device = kObjects[0];
-                        device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters){
-                            if(parameters.length >0){
-                                var param = parameters[0];
-                                // emptying the dataset of the device
-                                dataSeries[device.getName()] = ({
-                                    type: "line",
-                                    showInLegend: true,
-                                    name: device.getName(),
-                                    title: device.getName(),
-                                    dataPoints: []
-                                });
-                                if (dataSeries[device.getName() + "_Period"] != null) {
-                                    dataSeries[device.getName() + "_Period"] = ({
-                                        type: "line",
-                                        showInLegend: true,
-                                        name: device.getName() + "_Period",
-                                        title: device.getName() + "_Period",
-                                        dataPoints: []
-                                    });
-                                }
-
-                                setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
-                            }
-                        });
-                    }
-                });
-        }
-    });
-}
-
 
 function sliderGraphInit() {
-    $("#slider1").click(truc);
+    this.get()("#slider1").click(function(){
+        var value = this.get("#slider1").val() * 1000;
+        var range = this.get("#selectScale")[0].value;
+        var deviceName = "plug"; // TODO : generalisation get radio.* value
+        var start = value - range;
+        var end = value + parseInt(range);
+        var step = range / 500;
+        console.log(start,"-----", end, "_____", range, "_____", step);
+        //var end = ( end==0 ? start-86400000 : end  );
+        //var step = ( step==0 ? 3600000 : step );
+        var currentView = kubiModel.universe(universeNumber).time(start);
+        currentView.getRoot().then(function(root) {
+            if (root != null) {
+                root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceName).done().then(function (kObjects) {
+                        if (kObjects.length > 0) {
+                            // TODO : useful ?? maybe if it doesn't not exist, we can just create it ?
+                            var device = kObjects[0];
+                            device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters){
+                                if(parameters.length >0){
+                                    var param = parameters[0];
+                                    // emptying the dataset of the device
+                                    dataSeries[device.getName()] = ({
+                                        type: "line",
+                                        showInLegend: true,
+                                        name: device.getName(),
+                                        title: device.getName(),
+                                        dataPoints: []
+                                    });
+                                    if (dataSeries[device.getName() + "_Period"] != null) {
+                                        dataSeries[device.getName() + "_Period"] = ({
+                                            type: "line",
+                                            showInLegend: true,
+                                            name: device.getName() + "_Period",
+                                            title: device.getName() + "_Period",
+                                            dataPoints: []
+                                        });
+                                    }
+
+                                    setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
+                                }
+                            });
+                        }
+                    });
+            }
+        });
+    });
 
 }
 

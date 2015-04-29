@@ -6,12 +6,15 @@
     <title>SmartHome : tile style</title>
 
     <link rel="stylesheet" href="css/demo-styles.css"/>
-    <script src="../canvasjs.min.js"></script>
+    <!-- canvasJS -->
+    <script src="../js/canvasjs.min.js"></script>
+    <!-- tules-->
     <script src="js/modernizr-1.5.min.js"></script>
 
-    <script src="../nunjucks.js"></script>
-    <script src="../org.kubi.model-all.js"></script>
-    <script src="../org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+    <!-- kubi-->
+    <script src="../js/js/nunjucks.js"></script>
+    <script src="../js/js/org.kubi.model-all.js"></script>
+    <script src="../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
 
     <!-- materialize-->
     <link href="../materialize/css/materialize.css" rel="stylesheet" type="text/css"/>
@@ -35,16 +38,16 @@
         <h2 class="page-title">Economic move</h2>
 
         <div class="close-button s-close-button">x</div>
-            <div class="input-field col s12 openpage">
-                <select id="selectScale" class="browser-default">
-                    <option value="31536000000">Yearly</option>
-                    <option value="604800000">Weekly</option>
-                    <option value="172800000" selected="selected">2 days</option>
-                    <option value="86400000" selected="selected">Daily</option>
-                    <option value="3600000">Hourly</option>
-                </select>
-                <label>Choose the scale</label>
-            </div>
+        <div class="input-field col s12 openpage">
+            <select id="selectScale" class="browser-default">
+                <option value="31536000000">Yearly</option>
+                <option value="604800000">Weekly</option>
+                <option value="172800000" selected="selected">2 days</option>
+                <option value="86400000" selected="selected">Daily</option>
+                <option value="3600000">Hourly</option>
+            </select>
+            <label>Choose the scale</label>
+        </div>
         <div class="openpage" id="chartContainer"></div>
         <p class="range-field openpage">
             <input type="range" id="slider1" value="1428887547" min="1428000000" max="1429100000" step="100"/>
@@ -52,12 +55,12 @@
         <form id="radioDevicePicker" action="#"></form>
         <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
             {% asyncEach techno in ecosystem.technologies %}
-                {% asyncEach device in techno.devices %}
-                    <p>
-                        <input name="radioDevicePicker-group" class="with-gap" value="{{device.name}}" type="radio" id="radio{{device.name}}" />
-                        <label for="radio{{device.name}}">{{device.name}}</label>
-                    </p>
-                {% endeach %}
+            {% asyncEach device in techno.devices %}
+            <p>
+                <input name="radioDevicePicker-group" class="with-gap" value="{{device.name}}" type="radio" id="radio{{device.name}}" />
+                <label for="radio{{device.name}}">{{device.name}}</label>
+            </p>
+            {% endeach %}
             {% endeach %}
         </script>
     </div>
@@ -73,7 +76,7 @@
             <h2 class="page-title">App Screen</h2>
 
             <p class="range-field">
-                <input type="range" id="slider" value="[1428887547,1429000000]" min="1428754400" max="1429100000" step="100" multiple/>
+                <input type="range" id="slider" value="1428887547,1429087547" min="1428754400" max="1429100000" step="100" multiple/>
             </p>
             Seek To : <input id="seekTo" type="text" value="1429187547"/>
             <input id="update" type="button" value="Update"/>
@@ -139,7 +142,7 @@
 <script src="js/scripts.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-<script src="js/kubi_.jscript2.js"></script>
+<script src="../js/js/test2.js"></script>
 
 
 </body>

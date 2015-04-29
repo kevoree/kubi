@@ -46,7 +46,7 @@
                 <executions>
                     <execution>
                         <id>genDep</id>
-                        <phase>initialize</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>extract</goal>
                         </goals>
@@ -65,7 +65,7 @@
                         <goals>
                             <goal>tsc</goal>
                         </goals>
-                        <phase>generate-sources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <outputClasses>${project.build.directory}/js</outputClasses>
                         </configuration>
@@ -101,7 +101,7 @@
                                     <fileset dir="${project.build.directory}/js">
                                         <include name="test2.js"/>
                                         <include name="org.kubi.model-all.js"/>
-                                        <include name="org.kevoree.modeling.databases.websocket.WebSocket.js"/>
+                                        <include name="org.kevoree.modeling.database.websocket.WebSocket.js"/>
                                     </fileset>
                                 </copy>
                             </target>

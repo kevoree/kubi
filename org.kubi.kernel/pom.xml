@@ -38,12 +38,13 @@
         </dependency>
 
 
-        <!-- web view -->
+        <!-- web view
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.web</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
         <!-- Zwave
         <dependency>
             <groupId>org.kubi</groupId>
@@ -56,7 +57,8 @@
                     MOCKS
         -->
 
-        <!-- SmartFridge -->
+        <!-- SmartFridge
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.smartfridge</artifactId>
@@ -77,12 +79,12 @@
         </dependency>
         -->
         <!-- simulated smartfridge
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.simulsmartfridge</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
 
         <!-- Polynomial Reader
         <dependency>
@@ -93,12 +95,12 @@
         -->
 
         <!-- periodAnalysis
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.reader.periodAnalysis</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
 
         <!-- BugsMain
         <dependency>

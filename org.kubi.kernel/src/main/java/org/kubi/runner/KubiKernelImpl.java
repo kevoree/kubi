@@ -7,6 +7,7 @@ import org.kevoree.modeling.api.scheduler.ExecutorServiceScheduler;
 import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
+import org.kubi.KubiView;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
 
@@ -38,32 +39,43 @@ public class KubiKernelImpl implements KubiKernel {
     private ExecutorService executorService;
 
     public synchronized void start() {
+        Log.debug("Start");
         if (!isConnected) {
             kubiModel.connect().then(new Callback<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
-
-                    Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).createEcosystem();
+                    Log.debug("Connected");
+                    KubiView beginingOfTime = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME);
+                    Ecosystem ecosystem = beginingOfTime.createEcosystem();
                     ecosystem.setName("KubiRoot");
-                    kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).setRoot(ecosystem);
-
-                    executorService = Executors.newCachedThreadPool();
-                    isConnected = true;
-                    pluginLoaders = ServiceLoader.load(KubiPlugin.class);
-                    for (KubiPlugin plugin : pluginLoaders) {
-                        Log.info("Found plugin: {}",plugin.getClass().getSimpleName());
-                        try {
-                            addDriver(plugin);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    beginingOfTime.setRoot(ecosystem);
+                    kubiModel.save().then(new Callback<Throwable>() {
+                        @Override
+                        public void on(Throwable throwable) {
+                            if(throwable != null) {
+                                throwable.printStackTrace();
+                            } else {
+                                executorService = Executors.newCachedThreadPool();
+                                isConnected = true;
+                                pluginLoaders = ServiceLoader.load(KubiPlugin.class);
+                                for (KubiPlugin plugin : pluginLoaders) {
+                                    Log.info("Found plugin: {}",plugin.getClass().getSimpleName());
+                                    try {
+                                        addDriver(plugin);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
                         }
-                    }
+                    });
                 }
             });
         }
     }
 
     public synchronized void stop() throws InterruptedException {
+        Log.debug("Stop");
         if (isConnected) {
             for (KubiPlugin plugin : plugins.toArray(new KubiPlugin[plugins.size()])) {
                 try {
@@ -97,6 +109,7 @@ public class KubiKernelImpl implements KubiKernel {
     private KubiKernel selfPointer = this;
 
     public void addDriver(KubiPlugin plugin) throws Exception {
+        Log.debug("Adding driver");
         if (isConnected) {
             executorService.execute(new Runnable() {
                 @Override
@@ -111,6 +124,7 @@ public class KubiKernelImpl implements KubiKernel {
     }
 
     public void removeDriver(KubiPlugin plugin) throws Exception {
+        Log.debug("Remove driver");
         if (isConnected) {
             executorService.execute(new Runnable() {
                 @Override

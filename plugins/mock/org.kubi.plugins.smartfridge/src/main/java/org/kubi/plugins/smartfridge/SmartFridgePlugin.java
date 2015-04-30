@@ -78,7 +78,7 @@ public class SmartFridgePlugin implements KubiPlugin {
                                 final double temp = Double.parseDouble(data[2]);
                                 if(kObjects[0] != null){
                                     System.out.print("T -" + temp + "  --  ");
-//                                    ((StateParameter) kObjects[0]).setValue(temp + "");
+                                    ((StateParameter) kObjects[0]).setValue(temp + "");
                                 }
                             } else if (("2").equals(data[1])) {
                                 float openRawState = Float.parseFloat(data[2]);
@@ -88,7 +88,7 @@ public class SmartFridgePlugin implements KubiPlugin {
                                 }
                                 if(kObjects[1] != null){
                                     System.out.print("O -" + openState + "  --  ");
-//                                    ((StateParameter) kObjects[1]).setValue(openState + "");
+                                    ((StateParameter) kObjects[1]).setValue(openState + "");
                                 }
                             }
                         }

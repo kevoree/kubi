@@ -60,6 +60,7 @@ public class SmartFridgePlugin implements KubiPlugin {
             currentTechnology.delete();
             currentTechnology.view().universe().model().save();
         }
+        System.out.println("SmartFridgePlugin stops ...");
     }
 
     private void initData(KubiUniverse universe, long[] keys, InputStream stream) {
@@ -77,6 +78,7 @@ public class SmartFridgePlugin implements KubiPlugin {
                             if (("3").equals(data[1])) {
                                 final double temp = Double.parseDouble(data[2]);
                                 if(kObjects[0] != null){
+                                    System.out.println(temp);
                                     ((StateParameter) kObjects[0]).setValue(temp + "");
                                 }
                             } else if (("2").equals(data[1])) {
@@ -86,6 +88,7 @@ public class SmartFridgePlugin implements KubiPlugin {
                                     openState = true;
                                 }
                                 if(kObjects[1] != null){
+                                    System.out.println(openState);
                                     ((StateParameter) kObjects[1]).setValue(openState + "");
                                 }
                             }

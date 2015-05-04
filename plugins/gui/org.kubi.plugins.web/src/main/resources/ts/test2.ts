@@ -1,5 +1,6 @@
 /// <reference path="org.kubi.model.d.ts" />
 /// <reference path="org.kevoree.modeling.database.websocket.WebSocket.d.ts" />
+/// <reference path="../../../../target/js/org.kubi.model.d.ts" />
 
 var nunjucks;
 declare module CanvasJS{
@@ -215,7 +216,7 @@ function getDataFromKubi(){
                             param.jump(endTime).then(function (paramTimed){
                                 param.parent().then(function (parent){
                                     var startTime = 1428599097936;
-                                    var stepTime = 90000;
+                                    var stepTime = 150000;
                                     addPreviousValuesWithPeriod(paramTimed, parent.getName(), startTime ,stepTime);
                                 });
                             });

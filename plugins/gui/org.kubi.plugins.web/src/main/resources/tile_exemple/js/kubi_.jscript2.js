@@ -125,7 +125,6 @@ function initGraph() {
 function getDataFromKubi(){
     var currentView = kubiModel.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kubiModel.nextGroup();
-
     currentView.getRoot().then(function (root) {
         root.jump(1428932146000).then(function (rootNow){
             nunjucks.configure({autoescape: true});
@@ -211,7 +210,7 @@ function getDataFromKubi(){
                         param.jump(endTime).then(function (paramTimed){
                             param.parent().then(function (parent){
                                 var startTime = 1428599097936;
-                                var stepTime = 90000;
+                                var stepTime = 300000;
                                 addPreviousValuesWithPeriod(paramTimed, parent.getName(), startTime ,stepTime);
                             });
                         });
@@ -247,6 +246,7 @@ function addPreviousValues(paramTimed, deviceName,startTime, stepTime){
  */
 function addPreviousValuesWithPeriod(paramTimed, deviceName, startTime, stepTime){
     if((paramTimed.now() > startTime) && (paramTimed.getValue()!= undefined)) {
+        console.log(paramTimed.getValue());
         dataSeries[deviceName].dataPoints.push({x: new Date(paramTimed.now()), y: parseFloat(paramTimed.getValue())});
         paramTimed.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods){
             if(periods.length > 0 && periods[0].getPeriod()!= undefined){

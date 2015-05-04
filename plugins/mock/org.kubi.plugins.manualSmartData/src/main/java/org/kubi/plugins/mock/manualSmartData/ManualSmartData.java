@@ -12,7 +12,7 @@ import org.kubi.meta.MetaDevice;
  */
 public class ManualSmartData implements KubiPlugin{
     private Technology currentTechnology;
-private long startTime;
+    private long startTime;
     private long endRun;
 
     @Override
@@ -37,13 +37,16 @@ private long startTime;
 
                     device.traversal().traverse(MetaDevice.REF_STATEPARAMETERS).done().then((params) ->{
                         if(params.length>0){
-                            for (int i = 0; i <1000; i++) {
-                                System.out.println(i + " - blop");
-                                params[0].jump((1428887547 + (i * 300000))).then((param) -> {
+                            for (int i = 0; i <100; i++) {
+                                int k = 300000;
+                                params[0].jump((1428887547000L + (i * k))).then((param) -> {
                                     if(param!=null) {
-                                        ((StateParameter) param).setValue((((param.now() - 1428887547) / 300000) % 10) + "");
+                                        double value = ((param.now() - 1428887547000L) / k) %10;
+                                        System.out.println(value);
+                                        ((StateParameter) param).setValue(value + "");
+                                        currentTechnology.view().universe().model().save();
                                     }else {
-                                        System.out.println("azertyuiop");
+                                        System.err.println("The parameter is null");
                                     }
                                 });
                             }
@@ -62,9 +65,5 @@ private long startTime;
             currentTechnology.view().universe().model().save();
         }
         System.out.println("ManualSmartData Stop ... ");
-        this.currentTechnology.view().universe().model().save();
-        this.currentTechnology.view().universe().model().save();
-        System.out.println(startTime - System.currentTimeMillis());
-        System.out.println(endRun - System.currentTimeMillis());
     }
 }

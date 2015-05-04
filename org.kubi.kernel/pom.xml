@@ -39,12 +39,12 @@
 
 
         <!-- web view
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.web</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
         <!-- Zwave
         <dependency>
             <groupId>org.kubi</groupId>
@@ -58,12 +58,12 @@
         -->
 
         <!-- SmartFridge
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.smartfridge</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
         <!-- madmock
         <dependency>
             <groupId>org.kubi</groupId>
@@ -86,12 +86,12 @@
         </dependency>
         -->
         <!-- manual data
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.manualSmartData</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
 
         <!-- Polynomial Reader
         <dependency>

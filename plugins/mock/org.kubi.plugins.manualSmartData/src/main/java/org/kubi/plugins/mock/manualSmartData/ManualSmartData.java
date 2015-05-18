@@ -14,9 +14,11 @@ public class ManualSmartData implements KubiPlugin{
     private Technology currentTechnology;
     private long startTime;
     private long endRun;
+    private KubiKernel kubiKernel;
 
     @Override
     public void start(KubiKernel kernel) {
+        this.kubiKernel = kernel;
         startTime = System.currentTimeMillis();
         long initialTime = 1428887547;
         kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
@@ -25,15 +27,15 @@ public class ManualSmartData implements KubiPlugin{
                 if (kObject != null) {
                     Ecosystem e = ((Ecosystem) kObject);
 
-                    currentTechnology = e.view().createTechnology().setName(ManualSmartData.class.getSimpleName());
+                    currentTechnology = kubiKernel.model().createTechnology(e.universe(), e.now()).setName(ManualSmartData.class.getSimpleName());
                     e.addTechnologies(currentTechnology);
 
-                    Device device = e.view().createDevice().setName("ManualDevice");
+                    Device device = kubiKernel.model().createDevice(e.universe(), e.now()).setName("ManualDevice");
 
-                    SimulatedParameter electricParameter = device.view().createSimulatedParameter().setName("name");
+                    SimulatedParameter electricParameter = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("name");
                     device.addStateParameters(electricParameter);
                     currentTechnology.addDevices(device);
-                    e.view().universe().model().save();
+                    kubiKernel.model().save();
 
                     device.traversal().traverse(MetaDevice.REF_STATEPARAMETERS).done().then((params) ->{
                         if(params.length>0){
@@ -44,7 +46,7 @@ public class ManualSmartData implements KubiPlugin{
                                         double value = ((param.now() - 1428887547000L) / k) %10;
                                         System.out.println(value);
                                         ((StateParameter) param).setValue(value + "");
-                                        currentTechnology.view().universe().model().save();
+                                        kubiKernel.model().save();
                                     }else {
                                         System.err.println("The parameter is null");
                                     }
@@ -62,7 +64,7 @@ public class ManualSmartData implements KubiPlugin{
     public void stop() {
         if(currentTechnology != null){
             currentTechnology.delete();
-            currentTechnology.view().universe().model().save();
+            kubiKernel.model().save();
         }
         System.out.println("ManualSmartData Stop ... ");
     }

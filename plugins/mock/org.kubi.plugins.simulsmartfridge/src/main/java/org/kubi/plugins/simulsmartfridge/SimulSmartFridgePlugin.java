@@ -14,10 +14,11 @@ import org.kubi.api.KubiPlugin;
 public class SimulSmartFridgePlugin implements KubiPlugin {
 
     private Technology currentTechnology;
-
+    private KubiKernel kubiKernel;
 
     @Override
     public void start(KubiKernel kernel) {
+        this.kubiKernel = kernel;
         long initialTime = KConfig.BEGINNING_OF_TIME;
         kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
             @Override
@@ -25,16 +26,16 @@ public class SimulSmartFridgePlugin implements KubiPlugin {
                 if (kObject != null) {
                     Ecosystem e = ((Ecosystem) kObject);
 
-                    currentTechnology = e.view().createTechnology().setName(SimulSmartFridgePlugin.class.getSimpleName());
+                    currentTechnology = kernel.model().createTechnology(e.universe(), e.now()).setName(SimulSmartFridgePlugin.class.getSimpleName());
                     e.addTechnologies(currentTechnology);
 
-                    Device electricDevice = e.view().createDevice().setName("ElectricConsommation");
+                    Device electricDevice = kernel.model().createDevice(e.universe(),e.now()).setName("ElectricConsommation");
 
-                    SimulatedParameter electricParameter = electricDevice.view().createSimulatedParameter().setName("name").setUnit("kW");
-                    electricParameter.view().universe().model().metaModel().metaClass("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new PolynomialExtrapolation());
+                    SimulatedParameter electricParameter = kernel.model().createSimulatedParameter(electricDevice.universe(),electricDevice.now()).setName("name").setUnit("kW");
+                    kubiKernel.model().metaModel().metaClass("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new PolynomialExtrapolation());
                     electricDevice.addStateParameters(electricParameter);
                     currentTechnology.addDevices(electricDevice);
-                    e.view().universe().model().save();
+                    kubiKernel.model().save();
                 }
             }
         });
@@ -44,7 +45,7 @@ public class SimulSmartFridgePlugin implements KubiPlugin {
     public void stop() {
         if(currentTechnology != null){
             currentTechnology.delete();
-            currentTechnology.view().universe().model().save();
+            kubiKernel.model().save();
         }
         System.out.println("SmartFridge Stop ... ");
     }

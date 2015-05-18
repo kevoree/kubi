@@ -68,7 +68,7 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation
                     if (addDeviceProba < 0.3) {
                         String deviceName = "Device_" + rand.nextInt(1000);
                         System.err.println("FakeMock add a device ... named:" + deviceName);
-                        Device newDevice = currentTechno.view().createDevice();
+                        Device newDevice = model.createDevice(currentTechno.universe(), currentTechno.now());
                         newDevice.setName(deviceName);
                         currentTechno.addDevices(newDevice);
                     }

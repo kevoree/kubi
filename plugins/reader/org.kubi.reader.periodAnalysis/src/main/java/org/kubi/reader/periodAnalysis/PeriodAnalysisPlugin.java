@@ -16,9 +16,11 @@ import java.util.*;
 
 public class PeriodAnalysisPlugin implements KubiPlugin {
 
+    private KubiKernel kubiKernel;
 
     @Override
     public void start(KubiKernel kernel) {
+        this.kubiKernel = kernel;
         try {
             Thread.sleep(5000);
         }
@@ -106,7 +108,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                     Period kPeriod = ((Period) kObjects[0]);
                     if (kPeriod.getPeriod() == null) {
                         kPeriod.setPeriod(((double) period) / 2000 + ""); // TODO : division par 2000 inutile (= good pour aligner les courbes sur le meme axe / meme ordre de grandeur).
-                        kPeriod.view().universe().model().save();
+                        kubiKernel.model().save();
                         System.out.println("Length-_----------" + observationsDouble.length + "\tFFT........." + period + "______" + parameter.now());
                     }
                     else

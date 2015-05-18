@@ -58,18 +58,18 @@
         -->
 
         <!-- SmartFridge
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.smartfridge</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
-        <!-- madmock
+        <!--
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.madmock</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>madmock
         -->
         <!-- fakemock
  		<dependency>
@@ -86,12 +86,19 @@
         </dependency>
         -->
         <!-- manual data
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.manualSmartData</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
+        <!-- switch your
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.switchYourLight</artifactId>
+            <version>${project.version}</version>
+        </dependency>light
+        -->
 
         <!-- Polynomial Reader
         <dependency>

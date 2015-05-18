@@ -130,7 +130,7 @@ var org;
                             this._localEventListeners.registerListener(groupId, origin, listener);
                         };
                         WebSocketClient.prototype.registerMultiListener = function (groupId, origin, objects, listener) {
-                            this._localEventListeners.registerListenerAll(groupId, origin, objects, listener);
+                            this._localEventListeners.registerListenerAll(groupId, origin.key(), objects, listener);
                         };
                         WebSocketClient.prototype.unregisterGroup = function (groupId) {
                             this._localEventListeners.unregister(groupId);

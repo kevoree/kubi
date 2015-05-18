@@ -46,9 +46,10 @@
         <!-- Plugins -->
         <module>plugins/gui/org.kubi.plugins.web</module>
 
-        <!-- ZWave driver -->
+        <!-- ZWave driver
         <module>plugins/zwave/org.kubi.plugins.zwave</module>
-        <module>plugins/zwave/org.kubi.driver.zwave.productstore</module>
+        <module>plugins/zwave/org.kubi.driver.zwave.productstore</module> -->
+
         <!-- EnOcean driver -->
         <module>plugins/enocean/org.kubi.driver.enocean</module>
 
@@ -57,6 +58,7 @@
         <module>plugins/mock/org.kubi.plugins.fakemock</module>
         <module>plugins/mock/org.kubi.plugins.smartfridge</module>
         <module>plugins/mock/org.kubi.plugins.manualSmartData</module>
+        <module>plugins/mock/org.kubi.plugins.switchYourLight</module>
         <!-- Modules with real data -->
         <module>plugins/mock/org.kubi.plugins.simulsmartfridge</module>
 

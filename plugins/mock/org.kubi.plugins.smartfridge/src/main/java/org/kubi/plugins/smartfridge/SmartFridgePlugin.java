@@ -16,30 +16,33 @@ public class SmartFridgePlugin implements KubiPlugin {
 
     private Technology currentTechnology;
 
+    private KubiKernel kubiKernel;
+
     private String fileToLoad = "CSV_Cuisine_9-14_Avril.csv";
     private static final String csvSplitter = ";";
 
     @Override
     public void start(KubiKernel kernel) {
+        kubiKernel = kernel;
         long initialTime = KConfig.BEGINNING_OF_TIME;
         kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
 
-                currentTechnology = ecosystem.view().createTechnology().setName(SmartFridgePlugin.class.getSimpleName());
+                currentTechnology = kernel.model().createTechnology(ecosystem.universe(),ecosystem.now()).setName(SmartFridgePlugin.class.getSimpleName());
                 ecosystem.addTechnologies(currentTechnology);
 
-                Device device = ecosystem.view().createDevice().setName("plug");
+                Device device = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("plug");
 
-                StateParameter temperatureParam = device.view().createStateParameter().setName("name").setUnit("kW");
-                temperatureParam.setPeriod(temperatureParam.view().createPeriod());
+                StateParameter temperatureParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name").setUnit("kW");
+                temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
                 device.addStateParameters(temperatureParam);
 
 
-                Device device2 = ecosystem.view().createDevice().setName("openCheck");
+                Device device2 = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("openCheck");
 
-                StateParameter openParam = device.view().createStateParameter().setName("name");
+                StateParameter openParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name");
                 device2.addStateParameters(openParam);
 
                 currentTechnology.addDevices(device);
@@ -48,8 +51,10 @@ public class SmartFridgePlugin implements KubiPlugin {
                 stateKeys[0] = temperatureParam.uuid();
                 stateKeys[1] = openParam.uuid();
 
-                initData((KubiUniverse) ecosystem.universe(), stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad));
-                ecosystem.view().universe().model().save();
+                KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
+                initData(universe, stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad));
+                kernel.model().save();
+//                ecosystem.view().universe().model().save();
             }
         });
     }
@@ -58,7 +63,8 @@ public class SmartFridgePlugin implements KubiPlugin {
     public void stop() {
         if(currentTechnology != null){
             currentTechnology.delete();
-            currentTechnology.view().universe().model().save();
+            kubiKernel.model().save();
+//            currentTechnology.view().universe().model().save();
         }
         System.out.println("SmartFridgePlugin stops ...");
     }

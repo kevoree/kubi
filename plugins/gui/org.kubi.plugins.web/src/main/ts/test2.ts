@@ -1,6 +1,5 @@
 /// <reference path="org.kubi.model.d.ts" />
 /// <reference path="org.kevoree.modeling.database.websocket.WebSocket.d.ts" />
-/// <reference path="../../../../target/js/org.kubi.model.d.ts" />
 
 var nunjucks;
 declare module CanvasJS{

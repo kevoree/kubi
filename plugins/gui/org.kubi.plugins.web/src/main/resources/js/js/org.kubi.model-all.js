@@ -7436,24 +7436,6 @@ var org;
                 })(polynomial = api.polynomial || (api.polynomial = {}));
                 var rbtree;
                 (function (rbtree) {
-                    var Color = (function () {
-                        function Color() {
-                        }
-                        Color.prototype.equals = function (other) {
-                            return this == other;
-                        };
-                        Color.values = function () {
-                            return Color._ColorVALUES;
-                        };
-                        Color.RED = new Color();
-                        Color.BLACK = new Color();
-                        Color._ColorVALUES = [
-                            Color.RED,
-                            Color.BLACK
-                        ];
-                        return Color;
-                    })();
-                    rbtree.Color = Color;
                     var IndexRBTree = (function () {
                         function IndexRBTree() {
                             this.root = null;
@@ -7761,7 +7743,7 @@ var org;
                             var insertedNode;
                             if (this.root == null) {
                                 this._size++;
-                                insertedNode = new org.kevoree.modeling.api.rbtree.TreeNode(key, org.kevoree.modeling.api.rbtree.Color.RED, null, null);
+                                insertedNode = new org.kevoree.modeling.api.rbtree.TreeNode(key, false, null, null);
                                 this.root = insertedNode;
                             }
                             else {
@@ -7774,7 +7756,7 @@ var org;
                                     else {
                                         if (key < n.key) {
                                             if (n.getLeft() == null) {
-                                                insertedNode = new org.kevoree.modeling.api.rbtree.TreeNode(key, org.kevoree.modeling.api.rbtree.Color.RED, null, null);
+                                                insertedNode = new org.kevoree.modeling.api.rbtree.TreeNode(key, false, null, null);
                                                 n.setLeft(insertedNode);
                                                 this._size++;
                                                 break;
@@ -7785,7 +7767,7 @@ var org;
                                         }
                                         else {
                                             if (n.getRight() == null) {
-                                                insertedNode = new org.kevoree.modeling.api.rbtree.TreeNode(key, org.kevoree.modeling.api.rbtree.Color.RED, null, null);
+                                                insertedNode = new org.kevoree.modeling.api.rbtree.TreeNode(key, false, null, null);
                                                 n.setRight(insertedNode);
                                                 this._size++;
                                                 break;
@@ -7803,14 +7785,14 @@ var org;
                         };
                         IndexRBTree.prototype.insertCase1 = function (n) {
                             if (n.getParent() == null) {
-                                n.color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                n.color = true;
                             }
                             else {
                                 this.insertCase2(n);
                             }
                         };
                         IndexRBTree.prototype.insertCase2 = function (n) {
-                            if (this.nodeColor(n.getParent()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
+                            if (this.nodeColor(n.getParent()) == true) {
                                 return;
                             }
                             else {
@@ -7818,10 +7800,10 @@ var org;
                             }
                         };
                         IndexRBTree.prototype.insertCase3 = function (n) {
-                            if (this.nodeColor(n.uncle()) == org.kevoree.modeling.api.rbtree.Color.RED) {
-                                n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
-                                n.uncle().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
-                                n.grandparent().color = org.kevoree.modeling.api.rbtree.Color.RED;
+                            if (this.nodeColor(n.uncle()) == false) {
+                                n.getParent().color = true;
+                                n.uncle().color = true;
+                                n.grandparent().color = false;
                                 this.insertCase1(n.grandparent());
                             }
                             else {
@@ -7843,8 +7825,8 @@ var org;
                             this.insertCase5(n);
                         };
                         IndexRBTree.prototype.insertCase5 = function (n) {
-                            n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
-                            n.grandparent().color = org.kevoree.modeling.api.rbtree.Color.RED;
+                            n.getParent().color = true;
+                            n.grandparent().color = false;
                             if (n == n.getParent().getLeft() && n.getParent() == n.grandparent().getLeft()) {
                                 this.rotateRight(n.grandparent());
                             }
@@ -7874,7 +7856,7 @@ var org;
                                 else {
                                     child = n.getRight();
                                 }
-                                if (this.nodeColor(n) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
+                                if (this.nodeColor(n) == true) {
                                     n.color = this.nodeColor(child);
                                     this.deleteCase1(n);
                                 }
@@ -7890,9 +7872,9 @@ var org;
                             }
                         };
                         IndexRBTree.prototype.deleteCase2 = function (n) {
-                            if (this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.RED) {
-                                n.getParent().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            if (this.nodeColor(n.sibling()) == false) {
+                                n.getParent().color = false;
+                                n.sibling().color = true;
                                 if (n == n.getParent().getLeft()) {
                                     this.rotateLeft(n.getParent());
                                 }
@@ -7903,8 +7885,8 @@ var org;
                             this.deleteCase3(n);
                         };
                         IndexRBTree.prototype.deleteCase3 = function (n) {
-                            if (this.nodeColor(n.getParent()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
+                            if (this.nodeColor(n.getParent()) == true && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getLeft()) == true && this.nodeColor(n.sibling().getRight()) == true) {
+                                n.sibling().color = false;
                                 this.deleteCase1(n.getParent());
                             }
                             else {
@@ -7912,24 +7894,24 @@ var org;
                             }
                         };
                         IndexRBTree.prototype.deleteCase4 = function (n) {
-                            if (this.nodeColor(n.getParent()) == org.kevoree.modeling.api.rbtree.Color.RED && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            if (this.nodeColor(n.getParent()) == false && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getLeft()) == true && this.nodeColor(n.sibling().getRight()) == true) {
+                                n.sibling().color = false;
+                                n.getParent().color = true;
                             }
                             else {
                                 this.deleteCase5(n);
                             }
                         };
                         IndexRBTree.prototype.deleteCase5 = function (n) {
-                            if (n == n.getParent().getLeft() && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.RED && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                n.sibling().getLeft().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            if (n == n.getParent().getLeft() && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getLeft()) == false && this.nodeColor(n.sibling().getRight()) == true) {
+                                n.sibling().color = false;
+                                n.sibling().getLeft().color = true;
                                 this.rotateRight(n.sibling());
                             }
                             else {
-                                if (n == n.getParent().getRight() && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.RED && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                    n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                    n.sibling().getRight().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                if (n == n.getParent().getRight() && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getRight()) == false && this.nodeColor(n.sibling().getLeft()) == true) {
+                                    n.sibling().color = false;
+                                    n.sibling().getRight().color = true;
                                     this.rotateLeft(n.sibling());
                                 }
                             }
@@ -7937,19 +7919,19 @@ var org;
                         };
                         IndexRBTree.prototype.deleteCase6 = function (n) {
                             n.sibling().color = this.nodeColor(n.getParent());
-                            n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            n.getParent().color = true;
                             if (n == n.getParent().getLeft()) {
-                                n.sibling().getRight().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                n.sibling().getRight().color = true;
                                 this.rotateLeft(n.getParent());
                             }
                             else {
-                                n.sibling().getLeft().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                n.sibling().getLeft().color = true;
                                 this.rotateRight(n.getParent());
                             }
                         };
                         IndexRBTree.prototype.nodeColor = function (n) {
                             if (n == null) {
-                                return org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                return true;
                             }
                             else {
                                 return n.color;
@@ -8289,7 +8271,7 @@ var org;
                         LongRBTree.prototype.insert = function (key, value) {
                             this.resetCache();
                             this._dirty = true;
-                            var insertedNode = new org.kevoree.modeling.api.rbtree.LongTreeNode(key, value, org.kevoree.modeling.api.rbtree.Color.RED, null, null);
+                            var insertedNode = new org.kevoree.modeling.api.rbtree.LongTreeNode(key, value, false, null, null);
                             if (this.root == null) {
                                 this._size++;
                                 this.root = insertedNode;
@@ -8330,14 +8312,14 @@ var org;
                         };
                         LongRBTree.prototype.insertCase1 = function (n) {
                             if (n.getParent() == null) {
-                                n.color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                n.color = true;
                             }
                             else {
                                 this.insertCase2(n);
                             }
                         };
                         LongRBTree.prototype.insertCase2 = function (n) {
-                            if (this.nodeColor(n.getParent()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
+                            if (this.nodeColor(n.getParent()) == true) {
                                 return;
                             }
                             else {
@@ -8345,10 +8327,10 @@ var org;
                             }
                         };
                         LongRBTree.prototype.insertCase3 = function (n) {
-                            if (this.nodeColor(n.uncle()) == org.kevoree.modeling.api.rbtree.Color.RED) {
-                                n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
-                                n.uncle().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
-                                n.grandparent().color = org.kevoree.modeling.api.rbtree.Color.RED;
+                            if (this.nodeColor(n.uncle()) == false) {
+                                n.getParent().color = true;
+                                n.uncle().color = true;
+                                n.grandparent().color = false;
                                 this.insertCase1(n.grandparent());
                             }
                             else {
@@ -8370,8 +8352,8 @@ var org;
                             this.insertCase5(n);
                         };
                         LongRBTree.prototype.insertCase5 = function (n) {
-                            n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
-                            n.grandparent().color = org.kevoree.modeling.api.rbtree.Color.RED;
+                            n.getParent().color = true;
+                            n.grandparent().color = false;
                             if (n == n.getParent().getLeft() && n.getParent() == n.grandparent().getLeft()) {
                                 this.rotateRight(n.grandparent());
                             }
@@ -8402,7 +8384,7 @@ var org;
                                 else {
                                     child = n.getRight();
                                 }
-                                if (this.nodeColor(n) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
+                                if (this.nodeColor(n) == true) {
                                     n.color = this.nodeColor(child);
                                     this.deleteCase1(n);
                                 }
@@ -8418,9 +8400,9 @@ var org;
                             }
                         };
                         LongRBTree.prototype.deleteCase2 = function (n) {
-                            if (this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.RED) {
-                                n.getParent().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            if (this.nodeColor(n.sibling()) == false) {
+                                n.getParent().color = false;
+                                n.sibling().color = true;
                                 if (n == n.getParent().getLeft()) {
                                     this.rotateLeft(n.getParent());
                                 }
@@ -8431,8 +8413,8 @@ var org;
                             this.deleteCase3(n);
                         };
                         LongRBTree.prototype.deleteCase3 = function (n) {
-                            if (this.nodeColor(n.getParent()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
+                            if (this.nodeColor(n.getParent()) == true && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getLeft()) == true && this.nodeColor(n.sibling().getRight()) == true) {
+                                n.sibling().color = false;
                                 this.deleteCase1(n.getParent());
                             }
                             else {
@@ -8440,24 +8422,24 @@ var org;
                             }
                         };
                         LongRBTree.prototype.deleteCase4 = function (n) {
-                            if (this.nodeColor(n.getParent()) == org.kevoree.modeling.api.rbtree.Color.RED && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            if (this.nodeColor(n.getParent()) == false && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getLeft()) == true && this.nodeColor(n.sibling().getRight()) == true) {
+                                n.sibling().color = false;
+                                n.getParent().color = true;
                             }
                             else {
                                 this.deleteCase5(n);
                             }
                         };
                         LongRBTree.prototype.deleteCase5 = function (n) {
-                            if (n == n.getParent().getLeft() && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.RED && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                n.sibling().getLeft().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            if (n == n.getParent().getLeft() && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getLeft()) == false && this.nodeColor(n.sibling().getRight()) == true) {
+                                n.sibling().color = false;
+                                n.sibling().getLeft().color = true;
                                 this.rotateRight(n.sibling());
                             }
                             else {
-                                if (n == n.getParent().getRight() && this.nodeColor(n.sibling()) == org.kevoree.modeling.api.rbtree.Color.BLACK && this.nodeColor(n.sibling().getRight()) == org.kevoree.modeling.api.rbtree.Color.RED && this.nodeColor(n.sibling().getLeft()) == org.kevoree.modeling.api.rbtree.Color.BLACK) {
-                                    n.sibling().color = org.kevoree.modeling.api.rbtree.Color.RED;
-                                    n.sibling().getRight().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                if (n == n.getParent().getRight() && this.nodeColor(n.sibling()) == true && this.nodeColor(n.sibling().getRight()) == false && this.nodeColor(n.sibling().getLeft()) == true) {
+                                    n.sibling().color = false;
+                                    n.sibling().getRight().color = true;
                                     this.rotateLeft(n.sibling());
                                 }
                             }
@@ -8465,19 +8447,19 @@ var org;
                         };
                         LongRBTree.prototype.deleteCase6 = function (n) {
                             n.sibling().color = this.nodeColor(n.getParent());
-                            n.getParent().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            n.getParent().color = true;
                             if (n == n.getParent().getLeft()) {
-                                n.sibling().getRight().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                n.sibling().getRight().color = true;
                                 this.rotateLeft(n.getParent());
                             }
                             else {
-                                n.sibling().getLeft().color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                n.sibling().getLeft().color = true;
                                 this.rotateRight(n.getParent());
                             }
                         };
                         LongRBTree.prototype.nodeColor = function (n) {
                             if (n == null) {
-                                return org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                return true;
                             }
                             else {
                                 return n.color;
@@ -8551,7 +8533,7 @@ var org;
                         };
                         LongTreeNode.prototype.serialize = function (builder) {
                             builder.append("|");
-                            if (this.color == org.kevoree.modeling.api.rbtree.Color.BLACK) {
+                            if (this.color == true) {
                                 builder.append(LongTreeNode.BLACK);
                             }
                             else {
@@ -8653,9 +8635,9 @@ var org;
                             }
                             ctx.index = ctx.index + 1;
                             ch = ctx.payload.charAt(ctx.index);
-                            var color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                            var colorLoaded = true;
                             if (ch == LongTreeNode.RED) {
-                                color = org.kevoree.modeling.api.rbtree.Color.RED;
+                                colorLoaded = false;
                             }
                             ctx.index = ctx.index + 1;
                             ch = ctx.payload.charAt(ctx.index);
@@ -8685,7 +8667,7 @@ var org;
                                 i++;
                             }
                             var value = java.lang.Long.parseLong(StringUtils.copyValueOf(ctx.buffer, 0, i));
-                            var p = new org.kevoree.modeling.api.rbtree.LongTreeNode(key, value, color, null, null);
+                            var p = new org.kevoree.modeling.api.rbtree.LongTreeNode(key, value, colorLoaded, null, null);
                             var left = org.kevoree.modeling.api.rbtree.LongTreeNode.internal_unserialize(false, ctx);
                             if (left != null) {
                                 left.setParent(p);
@@ -8770,7 +8752,7 @@ var org;
                         };
                         TreeNode.prototype.serialize = function (builder) {
                             builder.append("|");
-                            if (this.color == org.kevoree.modeling.api.rbtree.Color.BLACK) {
+                            if (this.color == true) {
                                 builder.append(TreeNode.BLACK);
                             }
                             else {
@@ -8871,12 +8853,12 @@ var org;
                             }
                             ctx.index = ctx.index + 1;
                             ch = ctx.payload.charAt(ctx.index);
-                            var color;
+                            var colorLoaded;
                             if (ch == org.kevoree.modeling.api.rbtree.TreeNode.BLACK) {
-                                color = org.kevoree.modeling.api.rbtree.Color.BLACK;
+                                colorLoaded = true;
                             }
                             else {
-                                color = org.kevoree.modeling.api.rbtree.Color.RED;
+                                colorLoaded = false;
                             }
                             ctx.index = ctx.index + 1;
                             ch = ctx.payload.charAt(ctx.index);
@@ -8888,7 +8870,7 @@ var org;
                             if (ch != '|' && ch != '#' && ch != '%') {
                                 tokenBuild.append(ch);
                             }
-                            var p = new org.kevoree.modeling.api.rbtree.TreeNode(java.lang.Long.parseLong(tokenBuild.toString()), color, null, null);
+                            var p = new org.kevoree.modeling.api.rbtree.TreeNode(java.lang.Long.parseLong(tokenBuild.toString()), colorLoaded, null, null);
                             var left = org.kevoree.modeling.api.rbtree.TreeNode.internal_unserialize(false, ctx);
                             if (left != null) {
                                 left.setParent(p);

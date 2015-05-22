@@ -92,12 +92,12 @@
             <version>${project.version}</version>
         </dependency>
         -->
-        <!-- switch your
+        <!-- switch your light
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.switchYourLight</artifactId>
             <version>${project.version}</version>
-        </dependency>light
+        </dependency>
         -->
 
         <!-- Polynomial Reader

@@ -6,6 +6,7 @@ import org.kevoree.modeling.api.KObject;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
+import org.kubi.meta.MetaEcosystem;
 
 import java.io.*;
 
@@ -39,7 +40,6 @@ public class SmartFridgePlugin implements KubiPlugin {
                 temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
                 device.addStateParameters(temperatureParam);
 
-
                 Device device2 = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("openCheck");
 
                 StateParameter openParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name");
@@ -54,10 +54,14 @@ public class SmartFridgePlugin implements KubiPlugin {
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
                 initData(universe, stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad));
                 kernel.model().save();
-//                ecosystem.view().universe().model().save();
+
+
+                // TODO : reader
+                //readData();
             }
         });
     }
+
 
     @Override
     public void stop() {
@@ -84,7 +88,6 @@ public class SmartFridgePlugin implements KubiPlugin {
                             if (("3").equals(data[1])) {
                                 final double temp = Double.parseDouble(data[2]);
                                 if(kObjects[0] != null){
-                                    System.out.println(temp);
                                     ((StateParameter) kObjects[0]).setValue(temp + "");
                                 }
                             } else if (("2").equals(data[1])) {
@@ -94,10 +97,10 @@ public class SmartFridgePlugin implements KubiPlugin {
                                     openState = true;
                                 }
                                 if(kObjects[1] != null){
-                                    System.out.println(openState);
                                     ((StateParameter) kObjects[1]).setValue(openState + "");
                                 }
                             }
+                            kubiKernel.model().save();
                         }
                     });
                 }
@@ -117,4 +120,27 @@ public class SmartFridgePlugin implements KubiPlugin {
         }
     }
 
+    private void readData() {
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot().then(new Callback<KObject>() {
+            @Override
+            public void on(KObject kObject) {
+                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).done().then(new Callback<KObject[]>() {
+                    @Override
+                    public void on(KObject[] kObjects) {
+                        System.out.println(kObjects.length);
+                        for (KObject t : kObjects){
+                            System.out.println((Technology)t);
+                        }
+                    }
+                });
+            }
+        });
+    }
 }

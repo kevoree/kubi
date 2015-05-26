@@ -152,18 +152,18 @@ function getDataFromKubi(){
                     }catch(e){console.log(e);}
                 });
                 nunjucks.configure({autoescape: true});
-                // TODO init the graph
-                //nunjucks.renderString(this.get("#radioDevicePicker-template").html(), {
-                //    ecosystem: rootNow,
-                //    model: kubiModel,
-                //    autoRefresh: true,
-                //    autoNow: true
-                //}, function (err, res) {
-                //    if (err) {
-                //        console.log(err);
-                //    }
-                //    this.get("#radioDevicePicker").html(res);
-                //});
+                // init the graph
+                nunjucks.renderString(document.getElementById("radioDevicePicker-template").innerHTML, {
+                    ecosystem: rootNow,
+                    model: kubiModel,
+                    autoRefresh: true,
+                    autoNow: true
+                }, function (err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    document.getElementById("radioDevicePicker").innerHTML = res;
+                });
             }catch (e){
                 e.printStackTrace();
             }

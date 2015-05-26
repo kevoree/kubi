@@ -879,10 +879,10 @@
                     } else {
                         metaElem = obj.metaClass().reference(val);
                         if (metaElem !== undefined && metaElem !== null) {
-                            var backendRawEntry = obj.view().universe().model().manager().entry(obj, org.kevoree.modeling.api.data.manager.AccessMode.READ);
+                            var backendRawEntry = runtime.ctx.ctx.originModel.manager().entry(obj, org.kevoree.modeling.api.data.manager.AccessMode.READ);
                             var backendIds = backendRawEntry.get(metaElem.index());
                             if (backendIds !== undefined && backendIds !== null) {
-                                var deferTask = obj.view().lookupAll(backendIds);
+                                var deferTask = runtime.ctx.ctx.originModel.universe(obj.universe()).time(obj.now()).lookupAll(backendIds);
                                 return {arr: backendIds, defer: deferTask};
                             }
                         }
@@ -4971,7 +4971,7 @@
                 var cb = originCb;
                 if (ctx.autoRefresh) {
                     ctx.managedObjects = {};
-                    ctx.originModel = undefined;
+                    ctx.originModel = ctx.model;
                     ctx.originGroup = undefined;
                     ctx.managedListener = function (srcEvent, metaEvt) {
                         if(ctx.originGroup !== undefined && ctx.originModel !== undefined){
@@ -4989,7 +4989,7 @@
                                     toReloadMap[loopObj.uuid()] = keyName;
                                     toReloadIds.push(loopObj.uuid());
                                     if (originUniverse == undefined) {
-                                        originUniverse = loopObj.view().universe();
+                                        originUniverse = runtime.ctx.ctx.originModel.universe(loopObj.universe());
                                     }
                                 }
                             }
@@ -5027,8 +5027,7 @@
                             toListenUuids.push(ctx.managedObjects[uuid].uuid());
                         }
                         for (var uuid in ctx.managedObjects) {
-                            ctx.originModel = ctx.managedObjects[uuid].view().universe().model();
-                            ctx.managedObjects[uuid].view().universe().listenAll(ctx.originGroup,toListenUuids,ctx.managedListener);
+                            ctx.model.universe(ctx.managedObjects[uuid].universe()).listenAll(ctx.originGroup,toListenUuids,ctx.managedListener);
                             break;
                         }
                         originCb(err, res)

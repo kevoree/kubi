@@ -134,42 +134,40 @@ function getDataFromKubi(){
     var groupListenerID = kubiModel.nextGroup();
 
     currentView.getRoot().then(function (root) {
-        /* TODO template
-         root.jump(1428932146000).then(function (rootNow){
-         nunjucks.configure({autoescape: true});
-         try {
-         // init the graph
-         nunjucks.renderString((<HTMLScriptElement>document.getElementById("ecosystem-template")).text, {
-         ecosystem: rootNow,
-         autoRefresh: true,
-         autoNow: true
-         }, function (err, res) {
-         if (err) {
-         console.log(err);
-         }
-         try {
-         console.log("getDataFromKubi - inside");
-         this.get("#ecosystem").html(res);
-         }catch(e){console.log(e);}
-         });
-         console.log("getDataFromKubi - inside2");
-         nunjucks.configure({autoescape: true});
-         // init the graph
-         nunjucks.renderString(this.get("#radioDevicePicker-template").html(), {
-         ecosystem: rootNow,
-         autoRefresh: true,
-         autoNow: true
-         }, function (err, res) {
-         if (err) {
-         console.log(err);
-         }
-         this.get("#radioDevicePicker").html(res);
-         });
-         }catch (e){
-         e.printStackTrace();
-         }
-         });
-         */
+        root.jump(1428932146000).then(function (rootNow){
+            nunjucks.configure({autoescape: true});
+            try {
+                // init the graph
+                nunjucks.renderString((document.getElementById("ecosystem-template")).innerHTML, {
+                    ecosystem: rootNow,
+                    model: kubiModel,
+                    autoRefresh: true,
+                    autoNow: true
+                }, function (err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    try {
+                        (document.getElementById("ecosystem")).innerHTML = res;
+                    }catch(e){console.log(e);}
+                });
+                nunjucks.configure({autoescape: true});
+                // TODO init the graph
+                //nunjucks.renderString(this.get("#radioDevicePicker-template").html(), {
+                //    ecosystem: rootNow,
+                //    model: kubiModel,
+                //    autoRefresh: true,
+                //    autoNow: true
+                //}, function (err, res) {
+                //    if (err) {
+                //        console.log(err);
+                //    }
+                //    this.get("#radioDevicePicker").html(res);
+                //});
+            }catch (e){
+                e.printStackTrace();
+            }
+        });
 
         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
             .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices){
@@ -382,7 +380,7 @@ function contentSliderGraphInit(){
     var deviceName = "plug"; // TODO : generalisation get radio.* value
     var start = value - range;
     var end = value - (-range);
-    var numberOfPoint :number = 500;
+    var numberOfPoint :number = 300;
     var step = range / numberOfPoint;
     console.log(start,"-----", end, "_____", range, "_____", step);
     //var end = ( end==0 ? start-86400000 : end  );
@@ -456,7 +454,6 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
         });
     }
     else{
-        console.log("j'aime le chocolat");
         // add in graph
         console.log(deviceName,"-----in -setInGraphDeviceRangeValuesWithPeriod");
         // reverse the DataPoints set for the device given for the graph
@@ -488,7 +485,6 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
  * @param seriesName the name of the series of values
  */
 function createOrReplaceValuesSetInChart(values, seriesName){
-    console.log("_____",values);
     for(var i in dataChart){
         if(seriesName.equals(dataChart[i].name)){
             dataChart[i] = values;

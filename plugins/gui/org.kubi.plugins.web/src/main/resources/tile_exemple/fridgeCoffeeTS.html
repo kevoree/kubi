@@ -93,30 +93,31 @@
         <ul class="tiles">
             <div class="col1 clearfix">
                 <li class="tile tile-big tile-1 slideTextUp">
-                    <a href="index.html" class="tutorial-link">
+                    <div class="tutorial-link">
                         <div><p>I don't want to do anything. I'm the one in charge !</p></div>
                         <div><p>Close</p></div>
-                    </a>
+                    </div>
                 </li>
                 <li class="tile tile-2xbig tile-2" data-page-type="s-page" data-page-name="random-restored-page">
                     <figure>
                         <div>
                             <p>Scenario 1</p>
-
-                            <ul id="ecosystem"></ul>
+                            <div id="ecosystem"/>
                             <script id="ecosystem-template" type="text/x-handlebars-template">
-                                {% asyncEach techno in ecosystem.technologies %}
-                                {% asyncEach device in techno.devices %}
-                                {% asyncEach param in device.stateParameters %}
-                                <li>
-                                    <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
-                                        Value : {{param.value}} -
-                                        Period :{{param.period.period}}
-                                    </p>
-                                </li>
-                                {% endeach %}
-                                {% endeach %}
-                                {% endeach %}
+                                <ul >
+                                    {% asyncEach techno in ecosystem.technologies %}
+                                    {% asyncEach device in techno.devices %}
+                                    {% asyncEach param in device.stateParameters %}
+                                    <li>
+                                        <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
+                                            Value : {{param.value}} -
+                                            Period :{{param.period.period}}
+                                        </p>
+                                    </li>
+                                    {% endeach %}
+                                    {% endeach %}
+                                    {% endeach %}
+                                </ul>
                             </script>
                         </div>
                         <p class="tile-caption caption-left">More details...</p>

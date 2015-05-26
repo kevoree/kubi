@@ -47,6 +47,7 @@ public class SmartFridgePlugin implements KubiPlugin {
 
                 currentTechnology.addDevices(device);
                 currentTechnology.addDevices(device2);
+
                 long[] stateKeys = new long[2];
                 stateKeys[0] = temperatureParam.uuid();
                 stateKeys[1] = openParam.uuid();

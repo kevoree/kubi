@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>SmartHome : tile style</title>
+
+    <link rel="stylesheet" href="css/demo-styles.css"/>
+    <!-- canvasJS -->
+    <script src="../js/canvasjs.min.js"></script>
+    <!-- tules-->
+    <script src="js/modernizr-1.5.min.js"></script>
+
+    <!-- kubi-->
+    <script src="../js/nunjucks.js"></script>
+    <script src="../js/js/org.kubi.model-all.js"></script>
+    <script src="../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+
+    <!-- materialize-->
+    <link href="../materialize/css/materialize.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="../materialize/js/materialize.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+
+</head>
+
+<body>
+<header>
+    <a href="http://wwwfr.uni.lu/snt" class="tutorial-link">Made by the SnT</a>
+    <a href="https://www.post.lu/" class="tutorial-link"> in partnership with Post</a>
+</header>
+<!--===============================Start Demo====================================================-->
+<div class="demo-wrapper">
+    <!-- classnames for the pages should include: 1) type of page 2) page name-->
+
+    <div class="s-page random-restored-page">
+        <h2 class="page-title">Economic move</h2>
+
+        <div class="close-button s-close-button">x</div>
+        <div class="input-field col s12 openpage">
+            <select id="selectScale" class="browser-default">
+                <option value="31536000000">Yearly</option>
+                <option value="604800000">Weekly</option>
+                <option value="172800000" selected="selected">2 days</option>
+                <option value="86400000" selected="selected">Daily</option>
+                <option value="3600000">Hourly</option>
+            </select>
+            <label>Choose the scale</label>
+        </div>
+        <div class="openpage" id="chartContainer"></div>
+        <p class="range-field openpage">
+            <input type="range" id="slider1" value="1428887547" min="1428000000" max="1429100000" step="100"/>
+        </p>
+        <form id="radioDevicePicker" action="#"></form>
+        <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
+            {% asyncEach techno in ecosystem.technologies %}
+            {% asyncEach device in techno.devices %}
+            <p>
+                <input name="radioDevicePicker-group" class="with-gap" value="{{device.name}}" type="radio" id="radio{{device.name}}" />
+                <label for="radio{{device.name}}">{{device.name}}</label>
+            </p>
+            {% endeach %}
+            {% endeach %}
+        </script>
+    </div>
+
+    <div class="s-page custom-page">
+        <h2 class="page-title">Thank You!</h2>
+
+        <div class="close-button s-close-button">x</div>
+    </div>
+    <div class="r-page random-r-page">
+
+        <div class="page-content">
+            <h2 class="page-title">App Screen</h2>
+
+            <p class="range-field">
+                <input type="range" id="slider" value="1428887547,1429087547" min="1428754400" max="1429100000" step="100"/>
+            </p>
+            Seek To : <input id="seekTo" type="text" value="1429187547"/>
+            <input id="update" type="button" value="Update"/>
+            Current Value : <p id="val">0</p>
+            Current Device Value : <p id="valDevice">0</p>
+        </div>
+
+        <div class="close-button r-close-button">x</div>
+    </div>
+
+
+    <!--each tile should specify what page type it opens (to determine which animation) and the corresponding page name it should open-->
+    <div class="dashboard clearfix">
+        <ul class="tiles">
+            <div class="col1 clearfix">
+                <li class="tile tile-big tile-1 slideTextUp">
+                    <div class="tutorial-link">
+                        <div><p>I don't want to do anything. I'm the one in charge !</p></div>
+                        <div><p>Close</p></div>
+                    </div>
+                </li>
+                <li class="tile tile-2xbig tile-2" data-page-type="s-page" data-page-name="random-restored-page">
+                    <figure>
+                        <div>
+                            <p>Scenario 1</p>
+                            <div id="ecosystem"/>
+                            <script id="ecosystem-template" type="text/x-handlebars-template">
+                                <ul >
+                                    {% asyncEach techno in ecosystem.technologies %}
+                                    {% asyncEach device in techno.devices %}
+                                    {% asyncEach param in device.stateParameters %}
+                                    <li>
+                                        <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
+                                            Value : {{param.value}} -
+                                            Period :{{param.period.period}}
+                                        </p>
+                                    </li>
+                                    {% endeach %}
+                                    {% endeach %}
+                                    {% endeach %}
+                                </ul>
+                            </script>
+                        </div>
+                        <p class="tile-caption caption-left">More details...</p>
+                    </figure>
+                </li>
+
+                <li class="tile tile-2xbig tile-2" data-page-type="r-page" data-page-name="random-r-page">
+                    <div>
+                        <p>Scenario 2</p>
+                        <ul>
+                            <li>Temperature : 20°C (-0.5°C)</li>
+                            <li>Air quality : 80% (+6 % )</li>
+                        </ul>
+                    </div>
+                </li>
+            </div>
+        </ul>
+    </div>
+    <!--end dashboard-->
+</div>
+<!--====================================end demo wrapper================================================-->
+<script src="js/jquery-1.8.2.min.js"></script>
+<script src="js/scripts.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+<script src="../js/js/kubiTS.js"></script>
+
+
+</body>
+</html>

@@ -1,8 +1,9 @@
-package org.kubi.runner;
+package org.kubi.kernel;
 
 import org.kevoree.log.Log;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KConfig;
+import org.kevoree.modeling.api.data.cdn.KContentDeliveryDriver;
 import org.kevoree.modeling.api.scheduler.ExecutorServiceScheduler;
 import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
 import org.kubi.Ecosystem;
@@ -24,11 +25,12 @@ public class KubiKernelImpl implements KubiKernel {
 
     private KubiModel kubiModel;
 
-    public KubiKernelImpl(String dbPath) throws IOException {
+    public KubiKernelImpl(KContentDeliveryDriver cdd) throws IOException {
         kubiModel = new KubiModel();
         kubiModel.setScheduler(new ExecutorServiceScheduler());
-        LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(dbPath);
-        kubiModel.setContentDeliveryDriver(leveldb);
+        if(cdd != null) {
+        kubiModel.setContentDeliveryDriver(cdd);
+        }
     }
 
     private boolean isConnected = false;

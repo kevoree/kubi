@@ -1,16 +1,24 @@
 package org.kubi.runner;
 
+import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
+import org.kubi.kernel.KubiKernelImpl;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
-public class KubiRunner {
+/**
+ * Created by gnain on 27/05/15.
+ */
+public class DefaultRunner {
+
 
     private static final String DB_NAME = "kubiDB";
 
     public static void main(String[] args) throws IOException {
         clearDB();
-        KubiKernelImpl kernel = new KubiKernelImpl(DB_NAME);
+        LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(DB_NAME);
+        KubiKernelImpl kernel = new KubiKernelImpl(leveldb);
         kernel.start();
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -46,5 +54,7 @@ public class KubiRunner {
             e.printStackTrace();
         }
     }
+
+
 
 }

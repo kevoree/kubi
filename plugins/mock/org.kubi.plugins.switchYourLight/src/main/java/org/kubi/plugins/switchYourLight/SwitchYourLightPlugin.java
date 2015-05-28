@@ -29,14 +29,14 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
                 Device device = kubiKernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("switch");
 
-                SimulatedParameter switchState = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("switch").setUnit("kW");
+                SimulatedParameter switchState = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("name").setUnit("kW");
 //                switchState.setPeriod(switchState.view().createPeriod());
                 device.addStateParameters(switchState);
 
 
                 Device device2 = kubiKernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("light");
 
-                SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("light");
+                SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("name");
                 device2.addStateParameters(lightState);
 
                 kubiKernel.model().metaModel().metaClass("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new SwitchYourLightExtrapolation());
@@ -78,7 +78,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 //                        System.out.println("0\t---\t" + kObjects[0].now() + "\t,,\t" + ((SimulatedParameter) kObjects[0]).getValue());
 //                        System.out.println("1\t---\t" + kObjects[1].now() + "\t,,\t" + ((SimulatedParameter) kObjects[1]).getValue());
 //                        System.out.println((kObjects[0].now())%60000 + "," + (((SimulatedParameter) kObjects[0]).getValue().equals("true")?0:1)+ "," + (((SimulatedParameter) kObjects[1]).getValue().equals("true")?0:1));
-                        System.out.println((kObjects[0].now()) % 60000 + "," + ((SimulatedParameter) kObjects[0]).getValue() + "," + ((SimulatedParameter) kObjects[1]).getValue());
+//                        System.out.println((kObjects[0].now()) % 60000 + "," + ((SimulatedParameter) kObjects[0]).getValue() + "," + ((SimulatedParameter) kObjects[1]).getValue());
                     }
                 }
             });

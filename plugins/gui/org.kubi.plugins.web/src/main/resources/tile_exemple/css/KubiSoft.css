@@ -1,3 +1,14 @@
+header, main, footer {
+    padding-left: 250px;
+}
+
+@media only screen and (max-width : 992px) {
+    header, main, footer {
+        padding-left: 0;
+    }
+}
+
+
 #chartContainer{
     /* TODO : remove this part  */
     margin: 2em;
@@ -6,19 +17,4 @@
 }
 .canvasjs-chart-canvas{
     border: dotted #d121d6;
-}
-
-
-nav
-{
-    float: left;
-    width: 10em !important;
-    height: 100%;
-    border: 1px solid darkgrey;
-}
-
-article
-{
-    margin-left: 11em;
-    border: 1px solid darkgrey;
 }

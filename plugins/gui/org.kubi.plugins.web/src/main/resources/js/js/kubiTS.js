@@ -193,6 +193,7 @@ function initDataAndListener() {
                     }
                 });
             }
+            console.log("...", deviceNames);
             getAndDrawData(deviceNames, startTime, endTime, stepTime);
         });
     });
@@ -379,11 +380,17 @@ function getAndDrawData(deviceNames, start, end, step) {
                                     if (parameters.length > 0) {
                                         var param = parameters[0];
                                         // emptying the dataset of the device
+                                        console.log("... \tgetAndDrawData", device.getName());
                                         initDeviceInChartSeries(device.getName());
                                         if (dataSeries[device.getName() + "_Period"] != null) {
                                             initDeviceInChartSeries(device.getName() + "_Period");
                                         }
-                                        setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
+                                        try {
+                                            setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
+                                        }
+                                        catch (e) {
+                                            console.log(",,,", device.getName());
+                                        }
                                     }
                                 });
                             }

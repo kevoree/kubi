@@ -23,48 +23,55 @@
     <script type="text/javascript" src="../materialize/js/materialize.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
+    <!-- polymer -->
+    <!--link rel="import" href="../components/polymer/polymer.html"-->
 
 </head>
 
 <body>
-<header>
-    <a href="http://wwwfr.uni.lu/snt" class="tutorial-link">Made by the SnT</a>
-    <a href="https://www.post.lu/" class="tutorial-link"> in partnership with Post</a>
+<header class="page-header">
+    <div class="container">
+        <a href="http://wwwfr.uni.lu/snt" class="tutorial-link" class="grey-text text-lighten-3">Made by the SnT</a>
+        <a href="https://www.post.lu/" class="tutorial-link"> in partnership with Post</a>
+    </div>
+    <nav>
+    <div>
+        <form id="radioDevicePicker" action="#"></form>
+        <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
+            <ul id="nav-mobile" class="side-nav fixed">
+                {% asyncEach techno in ecosystem.technologies %}
+                {% asyncEach device in techno.devices %}
+                <li>
+                    <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}" />
+                    <label for="radio{{device.name}}">{{device.name}}</label>
+                </li>
+                {% endeach %}
+                {% endeach %}
+            </ul>
+        </script>
+    </div>
+    </nav>
 </header>
 
-<nav>
-    <form id="radioDevicePicker" action="#"></form>
-    <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
-        {% asyncEach techno in ecosystem.technologies %}
-        {% asyncEach device in techno.devices %}
+<main>
+    <div class="input-field" >
+        <label>Choose the scale</label>
+        <select id="selectScale" class="browser-default">
+            <option value="31536000000">Yearly</option>
+            <option value="604800000">Weekly</option>
+            <option value="172800000" selected="selected">2 days</option>
+            <option value="86400000" selected="selected">Daily</option>
+            <option value="3600000">Hourly</option>
+        </select>
         <p>
-            <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}" />
-            <label for="radio{{device.name}}">{{device.name}}</label>
+            <input type="range" id="slider1" value="1428887547" min="1428500000" max="1429100000" step="100"/>
         </p>
-        {% endeach %}
-        {% endeach %}
-    </script>
-</nav>
+        <p id="slider1_value">1428887547</p>
+    </div>
 
-<article>
-<div class="input-field">
-    <select id="selectScale" class="browser-default">
-        <option value="31536000000">Yearly</option>
-        <option value="604800000">Weekly</option>
-        <option value="172800000" selected="selected">2 days</option>
-        <option value="86400000" selected="selected">Daily</option>
-        <option value="3600000">Hourly</option>
-    </select>
-    <label>Choose the scale</label>
-    <p>
-        <input type="range" id="slider1" value="1428887547" min="1428500000" max="1429100000" step="100"/>
-    </p>
-    <p id="slider1_value">1428887547</p>
-</div>
+    <div id="chartContainer"></div>
 
-<div id="chartContainer"></div>
-
-</article>
+</main>
 
 
 <script src="js/jquery-1.8.2.min.js"></script>

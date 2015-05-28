@@ -1,0 +1,24 @@
+#chartContainer{
+    /* TODO : remove this part  */
+    margin: 2em;
+    border: double #2ca02c thick;
+    background-color: #3EC7F3;
+}
+.canvasjs-chart-canvas{
+    border: dotted #d121d6;
+}
+
+
+nav
+{
+    float: left;
+    width: 10em !important;
+    height: 100%;
+    border: 1px solid darkgrey;
+}
+
+article
+{
+    margin-left: 11em;
+    border: 1px solid darkgrey;
+}

@@ -52,7 +52,7 @@ function init() {
             initGraph();
             initTemplate("ecosystem-template", "ecosystem", universeNumber, timeNow);
             initTemplate("radioDevicePicker-template", "radioDevicePicker", universeNumber, timeNow);
-            getDataFromKubi();
+            initDataAndListener();
         }
         sliderInit();
         sliderGraphInit();
@@ -72,7 +72,7 @@ function initGraph() {
         zoomEnabled: true,
         animationEnabled: true,
         title: {
-            text: "Graph of the electric consumption of the fridge of the coffee place depending of the time(hour)",
+            text: "Graph describing timed devices data",
             fontColor: "#121212"
         },
         axisX: {
@@ -90,7 +90,7 @@ function initGraph() {
             labelAngle: -30
         },
         axisY: {
-            title: "Electric consumption(kW) of the fridge ",
+            title: "Devices data",
             titleFontColor: "black",
             lineColor: "black",
             lineThickness: 1,
@@ -174,7 +174,8 @@ function initDeviceInChartSeries(deviceName) {
         dataPoints: []
     });
 }
-function getDataFromKubi() {
+function initDataAndListener() {
+    var deviceNames = [];
     var endTime = 1428997126000;
     var startTime = 1428599097936;
     var stepTime = 150000;
@@ -184,20 +185,15 @@ function getDataFromKubi() {
         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
             for (var d = 0; d < devices.length; d++) {
                 var device = devices[d];
-                // add a curb describing the device and its period in the chart
-                initDeviceInChartSeries(device.getName());
-                initDeviceInChartSeries(device.getName() + "_Period");
+                deviceNames[deviceNames.length] = device.getName();
                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
                     if (params.length != 0) {
                         var param = params[0];
                         addListenerParam(param, groupListenerID);
-                        // add old data to the chart
-                        param.parent().then(function (parent) {
-                            setInGraphDeviceRangeValuesWithPeriod(parent.getName(), param, startTime, endTime, stepTime);
-                        });
                     }
                 });
             }
+            getAndDrawData(deviceNames, startTime, endTime, stepTime);
         });
     });
 }
@@ -243,6 +239,8 @@ function addListenerParam(param, groupListenerID) {
  * @param keyMap name of the key in the map dataSeries
  */
 function addDataWithPeriodInDataSeries(param, keyMap) {
+    if (dataChart[keyMap] == null || dataChart[keyMap] == undefined) {
+    }
     dataSeries[keyMap].dataPoints.push({
         x: new Date(param.now()),
         y: parseFloat(param.getValue())
@@ -250,13 +248,7 @@ function addDataWithPeriodInDataSeries(param, keyMap) {
     param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
         if (periods.length > 0 && periods[0].getPeriod() != undefined) {
             if (dataSeries[keyMap + "_Period"] == null) {
-                dataSeries[keyMap + "_Period"] = ({
-                    type: "line",
-                    showInLegend: true,
-                    name: keyMap,
-                    title: keyMap,
-                    dataPoints: []
-                });
+                initDeviceInChartSeries(keyMap + "_Period");
             }
             dataSeries[keyMap + "_Period"].dataPoints.push({
                 x: new Date(periods[0].now()),
@@ -341,8 +333,14 @@ function sliderGraphInit() {
         console.log(e);
     }
 }
+/**
+ * Action after the slider changed
+ *  - take all the info needed in the web page then call the getter and drawer of the data wanted
+ */
 function sliderUpdatesGraph() {
-    var value = parseInt(document.getElementById("slider1").value) * 1000;
+    var value = parseInt(document.getElementById("slider1").value);
+    document.getElementById("slider1_value").innerText = value + "";
+    value = value * 1000;
     var select = document.getElementById("selectScale");
     var range = select.options[select.selectedIndex].value;
     var deviceNames = [];
@@ -356,12 +354,18 @@ function sliderUpdatesGraph() {
     var end = value - (-range);
     var numberOfPoint = 300;
     var step = range / numberOfPoint;
-    console.log(start, "-----", end, "_____", range, "_____", step);
-    contentSliderGraphInit(deviceNames, start, end, step);
+    getAndDrawData(deviceNames, start, end, step);
 }
-function contentSliderGraphInit(deviceNames, start, end, step) {
-    //var end = ( end==0 ? start-86400000 : end  );
-    //var step = ( step==0 ? 3600000 : step );
+/**
+ * Get and draw the data from kubi of the set of Devices named deviceNames in the time window [start,end] with a step of step
+ * @param deviceNames
+ * @param start
+ * @param end
+ * @param step
+ */
+function getAndDrawData(deviceNames, start, end, step) {
+    //    dataChart = [];
+    //dataSeries =[];
     var currentView = kubiModel.universe(universeNumber).time(end);
     currentView.getRoot().then(function (root) {
         if (root != null) {

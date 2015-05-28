@@ -203,7 +203,6 @@ function initDataAndListener(){
                         }
                     });
                 }
-                console.log("...", deviceNames);
                 getAndDrawData(deviceNames, startTime, endTime, stepTime);
             });
     });
@@ -415,9 +414,7 @@ function getAndDrawData(deviceNames :string[], start :number, end:number, step :
                                         if (dataSeries[device.getName() + "_Period"] != null) {
                                             initDeviceInChartSeries(device.getName() + "_Period");
                                         }
-try {
-    setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
-}catch(e){console.log(",,,",device.getName());}
+                                        setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
                                     }
                                 });
                             }

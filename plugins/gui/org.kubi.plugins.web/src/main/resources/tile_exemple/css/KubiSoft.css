@@ -12,9 +12,8 @@ header, main, footer {
 #chartContainer{
     /* TODO : remove this part  */
     margin: 2em;
-    border: double #2ca02c thick;
-    background-color: #3EC7F3;
+    border: double #fffff0 thick;
 }
 .canvasjs-chart-canvas{
-    border: dotted #d121d6;
+    border: dotted #d121d6 thin;
 }

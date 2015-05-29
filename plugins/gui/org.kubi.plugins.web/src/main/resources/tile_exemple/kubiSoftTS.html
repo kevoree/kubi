@@ -44,13 +44,19 @@
         <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
             <ul id="nav-mobile" class="side-nav fixed">
                 {% asyncEach techno in ecosystem.technologies %}
-                {% asyncEach device in techno.devices %}
                 <li>
-                    <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}" />
-                    <label for="radio{{device.name}}">{{device.name}}</label>
+                    <p class="filled-in" >{{techno.name}} :</p>
+                    <ul>
+                        {% asyncEach device in techno.devices %}
+                        <li>
+                            <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}" />
+                            <label for="radio{{device.name}}">{{device.name}}</label>
+                        </li>
+                        {% endeach %}
+                    </ul>
                 </li>
-                {% endeach %}
-                {% endeach %}
+            </ul>
+            {% endeach %}
             </ul>
         </script>
     </div>

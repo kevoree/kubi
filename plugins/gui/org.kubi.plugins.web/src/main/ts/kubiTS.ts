@@ -63,6 +63,8 @@ function init() {
         sliderGraphInit();
     });
 }
+
+
 /**
  * Initialize the graph empty
  */

@@ -45,6 +45,7 @@
 
         <!-- Plugins -->
         <module>plugins/gui/org.kubi.plugins.web</module>
+        <module>plugins/gui/org.kubi.plugins.polywebsite</module>
 
         <!-- ZWave driver
         <module>plugins/zwave/org.kubi.plugins.zwave</module>

@@ -3,6 +3,8 @@
 <head lang="en">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
     <title>SmartHome : tile style</title>
 
     <!-- css Tiles -->
@@ -12,19 +14,20 @@
     <!-- canvasJS -->
     <script src="../js/canvasjs.min.js"></script>
 
-    <!-- kubi-->
-    <script src="../js/nunjucks.js"></script>
-    <script src="../js/js/org.kubi.model-all.js"></script>
-    <script src="../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
-
     <!-- materialize-->
     <link href="../materialize/css/materialize.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="../materialize/js/materialize.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-    <!-- polymer -->
-    <!--link rel="import" href="../components/polymer/polymer.html"-->
+
+
+    <!-- Kubi html external files -->
+    <link href="footer.html" rel="import" type="text/html"/>
+
+    <!-- kubi-->
+    <script src="../js/nunjucks.js"></script>
+    <script src="../js/js/org.kubi.model-all.js"></script>
+    <script src="../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
 
 </head>
 
@@ -82,6 +85,32 @@
     <div id="chartContainer"></div>
 
 </main>
+
+
+
+<footer id="footer-template" class="page-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col l6 s12">
+                <h5 class="white-text">Kubi project</h5>
+                <p class="grey-text text-lighten-4">Smarthome... you're home will thing for your well being.</p>
+            </div>
+            <div class="col l4 offset-l2 s12">
+                <h5 class="white-text">Links</h5>
+                <ul>
+                    <li><a class="grey-text text-lighten-3" href="http://www.uni.lu/snt">SnT</a></li>
+                    <li><a class="grey-text text-lighten-3" href="http://www.post.lu">Post</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer-copyright">
+        <div class="container">
+            © 2014 Copyright Text
+            <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+        </div>
+    </div>
+</footer>
 
 
 <script src="js/jquery-1.8.2.min.js"></script>

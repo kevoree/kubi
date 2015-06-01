@@ -1,0 +1,101 @@
+<link rel="import" href="../bower_components/polymer/polymer.html"/>
+
+<script src="../../js/js/org.kubi.model-all.js"></script>
+<script src="../../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+<script src="../../js/nunjucks.js"></script>
+
+<!--link rel="import" href="../../js/js/kubiTS.js"/-->
+
+
+<dom-module id="kubi-device-sidenavbar">
+    <template>
+        <div>
+            <form id="radioDevicePicker" action="#"></form>
+            <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
+                <ul id="nav-mobile" class="side-nav fixed">
+                    {% asyncEach techno in ecosystem.technologies %}
+                    <li>
+                        <p class="filled-in" >{{techno.name}} :</p>
+                        <ul>
+                            {% asyncEach device in techno.devices %}
+                            <li>
+                                <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}" />
+                                <label for="radio{{device.name}}">{{device.name}}</label>
+                            </li>
+                            {% endeach %}
+                        </ul>
+                    </li>
+                </ul>
+                {% endeach %}
+                </ul>
+            </script>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-device-sidenavbar",
+        ready: function() {
+            if(!modelConnected) {
+                var polySelf = this;
+                kubiModel.connect().then(function(err){
+                    if(err) {
+                        console.error(err);
+                    } else {
+                        //console.log("ModelConnected");
+                        modelConnected = true;
+//                        polySelf.fire('model-connected', kubiModel);
+                        console.log("j'aime le chocolat", universeNumber, timeNow);
+                        initTemplate("radioDevicePicker-template", "radioDevicePicker", universeNumber, timeNow);
+
+                    }
+                });
+            }
+        }
+    });
+    var dataBaseConnection = new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn");
+    var kubiModel  = new org.kubi.KubiModel();
+    kubiModel.setContentDeliveryDriver(dataBaseConnection);
+    var modelConnected = false;
+
+    var universeNumber = 0;
+    var timeNow =(new Date()).getTime();
+
+
+    /**
+     * initialize the template htmlIdSource to fill the htmlIdTarget at the time timeTemplate iun the universe universeTemplate
+     * @param htmlIdSource
+     * @param htmlIdTarget
+     * @param universeTemplate
+     * @param timeTemplate
+     */
+    function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate){
+        try {
+            var viewTemplate = kubiModel.universe(universeTemplate).time(timeTemplate);
+            viewTemplate.getRoot().then(function (rootNow) {
+                try {
+                    // init the graph
+                    nunjucks.renderString((document.getElementById(htmlIdSource)).innerHTML, {
+                        ecosystem: rootNow,
+                        autoRefresh: true,
+                        autoescape: true,
+                        autoNow: true
+                    }, function (err, res) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        try {
+                            (document.getElementById(htmlIdTarget)).innerHTML = res;
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    });
+                } catch (e) {
+                    console.error(htmlIdSource, " has some issues initializing the template.");
+                    e.printStackTrace();
+                }
+            });
+        }catch (e) {console.error(e,"...");}
+    }
+</script>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>org.kubi.root</artifactId>
+        <groupId>org.kubi</groupId>
+        <version>1-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <name>Kubi :: Plugins :: Polymer web site</name>
+    <artifactId>org.kubi.plugins.polywebsite</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.modeling</groupId>
+            <artifactId>org.kevoree.modeling.microframework.addons.nunjucks</artifactId>
+            <version>${kmf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.modeling</groupId>
+            <artifactId>org.kevoree.modeling.microframework.drivers.websocket</artifactId>
+            <version>${kmf.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.kevoree.modeling</groupId>
+                <artifactId>org.kevoree.modeling.java2typescript.mavenplugin</artifactId>
+                <version>${java2typescript.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>genDep</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>extract</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>.*[^d]\.ts</exclude>
+                                <exclude>java.js</exclude>
+                                <exclude>org.kevoree.modeling.microframework.typescript.js</exclude>
+                                <exclude>tsc.js</exclude>
+                            </excludes>
+                            <target>${project.build.directory}/js</target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-ts</id>
+                        <goals>
+                            <goal>tsc</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <outputClasses>${project.build.directory}/js</outputClasses>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>copyFileJS</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy todir="${project.basedir}/src/main/resources/js/js">
+                                    <fileset dir="${project.build.directory}/js">
+                                        <include name="kubiTS.js"/>
+                                        <include name="org.kubi.model-all.js"/>
+                                        <include name="org.kevoree.modeling.database.websocket.WebSocket.js"/>
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

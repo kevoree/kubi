@@ -1,0 +1,45 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="kubi-model">
+    <script src="../../../js/js/org.kubi.model-all.js"></script>
+    <script src="../../../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+    <script>
+        (function() {
+
+            var dataBaseConnection = new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn");
+            var kubiModel  = new org.kubi.KubiModel();
+            kubiModel.setContentDeliveryDriver(dataBaseConnection);
+            var modelConnected = false;
+            var last_timestamp = (new Date()).getTime();
+
+
+            Polymer({
+                ready: function() {
+                    if(!modelConnected) {
+                        var polySelf = this;
+                        kubiModel.connect().then(function(err){
+                            if(err) {
+                                console.error(err);
+                            } else {
+                                //console.log("ModelConnected");
+                                modelConnected = true;
+                                polySelf.fire('model-connected', kubiModel);
+
+                            }
+                        });
+                    }
+                },
+                get model() {
+                    return kubiModel;
+                },
+                modelAvailable : function() {
+                    return modelConnected;
+                },
+                get lastTime() {
+                    return last_timestamp;
+                }
+            });
+        })();
+
+    </script>
+</polymer-element>

@@ -47,8 +47,6 @@ function init() {
             //initTemplate("radioDevicePicker-template", "radioDevicePicker", universeNumber, timeNow);
             initDataAndListener();
         }
-        sliderInit();
-        sliderGraphInit();
     });
 }
 
@@ -304,38 +302,12 @@ function getDeviceValue(time) {
     });
 }
 
-function rangeChanged() {
-    var value = document.getElementById("slider").value;
-    document.getElementById("val").textContent = value;
-    document.getElementById("seekTo").value = value;
-    getDeviceValue(value);
-}
-
-/**
- * function initializing the handler for the numerical values print
- */
-function sliderInit() {
-    try {
-        document.getElementById("update").onclick = function () {
-            var choosenValue = document.getElementById("seekTo").value;
-            document.getElementById("val").textContent = choosenValue;
-            document.getElementById("seekTo").value = choosenValue;
-            getDeviceValue(choosenValue);
-        };
-        document.getElementById("slider").onchange = rangeChanged;
-        document.getElementById("slider").oninput = rangeChanged;
-    }
-    catch (e) {
-        console.log(e);
-    }
-}
-
 
 /**
  * Action after the slider changed
  *  - take all the info needed in the web page then call the getter and drawer of the data wanted
  */
-function sliderUpdatesGraph(value, range, devicesList) {
+function updateGraphSettings(value, range, devicesList) {
     value = value * 1000;
     var deviceNames = [];
     for (var i = 0; i < devicesList.length; i++) {
@@ -347,8 +319,8 @@ function sliderUpdatesGraph(value, range, devicesList) {
     var end = value - (-range);
     var numberOfPoint = 300;
     var step = range / numberOfPoint;
-    console.log("sliderUpdatesGraph", value, range, devicesList);
-    getAndDrawData(deviceNames, start, end, step);
+    console.log("... update values in graph ... (=updateGraphSettings)", value, range, devicesList);
+    getAndDrawData(devicesList, start, end, step);
 }
 
 /**
@@ -363,20 +335,18 @@ function getAndDrawData(deviceNames, start, end, step) {
     //dataSeries =[];
     var currentView = kubiModel.universe(universeNumber).time(end);
     currentView.getRoot().then(function (root) {
-        console.log("Root: " + root);
         if (root != null) {
-            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (kObjects) {
-                console.log("Tehchologies: " + kObjects.length);
-                if (kObjects.length != 0) {
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (technos) {
+                if (technos.length != 0) {
                     for (var namesIndex = 0; namesIndex < deviceNames.length; namesIndex++) {
-                        kObjects[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (kObjects) {
-                            if (kObjects.length > 0) {
-                                var device = kObjects[0];
+                        // TODO for all technologies
+                        technos[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (devices) {
+                            if (devices.length > 0) {
+                                var device = devices[0];
                                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters) {
                                     if (parameters.length > 0) {
                                         var param = parameters[0];
                                         // emptying the dataset of the device
-                                        console.log("... \tgetAndDrawData", device.getName());
                                         initDeviceInChartSeries(device.getName());
                                         if (dataSeries[device.getName() + "_Period"] != null) {
                                             initDeviceInChartSeries(device.getName() + "_Period");

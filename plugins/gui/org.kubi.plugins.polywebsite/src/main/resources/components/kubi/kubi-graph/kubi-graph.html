@@ -1,11 +1,14 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html"/>
 
+<!-- Kubi components -->
 <link rel="import" href="../kubi-data/kubi-data.html"/>
 <link rel="import" href="../kubi-slider/kubi-slider.html"/>
+<link rel="import" href="../kubi-scalepicker/kubi-scalepicker.html"/>
 
 
 <dom-module id="kubi-graph">
     <template>
+        <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
         <kubi-slider id="slider" on-slider-updated="sliderUpdated"></kubi-slider>
         <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]"></kubi-data>
     </template>
@@ -25,11 +28,12 @@
             }
         },
         sliderUpdated: function (event, detail) {
-            console.log("Graph::", this.slider_time, this.graph_scale);
             this.slider_time = detail.value;
         },
+        scalepickerUpdated: function (event, detail) {
+            this.graph_scale = detail.value;
+        },
         ready: function () {
-            //this.$.graphic.devices_list = ["plug"];
         }
     });
 </script>

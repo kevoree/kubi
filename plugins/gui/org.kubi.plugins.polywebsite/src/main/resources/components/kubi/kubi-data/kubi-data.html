@@ -24,20 +24,18 @@
                 observer: 'updateGraph'
             },
             scale: {
-                type: Number,
-                observer: 'updateGraph'
+                type: Number
             },
             devices_list: {
                 type: Array,
-                observer: 'updateGraph',
                 value: ["plug"]
             }
         },
         updateGraph: function (event) {
             if (this.time != undefined && this.scale != undefined && this.devices_list != undefined) {
-                console.log("Graph update", this.time, this.scale, this.devices_list);
+                console.log("______FINAL_____Graph update", this.time, this.scale, this.devices_list);
                 try {
-                    sliderUpdatesGraph(this.time, this.scale, this.devices_list);
+                    updateGraphSettings(this.time, this.scale, this.devices_list);
                 } catch (e) {
                     console.error(e);
                 }

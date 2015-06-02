@@ -135,19 +135,32 @@ function initDataAndListener() {
     var currentView = kubiModel.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kubiModel.nextGroup();
     currentView.getRoot().then(function (root) {
-        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
-            for (var d = 0; d < devices.length; d++) {
-                var device = devices[d];
-                deviceNames[deviceNames.length] = device.getName();
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
-                    if (params.length != 0) {
-                        var param = params[0];
-                        addListenerParam(param, groupListenerID);
+        console.log(root);
+        try {
+            root.getTechnologies().then(function (techno) {
+                console.log(techno);
+            });
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (d) {
+                console.log(d);
+                d[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
+                    for (var d = 0; d < devices.length; d++) {
+                        console.log(devices[d]);
+                        var device = devices[d];
+                        deviceNames[deviceNames.length] = device.getName();
+                        device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
+                            if (params.length != 0) {
+                                var param = params[0];
+                                addListenerParam(param, groupListenerID);
+                            }
+                        });
                     }
+                    getAndDrawData(deviceNames, startTime, endTime, stepTime);
                 });
-            }
-            getAndDrawData(deviceNames, startTime, endTime, stepTime);
-        });
+            });
+        }
+        catch (e1) {
+            console.error("...", e1);
+        }
     });
 }
 /**

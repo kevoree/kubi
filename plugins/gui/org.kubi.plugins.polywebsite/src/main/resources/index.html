@@ -7,6 +7,9 @@
 
     <title>Smarthome Polymer</title>
 
+    <!-- css Tiles -->
+    <link rel="stylesheet" href="css/kubiSoft.css"/>
+
     <!-- materialize-->
     <link href="./materialize/css/materialize.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -19,7 +22,7 @@
 
     <!-- components -->
     <link rel="import" href="./components/static/header.html"/>
-    <link rel="import" href="./components/kubi/sidenavbar.html"/>
+    <link rel="import" href="components/kubi/kubiData/kubiData.html"/>
     <link rel="import" href="./components/static/footer.html"/>
 
     <!-- kubi-->
@@ -29,7 +32,9 @@
 </head>
 <body>
 <kubi-header></kubi-header>
-<kubi-device-sidenavbar></kubi-device-sidenavbar>
+<main>
+    <kubi-data></kubi-data>
+</main>
 <kubi-footer></kubi-footer>
 </body>
 </html>

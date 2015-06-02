@@ -85,7 +85,8 @@
                             <target>
                                 <copy todir="${project.basedir}/src/main/resources/js/js">
                                     <fileset dir="${project.build.directory}/js">
-                                        <include name="kubiTS.js"/>
+                                        <include name="kubiTemplate.js"/>
+                                        <include name="kubiData.js"/>
                                         <include name="org.kubi.model-all.js"/>
                                         <include name="org.kevoree.modeling.database.websocket.WebSocket.js"/>
                                     </fileset>

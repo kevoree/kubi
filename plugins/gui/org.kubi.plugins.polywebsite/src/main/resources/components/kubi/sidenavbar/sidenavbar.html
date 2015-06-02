@@ -1,0 +1,40 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<script src="../../../js/js/org.kubi.model-all.js"></script>
+<script src="../../../js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+<script src="../../../js/nunjucks.js"></script>
+
+<script src="../../../js/js/kubiTemplate.js"></script>
+
+
+<dom-module id="kubi-device-sidenavbar">
+    <template>
+        <div>
+            <form id="radioDevicePicker" action="#"></form>
+            <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
+                <ul id="nav-mobile" class="side-nav fixed">
+                    {% asyncEach techno in ecosystem.technologies %}
+                    <li>
+                        <p class="filled-in" >{{techno.name}} :</p>
+                        <ul>
+                            {% asyncEach device in techno.devices %}
+                            <li>
+                                <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}" />
+                                <label for="radio{{device.name}}">{{device.name}}</label>
+                            </li>
+                            {% endeach %}
+                        </ul>
+                    </li>
+                    {% endeach %}
+                </ul>
+            </script>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-device-sidenavbar"
+
+    });
+</script>

@@ -1,0 +1,30 @@
+header, main, footer {
+    padding-left: 250px;
+}
+
+@media only screen and (max-width : 992px) {
+    header, main, footer {
+        padding-left: 0;
+    }
+}
+
+
+#chartContainer{
+    /* TODO : remove this part  */
+    margin: 2em;
+    border: double #fffff0 thick;
+}
+.canvasjs-chart-canvas{
+    border: dotted #d121d6 thin;
+}
+
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}

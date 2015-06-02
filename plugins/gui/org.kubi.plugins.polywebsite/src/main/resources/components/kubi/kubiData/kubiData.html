@@ -7,7 +7,7 @@
 
 <dom-module id="kubi-data">
     <template>
-        <div class="input-field" >
+        <div class="input-field">
             <p>Choose a scale :</p>
             <select id="selectScale" class="browser-default input-field col s12">
                 <option value="" disabled>Choose a scale</option>
@@ -20,9 +20,11 @@
                 <option value="10800000">3 hours</option>
                 <option value="3600000">Hourly</option>
             </select>
+
             <p>
                 <input type="range" id="slider1" value="1428887547" min="1428500000" max="1429100000" step="100"/>
             </p>
+
             <p id="slider1_value">1428887547</p>
         </div>
 
@@ -35,5 +37,6 @@
     Polymer({
         is: "kubi-data",
         ready: init()
-    });
+    })
+    ;
 </script>

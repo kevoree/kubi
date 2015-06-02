@@ -1,0 +1,57 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+
+<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+
+<script src="./kubi-data.js"></script>
+
+<!-- canvasJS -->
+<script src="../../../js/canvasjs.min.js"></script>
+
+<dom-module id="kubi-data">
+    <template>
+        <div id="chartContainer"></div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-data",
+        properties: {
+            time: {
+                type: Number,
+                observer: 'updateGraph'
+            },
+            scale: {
+                type: Number,
+                observer: 'updateGraph'
+            },
+            devices_list: {
+                type: Array,
+                observer: 'updateGraph',
+                value: ["plug"]
+            }
+        },
+        updateGraph: function (event) {
+            if (this.time != undefined && this.scale != undefined && this.devices_list != undefined) {
+                console.log("Graph update", this.time, this.scale, this.devices_list);
+                try {
+                    sliderUpdatesGraph(this.time, this.scale, this.devices_list);
+                } catch (e) {
+                    console.error(e);
+                }
+
+            }
+        },
+        ready: function () {
+            try {
+                console.log("Launching init");
+                init();
+            }
+            catch (e) {
+                console.log(e);
+            }
+        }
+    });
+</script>

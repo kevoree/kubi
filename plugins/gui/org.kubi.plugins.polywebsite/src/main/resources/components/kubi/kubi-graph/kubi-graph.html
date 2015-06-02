@@ -1,0 +1,35 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="../kubi-data/kubi-data.html"/>
+<link rel="import" href="../kubi-slider/kubi-slider.html"/>
+
+
+<dom-module id="kubi-graph">
+    <template>
+        <kubi-slider id="slider" on-slider-updated="sliderUpdated"></kubi-slider>
+        <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]"></kubi-data>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-graph",
+        properties: {
+            slider_time: {
+                type: Number,
+                value: 0
+            },
+            graph_scale: {
+                type: Number,
+                value: 86400000
+            }
+        },
+        sliderUpdated: function (event, detail) {
+            console.log("Graph::", this.slider_time, this.graph_scale);
+            this.slider_time = detail.value;
+        },
+        ready: function () {
+            //this.$.graphic.devices_list = ["plug"];
+        }
+    });
+</script>

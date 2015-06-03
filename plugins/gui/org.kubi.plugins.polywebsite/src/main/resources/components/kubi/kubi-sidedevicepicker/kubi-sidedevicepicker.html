@@ -54,8 +54,6 @@
             this.fire("devicepicker-updated", {value : this.value});
         },
         modelConnected : function(event, details){
-            // TODO : unworking : issue this the this.fire which launch the event
-            console.log("Side : modelConnectedEvent",event,  details);
             setModelForTemplate(details.value);
             initTemplate("radioDevicePicker-template", "radioDevicePicker", 0, (new Date()).getTime());
         },

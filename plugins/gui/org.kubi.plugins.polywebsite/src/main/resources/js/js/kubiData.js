@@ -1,5 +1,8 @@
+/// <reference path="org.kubi.model.d.ts" />
+/// <reference path="org.kevoree.modeling.database.websocket.WebSocket.d.ts" />
+var nunjucks;
 var last_timestamp = (new Date()).getTime();
-var kModeldata = new org.kubi.KubiModel();
+var kubiModel = new org.kubi.KubiModel();
 var chart;
 /**
  * Contain the list of data for the graph
@@ -32,11 +35,9 @@ var dataChart = [];
 var dataSeries = [];
 var windowSize = 1000000;
 var universeNumber = 0;
-var timeNow = (new Date()).getTime();
-
 function init() {
-    kModeldata.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
-    kModeldata.connect().then(function (e) {
+    kubiModel.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
+    kubiModel.connect().then(function (e) {
         if (e) {
             console.error(e);
         }
@@ -44,15 +45,9 @@ function init() {
             initGraph();
             initDataAndListener();
         }
+        sliderGraphInit();
     });
 }
-
-function initWithModel(model) {
-    kModeldata =  model;
-    initGraph();
-    initDataAndListener();
-}
-
 /**
  * Initialize the graph empty
  */
@@ -119,7 +114,6 @@ function initGraph() {
         data: dataChart
     });
 }
-
 /**
  * Add a device named deviceName according to the chart expectations in the dataSeries set
  * @param deviceName
@@ -133,32 +127,42 @@ function initDeviceInChartSeries(deviceName) {
         dataPoints: []
     });
 }
-
 function initDataAndListener() {
     var deviceNames = [];
     var endTime = 1428997126000;
     var startTime = 1428599097936;
     var stepTime = 150000;
-    var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
-    var groupListenerID = kModeldata.nextGroup();
-
+    var currentView = kubiModel.universe(universeNumber).time(last_timestamp);
+    var groupListenerID = kubiModel.nextGroup();
     currentView.getRoot().then(function (root) {
-        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
-            for (var d = 0; d < devices.length; d++) {
-                var device = devices[d];
-                deviceNames[deviceNames.length] = device.getName();
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
-                    if (params.length != 0) {
-                        var param = params[0];
-                        addListenerParam(param, groupListenerID);
+        console.log(root);
+        try {
+            root.getTechnologies().then(function (techno) {
+                console.log(techno);
+            });
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (d) {
+                console.log(d);
+                d[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
+                    for (var d = 0; d < devices.length; d++) {
+                        console.log(devices[d]);
+                        var device = devices[d];
+                        deviceNames[deviceNames.length] = device.getName();
+                        device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
+                            if (params.length != 0) {
+                                var param = params[0];
+                                addListenerParam(param, groupListenerID);
+                            }
+                        });
                     }
+                    getAndDrawData(deviceNames, startTime, endTime, stepTime);
                 });
-            }
-            getAndDrawData(deviceNames, startTime, endTime, stepTime);
-        });
+            });
+        }
+        catch (e1) {
+            console.error("...", e1);
+        }
     });
 }
-
 /**
  * Add a listener to the StateParameter param in parameter with the implementation of the action do to
  *  -> update of the value and the period ONLY if needed
@@ -194,7 +198,6 @@ function addListenerParam(param, groupListenerID) {
         });
     });
 }
-
 /**
  * Add one StateParameter value in the dataSeries map
  * with its period ONLY if needed
@@ -220,7 +223,6 @@ function addDataWithPeriodInDataSeries(param, keyMap) {
         }
     });
 }
-
 /**
  * Add the point to the chart
  * @param point
@@ -242,14 +244,13 @@ function addDataPointWithSerie(point, serie) {
     }
     console.error("Bad series name (=", serie, ") : device not in the data set of the chart.");
 }
-
 /**
- * Get the value of the parameter named name of the device plug at the time time
+ * Get the value of the parameter named name of the device plug at the temps
  * @param time
  * @returns
  */
 function getDeviceValue(time) {
-    var currentView = kModeldata.universe(universeNumber).time(time * 1000);
+    var currentView = kubiModel.universe(universeNumber).time(time * 1000);
     currentView.getRoot().then(function (root) {
         if (root != null) {
             root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "plug").traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (kObecjts) {
@@ -262,28 +263,47 @@ function getDeviceValue(time) {
         }
     });
 }
-
-
+function rangeChanged() {
+    var value = document.getElementById("slider").value;
+    document.getElementById("val").textContent = value;
+    document.getElementById("seekTo").value = value;
+    getDeviceValue(value);
+}
+/**
+ * function initializing the handlers for the graph view updates
+ */
+function sliderGraphInit() {
+    try {
+        document.getElementById("slider1").onclick = sliderUpdatesGraph;
+        document.getElementById("slider1").oninput = sliderUpdatesGraph;
+    }
+    catch (e) {
+        console.log(e);
+    }
+}
 /**
  * Action after the slider changed
  *  - take all the info needed in the web page then call the getter and drawer of the data wanted
  */
-function updateGraphSettings(value, range, devicesList) {
+function sliderUpdatesGraph() {
+    var value = parseInt(document.getElementById("slider1").value);
+    document.getElementById("slider1_value").innerText = value + "";
     value = value * 1000;
+    var select = document.getElementById("selectScale");
+    var range = select.options[select.selectedIndex].value;
     var deviceNames = [];
-    for (var i = 0; i < devicesList.length; i++) {
-        if (devicesList[i].checked) {
-            deviceNames[deviceNames.length] = devicesList[i].value;
+    var form = document.getElementById("radioDevicePicker");
+    for (var i = 0; i < form.length; i++) {
+        if (form[i].checked) {
+            deviceNames[deviceNames.length] = form[i].value;
         }
     }
     var start = value - range;
     var end = value - (-range);
     var numberOfPoint = 300;
     var step = range / numberOfPoint;
-    console.log("... update values in graph ... (=updateGraphSettings)", value, range, devicesList);
-    getAndDrawData(devicesList, start, end, step);
+    getAndDrawData(deviceNames, start, end, step);
 }
-
 /**
  * Get and draw the data from kubi of the set of Devices named deviceNames in the time window [start,end] with a step of step
  * @param deviceNames
@@ -294,20 +314,20 @@ function updateGraphSettings(value, range, devicesList) {
 function getAndDrawData(deviceNames, start, end, step) {
     //    dataChart = [];
     //dataSeries =[];
-    var currentView = kModeldata.universe(universeNumber).time(end);
+    var currentView = kubiModel.universe(universeNumber).time(end);
     currentView.getRoot().then(function (root) {
         if (root != null) {
-            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (technos) {
-                if (technos.length != 0) {
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (kObjects) {
+                if (kObjects.length != 0) {
                     for (var namesIndex = 0; namesIndex < deviceNames.length; namesIndex++) {
-                        // TODO for all technologies
-                        technos[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (devices) {
-                            if (devices.length > 0) {
-                                var device = devices[0];
+                        kObjects[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (kObjects) {
+                            if (kObjects.length > 0) {
+                                var device = kObjects[0];
                                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters) {
                                     if (parameters.length > 0) {
                                         var param = parameters[0];
                                         // emptying the dataset of the device
+                                        console.log("... \tgetAndDrawData", device.getName());
                                         initDeviceInChartSeries(device.getName());
                                         if (dataSeries[device.getName() + "_Period"] != null) {
                                             initDeviceInChartSeries(device.getName() + "_Period");
@@ -323,7 +343,6 @@ function getAndDrawData(deviceNames, start, end, step) {
         }
     });
 }
-
 function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, step) {
     if (start < end) {
         param.jump(end).then(function (paramTimed) {
@@ -356,7 +375,6 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
         chart.render();
     }
 }
-
 /**
  * if there is no data in the dataChart named according to the seriesName in parameter ==> push the values into the dataChart
  * if there is a set of data having the same name as the seriesName in parameter ==> replace this set of values into the dataChart

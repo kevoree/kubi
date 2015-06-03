@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html"/>
 
+<link rel="import" href="../kubi-model/kubi-model.html"/>
 
 <script src="/js/js/org.kubi.model-all.js"></script>
 <script src="/js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
@@ -10,7 +11,9 @@
 <script src="../../../js/canvasjs.min.js"></script>
 
 <dom-module id="kubi-data">
+    <link rel="stylesheet" type="text/css" href="./kubi-data.css"/>
     <template>
+        <kubi-model id="modelHandlerData" on-model-connected="modelConnected"></kubi-model>
         <div id="chartContainer"></div>
     </template>
 </dom-module>
@@ -26,16 +29,16 @@
             scale: {
                 type: Number
             },
-            devices_list: {
+            devices: {
                 type: Array,
                 value: ["plug"]
             }
         },
         updateGraph: function (event) {
-            if (this.time != undefined && this.scale != undefined && this.devices_list != undefined) {
-                console.log("______FINAL_____Graph update", this.time, this.scale, this.devices_list);
+            if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
+                console.log("______FINAL_____Graph update", this.time, this.scale, this.devices);
                 try {
-                    updateGraphSettings(this.time, this.scale, this.devices_list);
+                    updateGraphSettings(this.time, this.scale, this.devices);
                 } catch (e) {
                     console.error(e);
                 }
@@ -43,9 +46,23 @@
             }
         },
         ready: function () {
-            try {
-                console.log("Launching init");
+            if(this.$.modelHandlerData.modelConnectedV){
+                console.log("Already connected");
+                initWithModel(this.$.modelHandlerData.model);
+            }
+            else{
+                console.log("Already not connected yet ...");
                 init();
+            }
+        },
+        modelConnected : function(event, details){
+            // TODO : unworking : issue this the this.fire which launch the event
+            console.log("modelConnectedEvent", details);
+            try {
+                console.log(event);
+                console.log(this.$.modelHandlerData.model);
+                console.log("Launching init");
+                init(this.$.modelHandlerData.model);
             }
             catch (e) {
                 console.log(e);

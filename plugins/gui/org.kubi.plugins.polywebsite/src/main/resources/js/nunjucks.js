@@ -4974,12 +4974,10 @@
                     ctx.managedObjects = {};
                     ctx.originModel = ctx.model;
                     ctx.originGroup = undefined;
-                    console.log(azer++,"2azertyui");
                     ctx.managedListener = function (srcEvent, metaEvt) {
                         if(ctx.originGroup !== undefined && ctx.originModel !== undefined){
                             ctx.originModel.clearListenerGroup(ctx.originGroup);
                         }
-                        console.log("irgfrargrarerz");
                         ctx.managedObjects = {};
                         if (ctx.autoNow) {
                             //jump all metaObject to now
@@ -5018,7 +5016,7 @@
                             //directly call render
                             tmpl.render(ctx, cb);
                         }
-                    };console.error("chocolat");
+                    };
                     cb = function (err, res) {
                         if(ctx.originModel !== undefined){
                             if(ctx.originGroup == undefined){
@@ -5035,11 +5033,8 @@
                         }
                         originCb(err, res);
                     };
-                    console.log("chocapic");
                 }
-                console.log("azr", cb);
                 tmpl.render(ctx, cb);
-                console.log("fin");
             }
         });
 
@@ -5154,7 +5149,6 @@
                 else if (typeof frame === 'function') {
                     cb = frame;
                     frame = null;
-                    console.log("2");
                 }
 
                 return lib.withPrettyErrors(this.path, this.env.dev, function () {

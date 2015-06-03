@@ -1,16 +1,22 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html"/>
 
+<link rel="stylesheet" type="text/css" href="kubi-graph.css"/>
+
 <!-- Kubi components -->
 <link rel="import" href="../kubi-data/kubi-data.html"/>
 <link rel="import" href="../kubi-slider/kubi-slider.html"/>
 <link rel="import" href="../kubi-scalepicker/kubi-scalepicker.html"/>
+<link rel="import" href="../kubi-sidedevicepicker/kubi-sidedevicepicker.html"/>
 
 
 <dom-module id="kubi-graph">
     <template>
-        <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
-        <kubi-slider id="slider" on-slider-updated="sliderUpdated"></kubi-slider>
-        <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]"></kubi-data>
+        <div id="kubigraph">
+            <kubi-sidedevicepicker id="devicepicker" on-devicepicker-updated="devicepickerUpadated"></kubi-sidedevicepicker>
+            <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
+            <kubi-slider id="slider" on-slider-updated="sliderUpdated"></kubi-slider>
+            <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]"></kubi-data>
+        </div>
     </template>
 </dom-module>
 
@@ -25,6 +31,10 @@
             graph_scale: {
                 type: Number,
                 value: 86400000
+            },
+            graph_devices: {
+                type: Array,
+                value: ["plug"]
             }
         },
         sliderUpdated: function (event, detail) {
@@ -32,6 +42,9 @@
         },
         scalepickerUpdated: function (event, detail) {
             this.graph_scale = detail.value;
+        },
+        devicepickerUpadated: function (event, detail) {
+            this.graph_devices = detail.value;
         },
         ready: function () {
         }

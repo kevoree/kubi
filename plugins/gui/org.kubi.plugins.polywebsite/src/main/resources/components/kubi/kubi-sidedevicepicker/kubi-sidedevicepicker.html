@@ -1,0 +1,68 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+
+<script src="/js/nunjucks.js"></script>
+
+<script src="./kubi-sidedevicepicker.js"></script>
+
+
+<dom-module id="kubi-sidedevicepicker">
+    <template>
+        <div>
+            <kubi-model id="modelHandlerSide" on-model-connected="modelConnected"></kubi-model>
+
+            <form id="radioDevicePicker" action="#" on-change="devicepickerUpdatesGraph"></form>
+
+            <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
+                <ul id="nav-mobile" class="side-nav fixed">
+                    {% asyncEach techno in ecosystem.technologies %}
+                    <li>
+                        <p class="filled-in" >{{techno.name}} :</p>
+                        <ul>
+                            {% asyncEach device in techno.devices %}
+                            <li>
+                                <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}"/>
+                                <label for="radio{{device.name}}">{{device.name}}</label>
+                            </li>
+                            {% endeach %}
+                        </ul>
+                    </li>
+                    {% endeach %}
+                </ul>
+            </script>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-sidedevicepicker",
+        value : ["plug"],
+        devicepickerUpdatesGraph : function(event){
+            console.log(event);
+            this.value = [];
+            var devicePickerForm = this.$.radioDevicePicker;
+            for(var i= 0; i<devicePickerForm.length ; i++){
+                if (devicePickerForm[i].checked) {
+                    this.value[this.value.length] = devicePickerForm[i].value;
+                }
+            }
+            this.fire("devicepicker-updated", {value : this.value});
+        },
+        ready : function (){
+            console.log(this.value);
+            if(this.$.modelHandlerSide.modelConnectedV){
+                console.log("Side : Already connected");
+                initTemplate("radioDevicePicker-template", "radioDevicePicker", 0, (new Date()).getTime());
+            }
+            else{
+                initModelAndTemplate();
+            }
+        }
+
+    });
+</script>

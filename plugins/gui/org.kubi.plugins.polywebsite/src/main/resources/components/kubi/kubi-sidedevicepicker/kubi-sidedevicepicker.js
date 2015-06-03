@@ -2,21 +2,11 @@
  * Created by jerome on 03/06/15.
  */
 var nunjucks;
-var kmodelTemplate = new org.kubi.KubiModel();
-var kuniverseTemplate = 0;
-var ktimeTemplate = (new Date()).getTime();
+var kModelTemplate = new org.kubi.KubiModel();
 
 
-function initModelAndTemplate() {
-    kmodelTemplate.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
-    kmodelTemplate.connect().then(function (e) {
-        if (e) {
-            console.error(e);
-        }
-        else{
-            initTemplate("radioDevicePicker-template", "radioDevicePicker", kuniverseTemplate, ktimeTemplate);
-        }
-    });
+function setModelForTemplate(modelForTemplate) {
+    kModelTemplate = modelForTemplate;
 }
 
 
@@ -28,14 +18,14 @@ function initModelAndTemplate() {
  * @param timeTemplate
  */
 function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
-    var viewTemplate = kmodelTemplate.universe(universeTemplate).time(timeTemplate);
+    var viewTemplate = kModelTemplate.universe(universeTemplate).time(timeTemplate);
     viewTemplate.getRoot().then(function (rootNow) {
         nunjucks.configure({autoescape: true});
         try {
             // init the graph
             nunjucks.renderString((document.getElementById(htmlIdSource)).innerHTML, {
                 ecosystem: rootNow,
-                model: kmodelTemplate,
+                model: kModelTemplate,
                 autoRefresh: true,
                 autoescape: true,
                 autoNow: true

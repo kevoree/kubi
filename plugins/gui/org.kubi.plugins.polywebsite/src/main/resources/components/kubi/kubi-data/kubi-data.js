@@ -48,9 +48,12 @@ function init() {
 }
 
 function initWithModel(model) {
-    kModeldata =  model;
-    initGraph();
-    initDataAndListener();
+    try {
+        console.log("initwithModel");
+        kModeldata = model;
+        initGraph();
+        initDataAndListener();
+    }catch(poi){console.error(poi);}
 }
 
 /**
@@ -141,21 +144,26 @@ function initDataAndListener() {
     var stepTime = 150000;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kModeldata.nextGroup();
-
+    console.log("step 1", currentView);
     currentView.getRoot().then(function (root) {
-        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
-            for (var d = 0; d < devices.length; d++) {
-                var device = devices[d];
-                deviceNames[deviceNames.length] = device.getName();
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
-                    if (params.length != 0) {
-                        var param = params[0];
-                        addListenerParam(param, groupListenerID);
-                    }
-                });
-            }
-            getAndDrawData(deviceNames, startTime, endTime, stepTime);
-        });
+        console.log("setp2  ",root);
+        try {
+            console.log("./././...",root.sizeOfTechnologies());
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
+                console.log(devices, ",,,,,MOUAHAHAHAHA");
+                for (var d = 0; d < devices.length; d++) {
+                    var device = devices[d];
+                    deviceNames[deviceNames.length] = device.getName();
+                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
+                        if (params.length != 0) {
+                            var param = params[0];
+                            addListenerParam(param, groupListenerID);
+                        }
+                    });
+                }
+                getAndDrawData(deviceNames, startTime, endTime, stepTime);
+            });
+        }catch (error){console.error(error)}
     });
 }
 

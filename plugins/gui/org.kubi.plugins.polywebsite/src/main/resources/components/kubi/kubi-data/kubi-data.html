@@ -46,27 +46,13 @@
             }
         },
         ready: function () {
-            if(this.$.modelHandlerData.modelConnectedV){
-                console.log("Already connected");
-                initWithModel(this.$.modelHandlerData.model);
-            }
-            else{
-                console.log("Already not connected yet ...");
-                init();
-            }
+
         },
         modelConnected : function(event, details){
             // TODO : unworking : issue this the this.fire which launch the event
-            console.log("modelConnectedEvent", details);
-            try {
-                console.log(event);
-                console.log(this.$.modelHandlerData.model);
-                console.log("Launching init");
-                init(this.$.modelHandlerData.model);
-            }
-            catch (e) {
-                console.log(e);
-            }
+            console.log("modelConnectedEvent",event,  details);
+            initWithModel(details.value);
+//            initWithModel(this.$.modelHandlerData.model);
         }
     });
 </script>

@@ -12,26 +12,24 @@
     Polymer({
         is: "kubi-model",
         ready: function() {
+            var selfKubiModel = this;
             if(!modelConnectedVar) {
+                kubiModel2  = new org.kubi.KubiModel();
+                var dataBaseConnection2 = new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn");
+                kubiModel2.setContentDeliveryDriver(dataBaseConnection2);
                 kubiModel2.connect().then(function(err){
                     if(err) {
                         console.error(err);
                     } else {
                         modelConnectedVar = true;
-                        try {
-//                            this.fire("model-connected", {value: kubiModel2});
-                        }catch (e){console.error(e);}
-                        console.log("modelConnectedVar--",modelConnectedVar);
-
+                        console.log("The model is initializing in the kubi-model component.")
+                        selfKubiModel.fire("model-connected", {value: kubiModel2});
                     }
                 });
             }
         },
         get model() {
             return kubiModel2;
-        },
-        set model(m) {
-            kubiModel2 = m;
         },
         get modelConnectedV(){
             return modelConnectedVar;
@@ -45,10 +43,7 @@
     });
 </script>
 <script>
-    var dataBaseConnection2 = new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn");
-    var kubiModel2  = new org.kubi.KubiModel();
-    kubiModel2.setContentDeliveryDriver(dataBaseConnection2);
+    var kubiModel2;
     var modelConnectedVar = false;
-    var last_timestamp2 = (new Date()).getTime();
 
 </script>

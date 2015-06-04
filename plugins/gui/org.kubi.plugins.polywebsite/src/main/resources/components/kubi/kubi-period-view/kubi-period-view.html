@@ -1,0 +1,59 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<script src="/js/nunjucks.js"></script>
+
+<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+
+<script src="./kubi-period-view.js"></script>
+
+
+<dom-module id="kubi-period-view">
+    <template>
+        <div>
+            <kubi-model id="modelHandlerPeriod" on-model-connected="modelConnected"></kubi-model>
+
+            <div id="periodView"></div>
+
+            <script id="periodView-template" type="text/x-handlebars-template" >
+                <ul>
+                    {% asyncEach techno in ecosystem.technologies %}
+                    <li>
+                        <p><u><b>{{techno.name}} :</b></u></p>
+                        <ul>
+                            {% asyncEach device in techno.devices %}
+                            {% asyncEach param in device.stateParameters %}
+                            {% asyncEach p in param.period %}
+                            <li>
+                                <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
+                                    Value : {{param.value}} -
+                                    Period :{{p.period}}
+                                </p>
+                            </li>
+                            {% endeach %}
+                            {% endeach %}
+                            {% endeach %}
+                        </ul>
+                    </li>
+                    {% endeach %}
+                </ul>
+            </script>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-period-view",
+        modelConnected : function(event, details){
+            testPeriod(details.value);
+            initTemplate("periodView-template", "periodView", 0, (new Date()).getTime());
+        },
+        ready : function (){
+
+        }
+
+    });
+</script>

@@ -1,21 +1,15 @@
-/// <reference path="org.kubi.model.d.ts" />
-/// <reference path="org.kevoree.modeling.database.websocket.WebSocket.d.ts" />
-var nunjucks;
-var universeNumber = 0;
-var timeNow = (new Date()).getTime();
-var kubiModel = new org.kubi.KubiModel();
-startsidebar();
-function startsidebar() {
-    kubiModel.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
-    kubiModel.connect().then(function (e) {
-        if (e) {
-            console.error(e);
-        }
-        else {
-            initTemplate("radioDevicePicker-template", "radioDevicePicker", universeNumber, timeNow);
-        }
-    });
+/**
+ * Created by jerome on 03/06/15.
+ */
+var nunjuckPeriod;
+var kModelPeriod = new org.kubi.KubiModel();
+
+
+function testPeriod(model){
+    kModelPeriod = model;
 }
+
+
 /**
  * initialize the template htmlIdSource to fill the htmlIdTarget at the time timeTemplate iun the universe universeTemplate
  * @param htmlIdSource
@@ -23,14 +17,15 @@ function startsidebar() {
  * @param universeTemplate
  * @param timeTemplate
  */
-function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
-    var viewTemplate = kubiModel.universe(universeTemplate).time(timeTemplate);
+function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
+    var viewTemplate = kModelPeriod.universe(universeTemplate).time(timeTemplate);
     viewTemplate.getRoot().then(function (rootNow) {
+        nunjuckPeriod.configure({autoescape: true});
         try {
             // init the graph
-            nunjucks.renderString((document.getElementById(htmlIdSource)).innerHTML, {
+            nunjuckPeriod.renderString((document.getElementById(htmlIdSource)).innerHTML, {
                 ecosystem: rootNow,
-                model: kubiModel,
+                model: kModelPeriod,
                 autoRefresh: true,
                 autoescape: true,
                 autoNow: true

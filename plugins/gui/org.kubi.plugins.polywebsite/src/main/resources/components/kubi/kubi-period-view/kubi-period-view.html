@@ -18,19 +18,21 @@
             <div id="periodView"></div>
 
             <script id="periodView-template" type="text/x-handlebars-template" >
-                <ul>
+                <ul >
                     {% asyncEach techno in ecosystem.technologies %}
                     <li>
-                        <p><u><b>{{techno.name}} :</b></u></p>
+                        <h4>{{techno.name}} ({{techno.now()}}) :</h4>
                         <ul>
                             {% asyncEach device in techno.devices %}
                             {% asyncEach param in device.stateParameters %}
                             {% asyncEach p in param.period %}
                             <li>
-                                <p><b>{{device.name}}</b> - <i>{{param.name}}</i>
-                                    Value : {{param.value}} -
-                                    Period :{{p.period}}
-                                </p>
+                                <ul class="collection with-header">
+                                    <li class="collection-header"><h5>Device : {{device.name}}</h5></li>
+                                    <li class="collection-item">Parameter : {{param.name}}</li>
+                                    <li class="collection-item">Value : {{param.value}}</li>
+                                    <li class="collection-item">Period :{{p.period}}</li>
+                                </ul>
                             </li>
                             {% endeach %}
                             {% endeach %}

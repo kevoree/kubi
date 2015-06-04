@@ -27,16 +27,17 @@
                 observer: 'updateGraph'
             },
             scale: {
-                type: Number
+                type: Number,
+                observer: 'updateGraph'
             },
             devices: {
                 type: Array,
-                value: ["plug"]
+                value: ["plug"],
+                observer: 'updateGraph'
             }
         },
         updateGraph: function (event) {
             if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
-                console.log("______FINAL_____Graph update", this.time, this.scale, this.devices);
                 try {
                     updateGraphSettings(this.time, this.scale, this.devices);
                 } catch (e) {

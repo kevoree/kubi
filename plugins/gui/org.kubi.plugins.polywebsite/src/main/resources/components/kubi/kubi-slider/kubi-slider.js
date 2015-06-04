@@ -22,7 +22,7 @@ function setMaxSlider(){
                             var min = getMinExcept(timestamps,-9007199254740990);
                             document.getElementById("slider1").max = max/1000;
                             document.getElementById("slider1").min = min/1000;
-                            document.getElementById("slider1").value = (max - min)/(2*1000);
+                            document.getElementById("slider1").value = (min + (max - min)/(2))/1000;
                             document.getElementById("slider1").step = (max - min)/(5000*1000);
                         }catch (e){
                             console.error(e);

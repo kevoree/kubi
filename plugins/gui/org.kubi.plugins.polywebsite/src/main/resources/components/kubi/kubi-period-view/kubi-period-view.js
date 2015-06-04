@@ -18,8 +18,8 @@ function testPeriod(model){
  * @param timeTemplate
  */
 function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
-    var viewTemplate = kModelPeriod.universe(universeTemplate).time(timeTemplate);
-    viewTemplate.getRoot().then(function (rootNow) {
+    var viewPeriod = kModelPeriod.universe(universeTemplate).time(timeTemplate);
+    viewPeriod.getRoot().then(function (rootNow) {
         nunjuckPeriod.configure({autoescape: true});
         try {
             // init the graph

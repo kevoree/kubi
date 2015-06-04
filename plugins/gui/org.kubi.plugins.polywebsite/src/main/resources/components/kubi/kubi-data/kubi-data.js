@@ -200,24 +200,27 @@ function addListenerParam(param, groupListenerID) {
  * @param param the StateParameter to add
  * @param keyMap name of the key in the map dataSeries
  */
-function addDataWithPeriodInDataSeries(param, keyMap) {
+function addDataWithPeriodInDataSeries(param, keyMap, hasToPrintPeriod) {
     if (dataChart[keyMap] == null || dataChart[keyMap] == undefined) {
+        // TODO : init value ?? useless no ?? should be done before
     }
     dataSeries[keyMap].dataPoints.push({
         x: new Date(param.now()),
         y: parseFloat(param.getValue())
     });
-    param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
-        if (periods.length > 0 && periods[0].getPeriod() != undefined) {
-            if (dataSeries[keyMap + "_Period"] == null) {
-                initDeviceInChartSeries(keyMap + "_Period");
+    if(hasToPrintPeriod) {
+        param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
+            if (periods.length > 0 && periods[0].getPeriod() != undefined) {
+                if (dataSeries[keyMap + "_Period"] == null) {
+                    initDeviceInChartSeries(keyMap + "_Period");
+                }
+                dataSeries[keyMap + "_Period"].dataPoints.push({
+                    x: new Date(periods[0].now()),
+                    y: parseFloat(periods[0].getPeriod())
+                });
             }
-            dataSeries[keyMap + "_Period"].dataPoints.push({
-                x: new Date(periods[0].now()),
-                y: parseFloat(periods[0].getPeriod())
-            });
-        }
-    });
+        });
+    }
 }
 
 /**
@@ -291,6 +294,7 @@ function updateGraphSettings(value, range, devicesList) {
  * @param step
  */
 function getAndDrawData(deviceNames, start, end, step) {
+    var hasToPrintPeriod = false;
     //    dataChart = [];
     //dataSeries =[];
     var currentView = kModeldata.universe(universeNumber).time(end);
@@ -308,10 +312,10 @@ function getAndDrawData(deviceNames, start, end, step) {
                                         var param = parameters[0];
                                         // emptying the dataset of the device
                                         initDeviceInChartSeries(device.getName());
-                                        if (dataSeries[device.getName() + "_Period"] != null) {
+                                        if (hasToPrintPeriod && dataSeries[device.getName() + "_Period"] != null) {
                                             initDeviceInChartSeries(device.getName() + "_Period");
                                         }
-                                        setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step);
+                                        setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step, hasToPrintPeriod);
                                     }
                                 });
                             }
@@ -323,12 +327,12 @@ function getAndDrawData(deviceNames, start, end, step) {
     });
 }
 
-function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, step) {
+function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, step, hasToPrintPeriod) {
     if (start < end) {
         param.jump(end).then(function (paramTimed) {
             if (paramTimed != null && paramTimed.getValue() != undefined) {
-                addDataWithPeriodInDataSeries(paramTimed, deviceName);
-                setInGraphDeviceRangeValuesWithPeriod(deviceName, paramTimed, start, end - step, step);
+                addDataWithPeriodInDataSeries(paramTimed, deviceName, hasToPrintPeriod);
+                setInGraphDeviceRangeValuesWithPeriod(deviceName, paramTimed, start, end - step, step, hasToPrintPeriod);
             }
         });
     }
@@ -343,7 +347,7 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
         }
         dataSeries[deviceName].dataPoints = sortedDataPoints;
         createOrReplaceValuesSetInChart(dataSeries[deviceName], deviceName);
-        if (dataSeries[deviceName + "_Period"] != undefined && dataSeries[deviceName + "_Period"].dataPoints.length != 0) {
+        if (hasToPrintPeriod && dataSeries[deviceName + "_Period"] != undefined && dataSeries[deviceName + "_Period"].dataPoints.length != 0) {
             var unsortedPeriodDataPoints = dataSeries[deviceName + "_Period"].dataPoints;
             var sortedPeriodDataPoints = [];
             for (var i = 0; i < unsortedPeriodDataPoints.length; i++) {

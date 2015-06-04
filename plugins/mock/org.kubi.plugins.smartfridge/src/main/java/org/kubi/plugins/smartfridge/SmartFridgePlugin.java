@@ -6,9 +6,14 @@ import org.kevoree.modeling.api.KObject;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
+import org.kubi.meta.MetaDevice;
 import org.kubi.meta.MetaEcosystem;
+import org.kubi.meta.MetaTechnology;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Created by jerome on 10/04/15.
@@ -58,7 +63,7 @@ public class SmartFridgePlugin implements KubiPlugin {
 
 
                 // TODO : reader
-                //readData();
+//                readData();
             }
         });
     }
@@ -132,12 +137,26 @@ public class SmartFridgePlugin implements KubiPlugin {
         kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot().then(new Callback<KObject>() {
             @Override
             public void on(KObject kObject) {
+
                 kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
-                        System.out.println(kObjects.length);
                         for (KObject t : kObjects){
                             System.out.println((Technology)t);
+                            t.traversal().traverse(MetaTechnology.REF_DEVICES)
+                                    .traverse(MetaDevice.REF_STATEPARAMETERS).done().then(new Callback<KObject[]>() {
+                                @Override
+                                public void on(KObject[] a) {
+                                    for(KObject stateP : a){
+                                        stateP.timeWalker().allTimes().then(new Callback<long[]>() {
+                                            @Override
+                                            public void on(long[] longs) {
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+
                         }
                     }
                 });

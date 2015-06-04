@@ -4,6 +4,7 @@
 
 <!-- Kubi components -->
 <link rel="import" href="../kubi-data/kubi-data.html"/>
+<link rel="import" href="../kubi-chart-epoch/kubi-chart-epoch.html"/>
 <link rel="import" href="../kubi-slider/kubi-slider.html"/>
 <link rel="import" href="../kubi-scalepicker/kubi-scalepicker.html"/>
 <link rel="import" href="../kubi-sidedevicepicker/kubi-sidedevicepicker.html"/>
@@ -16,6 +17,7 @@
             <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
             <kubi-slider id="slider" on-slider-updated="sliderUpdated"></kubi-slider>
             <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]"></kubi-data>
+            <kubi-chart-epoch id="epochChart" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]"></kubi-chart-epoch>
         </div>
     </template>
 </dom-module>

@@ -20,10 +20,7 @@ function setMaxSlider(){
                         try{
                             var max = getMax(timestamps);
                             var min = getMinExcept(timestamps,-9007199254740990);
-                            document.getElementById("slider1").max = max/1000;
-                            document.getElementById("slider1").min = min/1000;
-                            document.getElementById("slider1").value = (min + (max - min)/(2))/1000;
-                            document.getElementById("slider1").step = (max - min)/(5000*1000);
+                            setupSlider(min, max);
                         }catch (e){
                             console.error(e);
                         }
@@ -31,6 +28,18 @@ function setMaxSlider(){
                 });
         }catch(e){console.error(e);}
     });
+}
+
+function setupSlider(min, max){
+    document.getElementById("slider1").max = max/1000;
+    document.getElementById("slider1").min = min/1000;
+    document.getElementById("slider1").value = (min + (max - min)/(2))/1000;
+    document.getElementById("slider1").step = (max - min)/(5000*1000);
+}
+function setupSliderFromNewValue(newValue){
+    var slider = document.getElementById("slider1");
+    var halfRange = (slider.max - slider.min)/2;
+    setupSlider(newValue - halfRange, newValue + halfRange);
 }
 
 function allTimes(kobjects, callback){

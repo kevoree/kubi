@@ -108,7 +108,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                 if (kObjects.length > 0) {
                     Period kPeriod = ((Period) kObjects[0]);
                     if (kPeriod.getPeriod() == null) {
-                        kPeriod.setPeriod(((double) period) + ""); // TODO : division par 2000 inutile (= good pour aligner les courbes sur le meme axe / meme ordre de grandeur).
+                        kPeriod.setPeriod(((double) period) + "");
                         kubiKernel.model().save();
                     } else
                         System.out.println(kPeriod.getPeriod());

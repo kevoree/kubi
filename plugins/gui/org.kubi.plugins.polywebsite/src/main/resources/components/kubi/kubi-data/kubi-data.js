@@ -71,7 +71,7 @@ function initGraph() {
             fontColor: "#121212"
         },
         axisX: {
-            valueFormatString: "HH:mm:ss",
+            valueFormatString: "MM/DD/YY - HH:mm",
             interval: 21600,
             intervalType: "second",
             labelFontColor: "black",
@@ -155,7 +155,7 @@ function initDataAndListener() {
                     }
                 });
             }
-            updateGraphSettings(initialTime, initialRange, deviceNames);
+            updateGraphSettings(initialTime, initialRange, deviceNames, false);
             //getAndDrawData(deviceNames, startTime, endTime, stepTime);
         });
     });
@@ -273,14 +273,22 @@ function getDeviceValue(time) {
  * Action after the slider changed
  *  - take all the info needed in the web page then call the getter and drawer of the data wanted
  */
-function updateGraphSettings(time, range, devicesList) {
+function updateGraphSettings(time, range, devicesList, wantPeriod) {
     time = time * 1000;
     var start = time - range;
     var end = time - (-range);
     var numberOfPoint = 300;
     var step = range / numberOfPoint;
-    console.log("... update values in graph ... (=updateGraphSettings)", time, range, devicesList);
-    getAndDrawData(devicesList, start, end, step);
+    console.log("... update values in graph ... (=updateGraphSettings)", time, range, devicesList, wantPeriod);
+    cleanDataSet();
+    getAndDrawData(devicesList, start, end, step, wantPeriod);
+}
+function cleanDataSet(){
+    if(chart != undefined) {
+        dataChart = [];
+        dataSeries = [];
+        chart.options.data = dataChart;
+    }
 }
 
 /**
@@ -290,10 +298,8 @@ function updateGraphSettings(time, range, devicesList) {
  * @param end
  * @param step
  */
-function getAndDrawData(deviceNames, start, end, step) {
-    var hasToPrintPeriod = false;
-    //    dataChart = [];
-    //dataSeries =[];
+function getAndDrawData(deviceNames, start, end, step, wantPeriod) {
+    var hasToPrintPeriod = wantPeriod==undefined ? false: wantPeriod;
     var currentView = kModeldata.universe(universeNumber).time(end);
     currentView.getRoot().then(function (root) {
         if (root != null) {
@@ -344,7 +350,7 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
         }
         dataSeries[deviceName].dataPoints = sortedDataPoints;
         createOrReplaceValuesSetInChart(dataSeries[deviceName], deviceName);
-        if (hasToPrintPeriod && dataSeries[deviceName + "_Period"] != undefined && dataSeries[deviceName + "_Period"].dataPoints.length != 0) {
+        if (hasToPrintPeriod && dataSeries[deviceName + "_Period"] != undefined ) {
             var unsortedPeriodDataPoints = dataSeries[deviceName + "_Period"].dataPoints;
             var sortedPeriodDataPoints = [];
             for (var i = 0; i < unsortedPeriodDataPoints.length; i++) {

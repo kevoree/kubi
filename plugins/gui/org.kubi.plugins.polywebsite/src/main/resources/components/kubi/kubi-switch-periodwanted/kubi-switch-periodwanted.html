@@ -1,0 +1,31 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+
+
+<dom-module id="kubi-switch-periodwanted">
+    <template>
+        <div class="switch">
+            <label>
+                Hide Period
+                <input id="periodwanted" type="checkbox" on-change="periodwantedUpdatesGraph" >
+                <span class="lever"></span>
+                Show Period
+            </label>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-switch-periodwanted",
+        value : false,
+        periodwantedUpdatesGraph : function(event) {
+            this.value = event.srcElement.checked;
+            this.fire("switch-periodwanted-updated", {value:event.srcElement.checked});
+        },
+        ready: function() {
+
+
+        }
+    });
+</script>

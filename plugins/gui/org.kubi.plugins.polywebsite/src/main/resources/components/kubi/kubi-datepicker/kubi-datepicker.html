@@ -1,0 +1,27 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="stylesheet" type="text/css" href="/materialize/css/materialize.min.css"/>
+
+<dom-module id="kubi-datepicker">
+    <template>
+        <input type="date" id="datepicker" class="datepicker" on-input="dateUpdatesGraph">
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-datepicker",
+        value : 0,
+        dateUpdatesGraph : function(event) {
+            this.value = event.srcElement.valueAsNumber;
+            this.fire("date-updated", {value:event.srcElement.valueAsNumber});
+        },
+        ready: function() {
+//            document.getElementById("datepicker").pickadate({
+//                selectMonths: true, // Creates a dropdown to control month
+//                selectYears: 15 // Creates a dropdown of 15 years to control year
+//            });
+
+        }
+    });
+</script>

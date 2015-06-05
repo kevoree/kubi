@@ -8,6 +8,8 @@
 <link rel="import" href="../kubi-slider/kubi-slider.html"/>
 <link rel="import" href="../kubi-scalepicker/kubi-scalepicker.html"/>
 <link rel="import" href="../kubi-sidedevicepicker/kubi-sidedevicepicker.html"/>
+<link rel="import" href="../kubi-sidedevicepicker/kubi-sidedevicepicker.html"/>
+<link rel="import" href="../kubi-datepicker/kubi-datepicker.html"/>
 <link rel="import" href="../kubi-period-view/kubi-period-view.html"/>
 
 
@@ -16,9 +18,15 @@
         <div id="kubigraph">
             <kubi-sidedevicepicker id="devicepicker" on-devicepicker-updated="devicepickerUpadated"></kubi-sidedevicepicker>
             <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
-            <kubi-slider id="slider" on-slider-updated="sliderUpdated"></kubi-slider>
-            <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]"></kubi-data>
+            <kubi-slider id="slider" value=[[slider_time]] on-slider-updated="sliderUpdated"></kubi-slider>
+            <kubi-switch-periodwanted id="switchPeriod" on-switch-periodwanted-updated="switchPeriodUpdated"></kubi-switch-periodwanted>
+            <kubi-datepicker id="datepicked" on-date-updated="dateUpdated"></kubi-datepicker>
+
+
+            <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]" wantperiod="[[graph_wantperiod]]"></kubi-data>
             <!--kubi-chart-epoch id="epochChart" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]"></kubi-chart-epoch-->
+
+
             <kubi-period-view id="periodView"></kubi-period-view>
         </div>
     </template>
@@ -39,6 +47,10 @@
             graph_devices: {
                 type: Array,
                 value: ["plug"]
+            },
+            graph_wantperiod: {
+                type: Boolean,
+                value: false
             }
         },
         sliderUpdated: function (event, detail) {
@@ -49,6 +61,13 @@
         },
         devicepickerUpadated: function (event, detail) {
             this.graph_devices = detail.value;
+        },
+        switchPeriodUpdated: function (event, detail) {
+            this.graph_wantperiod = detail.value;
+        },
+        dateUpdated: function (event, detail) {
+            this.slider_time = detail.value/1000;
+            this.fire("notifySlider", detail.value); // TODO : doesn't work :'( => need to find a way to notify the slider of the change
         },
         ready: function () {
         }

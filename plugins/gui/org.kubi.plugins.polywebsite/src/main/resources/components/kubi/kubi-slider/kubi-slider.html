@@ -15,14 +15,18 @@
 <dom-module id="kubi-slider">
     <template>
         <kubi-model id="modelHandlerSlider" on-model-connected="modelConnected"></kubi-model>
-        <input type="range" id="slider1" value="1428887547" min="1428500000" max="1429100000" step="100" on-click="sliderUpdatesGraph" on-input="sliderUpdatesGraph"/>
+        <input type="range" id="slider1" value="1428887547" min="1428500000" max="1429100000" step="100" on-click="sliderUpdatesGraph" on-input="sliderUpdatesGraph" on-notifySlider="notifySlider"/>
     </template>
 </dom-module>
 
 <script>
     Polymer({
         is: "kubi-slider",
-        value : 0,
+        value : {
+            type : Number,
+            value : 0,
+            observer : 'notifySlider'
+        },
         sliderUpdatesGraph : function(event) {
             //console.log("Slide updated:", event.srcElement.value);
             this.value = event.srcElement.value;
@@ -31,6 +35,9 @@
         modelConnected : function(event, details){
             setModelSlider(details.value);
             setMaxSlider();
+        },
+        notifySlider : function(event, detail){
+            console.log("Et c'est le retour ..... ");
         },
         ready: function() {
 

@@ -34,12 +34,17 @@
                 type: Array,
                 value: ["plug"],
                 observer: 'updateGraph'
+            },
+            wantperiod: {
+                type: String,
+                value: false,
+                observer: 'updateGraph'
             }
         },
         updateGraph: function (event) {
             if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
                 try {
-                    updateGraphSettings(this.time, this.scale, this.devices);
+                    updateGraphSettings(this.time, this.scale, this.devices, this.wantperiod);
                 } catch (e) {
                     console.error(e);
                 }

@@ -136,9 +136,11 @@ function initDeviceInChartSeries(deviceName) {
 
 function initDataAndListener() {
     var deviceNames = [];
-    var endTime = 1428997126000;
-    var startTime = 1428599097936;
-    var stepTime = 150000;
+    var initialRange = 86400000;
+    var initialTime = 1428797898;
+    //var endTime =   1428997126000;
+    //var startTime = 1428599097936;
+    //var stepTime = 150000;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kModeldata.nextGroup();
     currentView.getRoot().then(function (root) {
@@ -153,7 +155,8 @@ function initDataAndListener() {
                     }
                 });
             }
-            getAndDrawData(deviceNames, startTime, endTime, stepTime);
+            updateGraphSettings(initialTime, initialRange, deviceNames);
+            //getAndDrawData(deviceNames, startTime, endTime, stepTime);
         });
     });
 }
@@ -270,19 +273,13 @@ function getDeviceValue(time) {
  * Action after the slider changed
  *  - take all the info needed in the web page then call the getter and drawer of the data wanted
  */
-function updateGraphSettings(value, range, devicesList) {
-    value = value * 1000;
-    var deviceNames = [];
-    for (var i = 0; i < devicesList.length; i++) {
-        if (devicesList[i].checked) {
-            deviceNames[deviceNames.length] = devicesList[i].value;
-        }
-    }
-    var start = value - range;
-    var end = value - (-range);
+function updateGraphSettings(time, range, devicesList) {
+    time = time * 1000;
+    var start = time - range;
+    var end = time - (-range);
     var numberOfPoint = 300;
     var step = range / numberOfPoint;
-    console.log("... update values in graph ... (=updateGraphSettings)", value, range, devicesList);
+    console.log("... update values in graph ... (=updateGraphSettings)", time, range, devicesList);
     getAndDrawData(devicesList, start, end, step);
 }
 

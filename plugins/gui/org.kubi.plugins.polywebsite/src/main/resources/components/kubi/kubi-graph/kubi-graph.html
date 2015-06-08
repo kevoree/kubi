@@ -16,12 +16,13 @@
 <dom-module id="kubi-graph">
     <template>
         <div id="kubigraph">
-            <kubi-sidedevicepicker id="devicepicker" on-devicepicker-updated="devicepickerUpadated"></kubi-sidedevicepicker>
-            <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
-            <kubi-slider id="slider" value=[[slider_time]] on-slider-updated="sliderUpdated"></kubi-slider>
-            <kubi-switch-periodwanted id="switchPeriod" on-switch-periodwanted-updated="switchPeriodUpdated"></kubi-switch-periodwanted>
-            <kubi-datepicker id="datepicked" on-date-updated="dateUpdated"></kubi-datepicker>
-
+            <div id="settings">
+                <kubi-sidedevicepicker id="devicepicker" on-devicepicker-updated="devicepickerUpadated"></kubi-sidedevicepicker>
+                <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
+                <kubi-slider id="slider" value=[[slider_time]] on-slider-updated="sliderUpdated"></kubi-slider>
+                <kubi-switch-periodwanted id="switchPeriod" on-switch-periodwanted-updated="switchPeriodUpdated"></kubi-switch-periodwanted>
+                <kubi-datepicker id="datepicked" on-date-updated="dateUpdated"></kubi-datepicker>
+            </div>
 
             <kubi-data id="graphic" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]" wantperiod="[[graph_wantperiod]]"></kubi-data>
             <!--kubi-chart-epoch id="epochChart" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]"></kubi-chart-epoch-->

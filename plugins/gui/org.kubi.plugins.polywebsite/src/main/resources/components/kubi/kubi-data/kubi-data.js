@@ -286,23 +286,24 @@ function getAndDrawData(deviceNames, start, end, step, wantPeriod) {
             root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (technos) {
                 if (technos.length != 0) {
                     for (var namesIndex = 0; namesIndex < deviceNames.length; namesIndex++) {
-                        // TODO for all technologies
-                        technos[0].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (devices) {
-                            if (devices.length > 0) {
-                                var device = devices[0];
-                                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters) {
-                                    if (parameters.length > 0) {
-                                        var param = parameters[0];
-                                        // emptying the dataset of the device
-                                        initDeviceInChartSeries(device.getName());
-                                        if (hasToPrintPeriod && dataSeries[device.getName() + "_Period"] != null) {
-                                            initDeviceInChartSeries(device.getName() + "_Period");
+                        for (var technoIndex = 0; technoIndex<technos.length; technoIndex++) {
+                            technos[technoIndex].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (devices) {
+                                if (devices.length > 0) {
+                                    var device = devices[0];
+                                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters) {
+                                        if (parameters.length > 0) {
+                                            var param = parameters[0];
+                                            // emptying the dataset of the device
+                                            initDeviceInChartSeries(device.getName());
+                                            if (hasToPrintPeriod && dataSeries[device.getName() + "_Period"] != null) {
+                                                initDeviceInChartSeries(device.getName() + "_Period");
+                                            }
+                                            setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step, hasToPrintPeriod);
                                         }
-                                        setInGraphDeviceRangeValuesWithPeriod(device.getName(), param, start, end, step, hasToPrintPeriod);
-                                    }
-                                });
-                            }
-                        });
+                                    });
+                                }
+                            });
+                        }
                     }
                 }
             });

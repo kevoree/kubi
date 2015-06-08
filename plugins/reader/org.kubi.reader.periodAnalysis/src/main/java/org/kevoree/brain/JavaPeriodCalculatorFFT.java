@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Created by assaad on 08/04/15.
@@ -98,5 +99,22 @@ public class JavaPeriodCalculatorFFT {
 
         return SortingMap.entriesSortedByValues(resultsTreeMap);
 
+    }
+
+    public static int getOtherPeriod(double[] entryTimeLine, int estimPerLow, int estimPerUp){
+        SortedSet<Map.Entry<Integer, Double>> allresults = getAllPeriods(entryTimeLine, estimPerLow, estimPerUp);
+        double nintyFivePerCent = 0.95;
+        double maxValueThreshold = nintyFivePerCent * allresults.first().getValue();
+        double maxKey   = allresults.first().getKey();
+        SortedSet<Integer> res = new TreeSet<>();
+        res.add((int) maxKey);
+        for(Map.Entry<Integer, Double> unitRes: allresults){
+            if(unitRes.getValue() > maxValueThreshold && Math.abs(unitRes.getKey()-maxKey) > 0.1*maxKey){
+                // X in res => probability(X)>0.95*proba(Max)  && |X-Max|>0.1*Max
+                res.add(unitRes.getKey());
+            }
+        }
+        return res.first();
+//        return getAllPeriods(entryTimeLine, estimPerLow, estimPerUp).toArray();
     }
 }

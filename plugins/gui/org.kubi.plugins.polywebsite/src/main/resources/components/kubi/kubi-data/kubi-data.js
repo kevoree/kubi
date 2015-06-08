@@ -248,26 +248,6 @@ function addDataPointWithSerie(point, serie) {
     console.error("Bad series name (=", serie, ") : device not in the data set of the chart.");
 }
 
-/**
- * Get the value of the parameter named name of the device plug at the time time
- * @param time
- * @returns
- */
-function getDeviceValue(time) {
-    var currentView = kModeldata.universe(universeNumber).time(time * 1000);
-    currentView.getRoot().then(function (root) {
-        if (root != null) {
-            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, "plug").traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (kObecjts) {
-                if (kObecjts.length > 0) {
-                    var res = kObecjts[0].getValue();
-                    // TODO : extract next line using the task to avoid the concurrency issue
-                    document.getElementById("valDevice").innerHTML = (res == undefined ? "null" : res);
-                }
-            });
-        }
-    });
-}
-
 
 /**
  * Action after the slider changed

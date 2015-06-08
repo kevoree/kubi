@@ -34,7 +34,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
                 ecosystem.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES)
-                        .traverse(MetaTechnology.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "plug")
+                        .traverse(MetaTechnology.REF_DEVICES)
                         .traverse(MetaDevice.REF_STATEPARAMETERS).withAttribute(MetaStateParameter.ATT_NAME, "name")
                         .done().then(new Callback<KObject[]>() {
                     @Override
@@ -101,7 +101,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
         }
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
-        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 150, 700);
+        int period = JavaPeriodCalculatorFFT.getOtherPeriod(observationsDouble, 150, 700);
         parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).done().then(new Callback<KObject[]>() {
             @Override
             public void on(KObject[] kObjects) {

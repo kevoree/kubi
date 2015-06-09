@@ -32,7 +32,6 @@ var dataChart = [];
 var dataSeries = [];
 var windowSize = 1000000;
 var universeNumber = 0;
-var timeNow = (new Date()).getTime();
 
 function init() {
     kModeldata.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
@@ -156,7 +155,6 @@ function initDataAndListener() {
                 });
             }
             updateGraphSettings(initialTime, initialRange, deviceNames, false);
-            //getAndDrawData(deviceNames, startTime, endTime, stepTime);
         });
     });
 }

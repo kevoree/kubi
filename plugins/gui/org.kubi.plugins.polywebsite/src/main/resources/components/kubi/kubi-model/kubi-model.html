@@ -9,41 +9,64 @@
 </dom-module>
 
 <script>
+    var modelConnectedCallbacks = [];
+    var kubiModel2;
+    var modelConnected;
+    var modelConnecting;
+    // --------------
+//    if(kubiModel2 == undefined){
+//        kubiModel2 = new org.kubi.KubiModel();
+//    }
+    // --------------
+    if( modelConnected == undefined){
+        modelConnected = false;
+    }
+    if( modelConnecting == undefined){
+        modelConnecting = false;
+    }
     Polymer({
         is: "kubi-model",
         ready: function() {
             var selfKubiModel = this;
-            if(!modelConnectedVar) {
-                kubiModel2  = new org.kubi.KubiModel();
+            if(!modelConnecting && !modelConnected) {
+                modelConnecting = true;
+                // --------------
+                kubiModel2 = new org.kubi.KubiModel();
+                // --------------
                 var dataBaseConnection2 = new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn");
                 kubiModel2.setContentDeliveryDriver(dataBaseConnection2);
                 kubiModel2.connect().then(function(err){
                     if(err) {
                         console.error(err);
                     } else {
-                        modelConnectedVar = true;
+                        modelConnected = true;
                         console.log("The model is initializing in the kubi-model component.")
                         selfKubiModel.fire("model-connected", {value: kubiModel2});
+                        for(var callbackIndex =0; callbackIndex<modelConnectedCallbacks.length; callbackIndex++){
+                            modelConnectedCallbacks[callbackIndex](kubiModel2);
+                        }
                     }
                 });
+            }else if(!modelConnected) {
+                modelConnectedCallbacks.push(function(model){
+                   selfKubiModel.fire('model-connected',{value: model});
+                });
+            }
+            else{
+                selfKubiModel.fire("model-connected", {value: kubiModel2});
             }
         },
         get model() {
             return kubiModel2;
         },
         get modelConnectedV(){
-            return modelConnectedVar;
+            return modelConnected;
         },
         modelAvailable : function() {
-            return modelConnectedVar;
+            return modelConnected;
         },
         get lastTime() {
             return last_timestamp2;
         }
     });
-</script>
-<script>
-    var kubiModel2;
-    var modelConnectedVar = false;
-
 </script>

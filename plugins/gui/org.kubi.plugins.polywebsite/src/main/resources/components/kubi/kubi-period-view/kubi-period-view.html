@@ -21,7 +21,7 @@
                 <ul >
                     {% asyncEach techno in ecosystem.technologies %}
                     <li>
-                        <h4>{{techno.name}} (new Date({{techno.now()}})) :</h4>
+                        <h4>{{techno.name}} (new Date({{1428797898|timestampToDate}})) :</h4>
                         <ul>
                             {% asyncEach device in techno.devices %}
                             {% asyncEach param in device.stateParameters %}

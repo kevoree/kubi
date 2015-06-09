@@ -20,8 +20,9 @@ function testPeriod(model){
 function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
     var viewPeriod = kModelPeriod.universe(universeTemplate).time(timeTemplate);
     viewPeriod.getRoot().then(function (rootNow) {
-        nunjuckPeriod.configure({autoescape: true});
+        var env = nunjuckPeriod.configure('views');
         try {
+            env.addFilter("timestampToDate", function(timestamp){try{console.log("timestampToDate");return new Date(timestamp);}catch(er){console.error("++",er);}}, false);
             // init the graph
             nunjuckPeriod.renderString((document.getElementById(htmlIdSource)).innerHTML, {
                 ecosystem: rootNow,
@@ -34,16 +35,18 @@ function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTe
                     console.log(err);
                 }
                 try {
+                    console.log("...",res);
                     (document.getElementById(htmlIdTarget)).innerHTML = res;
                 }
                 catch (e) {
                     console.log(e);
                 }
             });
+
+
         }
         catch (e) {
-            console.error(htmlIdSource, " has some issues initializing the template.");
-            e.printStackTrace();
+            console.error(htmlIdSource, " has some issues initializing the template.",e);
         }
     });
 }

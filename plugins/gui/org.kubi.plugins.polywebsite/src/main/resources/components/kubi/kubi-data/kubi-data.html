@@ -52,18 +52,15 @@
             }
         },
         ready: function (){
-            console.log("Data : ", this.$.modelHandlerData.modelAvailable());
             try{
                 if (this.$.modelHandlerData.modelAvailable())
                 {
-                    console.log("Data : coucou",this.$.modelHandlerData.model());
                     initWithModel(this.$.modelHandlerData.model());
                 }
             }catch (err){console.error(err);}
         },
         modelConnected : function(event, details){
             // TODO : clean & init
-            console.log("Data : ",details.value);
             initWithModel(details.value);
         }
     });

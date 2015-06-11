@@ -103,7 +103,7 @@ public class SmartFridgePlugin implements KubiPlugin {
                                     openState = true;
                                 }
                                 if(kObjects[1] != null){
-                                    ((StateParameter) kObjects[1]).setValue(openState + "");
+                                    ((StateParameter) kObjects[1]).setValue((openState?0.2:0) + "");
                                 }
                             }
                             kubiKernel.model().save();

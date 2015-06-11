@@ -1,0 +1,97 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+
+<!-- kubi model -->
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<!-- kubi dependencies -->
+<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+
+
+
+<!-- epoch chart dependencies -->
+<script src="jQuery.js"></script>
+
+<script src="/epoch.0.6.0/d3.min.js"></script>
+<script src="/epoch.0.6.0/epoch.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/epoch.0.6.0/epoch.min.css"/>
+
+<!-- js associated -->
+<script src="./kubi-chart-epoch.js"></script>
+
+<dom-module id="kubi-chart-epoch">
+    <template>
+        <kubi-model id="modelHandlerEpoch" on-model-connected="modelConnected"></kubi-model>
+        <div id="lineChart" class="epoch category10"></div>
+    </template>
+</dom-module>
+
+
+<script>
+    Polymer({
+        is: "kubi-chart-epoch",
+
+        properties: {
+            time: {
+                type: Number,
+                observer: 'updateGraph'
+            },
+            scale: {
+                type: Number,
+                observer: 'updateGraph'
+            },
+            devices: {
+                type: Array,
+                value: ["plug"],
+                observer: 'updateGraph'
+            },
+            wantperiod: {
+                type: String,
+                value: false,
+                observer: 'updateGraph'
+            }
+        },
+        updateGraph: function (event) {
+            if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
+                try {
+                    console.log("-- Epoch : updateGraph");
+                    updateEpochChartSettings(this.time, this.scale, this.devices, this.wantperiod);
+                } catch (e) {
+                    console.error(e);
+                }
+
+            }
+        },
+        modelConnected : function(event, details){
+            console.log("-- Epoch : modelConnected");
+            initEpochChart(details.value);
+        },
+
+        ready: function () {
+            try{
+                if(this.$.modelHandlerEpoch.modelAvailable()) {
+                    initEpochChart(this.$.modelHandlerEpoch.model());
+                }
+                KubiEpoch.chart = $(this.$.lineChart).epoch({
+                    type: 'line',
+                    data: lineChartData,
+                    height: 400,
+                    width: 1200,
+                    tickFormats: {
+                        bottom: function(x){return new Date(x);}
+                    },
+                    margins: {
+                        top: 50, right: 60, bottom: 100, left: 40
+                    },
+                    axes: ['left', 'bottom'],
+                    ticks : { bottom: 5, left: 5 }
+                });
+
+            } catch(er){
+                console.error(er);
+            }
+        }
+    });
+</script>

@@ -3,7 +3,11 @@
  */
 
 var KubiEpoch = {
-    universe : 0
+    universe : 0,
+    legendColors : [
+        "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+        "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"
+    ]
 };
 
 var lineChartData = [
@@ -31,7 +35,7 @@ function emptyChartData(){
 
 function updateEpochChartSettings(time, scale, devices, wantPeriod){
     if(KubiEpoch.kubiModel != undefined) {
-        console.log("-- Epoch : updateEpochChartSettings", time, scale, devices);
+        console.log("-- Epoch : updateEpochChartSettings", time, scale, devices, wantPeriod);
         time = time * 1000;
         var start = time - scale;
         var end = time - (-scale);
@@ -96,8 +100,27 @@ function addValueInEpochGraph(deviceName,parameter, start, end, step, haveToShow
     }
     else{
         KubiEpoch.chart.update(lineChartData);
+        makeLegend();
     }
 }
+
+/**
+ * Make a legend according to th labels of the lineDataChart and the KubiEpoch.legendColors
+ */
+function makeLegend(){
+    var legend = document.createElement("ul");
+    try {
+        document.getElementById("epochLegend").removeChild(document.getElementById("epochLegend").firstChild);
+    }catch (ex){console.log("epochLegend is empty.")}
+    document.getElementById("epochLegend").appendChild(legend);
+
+    for(var graph=0; graph<lineChartData.length; graph++){
+        var legendItem = document.createElement("li");
+        legendItem.innerHTML = "<p style=\"color:"+KubiEpoch.legendColors[graph%KubiEpoch.legendColors.length] + "\">" + lineChartData[graph].label + "</p>";
+        legend.appendChild(legendItem);
+    }
+}
+
 
 /**
  * Call the method to add the data in the epoch graph

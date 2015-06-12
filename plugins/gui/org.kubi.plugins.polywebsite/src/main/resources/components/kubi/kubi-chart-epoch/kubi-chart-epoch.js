@@ -99,28 +99,23 @@ function addValueInEpochGraph(deviceName,parameter, start, end, step, haveToShow
         });
     }
     else{
+        var deviceDataIndex = getDataIndexByLabelName(deviceName);
+        //lineChartData[deviceDataIndex] = sortOneDataSet(lineChartData[deviceDataIndex].sort());
+        try {
+            lineChartData[deviceDataIndex].values.sort(function (a, b){return a.x - b.x;});
+        }catch(ex){console.log(ex);}
         KubiEpoch.chart.update(lineChartData);
         makeLegend();
     }
 }
 
-/**
- * Make a legend according to th labels of the lineDataChart and the KubiEpoch.legendColors
- */
-function makeLegend(){
-    var legend = document.createElement("ul");
-    try {
-        document.getElementById("epochLegend").removeChild(document.getElementById("epochLegend").firstChild);
-    }catch (ex){console.log("epochLegend is empty.")}
-    document.getElementById("epochLegend").appendChild(legend);
-
-    for(var graph=0; graph<lineChartData.length; graph++){
-        var legendItem = document.createElement("li");
-        legendItem.innerHTML = "<p style=\"color:"+KubiEpoch.legendColors[graph%KubiEpoch.legendColors.length] + "\">" + lineChartData[graph].label + "</p>";
-        legend.appendChild(legendItem);
+function getDataIndexByLabelName(name){
+    for(var i = 0; i< lineChartData.length; i++){
+        if(lineChartData[i].label == name){
+            return i;
+        }
     }
 }
-
 
 /**
  * Call the method to add the data in the epoch graph
@@ -159,6 +154,25 @@ function addEpochPointWithPeriod(time, value, deviceName){
         values :[{x:time, y: value}]
     });
 }
+
+/**
+ * Make a legend according to th labels of the lineDataChart and the KubiEpoch.legendColors
+ */
+function makeLegend(){
+    var legend = document.createElement("ul");
+    try {
+        document.getElementById("epochLegend").removeChild(document.getElementById("epochLegend").firstChild);
+    }catch (ex){console.log("epochLegend is empty.")}
+    document.getElementById("epochLegend").appendChild(legend);
+
+    for(var graph=0; graph<lineChartData.length; graph++){
+        var legendItem = document.createElement("li");
+        legendItem.innerHTML = "<p style=\"color:"+KubiEpoch.legendColors[graph%KubiEpoch.legendColors.length] + "\">" + lineChartData[graph].label + "</p>";
+        legend.appendChild(legendItem);
+    }
+}
+
+
 
 
 

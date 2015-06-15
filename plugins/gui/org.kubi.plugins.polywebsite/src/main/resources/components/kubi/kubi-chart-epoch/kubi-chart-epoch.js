@@ -47,6 +47,8 @@ function updateEpochChartSettings(time, scale, devices, wantPeriod){
     }
 }
 
+
+
 /**
  * For each device in deviceNames it launch to getting function to add the values in [start;end] in the graph
  * @param deviceNames

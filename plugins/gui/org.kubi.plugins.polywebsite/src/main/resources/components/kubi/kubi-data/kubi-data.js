@@ -322,11 +322,12 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
         // add in graph
         console.log(deviceName, "-----in -setInGraphDeviceRangeValuesWithPeriod");
         // reverse the DataPoints set for the device given for the graph
-        var unsortedDataPoints = dataSeries[deviceName].dataPoints;
-        var sortedDataPoints = [];
-        for (var i = 0; i < unsortedDataPoints.length; i++) {
-            sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length - i - 1, unsortedDataPoints.length - i)[0]);
-        }
+        console.log(dataSeries[deviceName].dataPoints[0].x, "*****************");
+        var sortedDataPoints = dataSeries[deviceName].dataPoints.sort(function(a,b){return a.x.getTime() - b.x.getTime();});
+        //var sortedDataPoints = [];
+        //for (var i = 0; i < unsortedDataPoints.length; i++) {
+        //    sortedDataPoints.push(unsortedDataPoints.slice(unsortedDataPoints.length - i - 1, unsortedDataPoints.length - i)[0]);
+        //}
         dataSeries[deviceName].dataPoints = sortedDataPoints;
         createOrReplaceValuesSetInChart(dataSeries[deviceName], deviceName);
         if (hasToPrintPeriod && dataSeries[deviceName + "_Period"] != undefined ) {
@@ -338,6 +339,7 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
             dataSeries[deviceName + "_Period"].dataPoints = sortedPeriodDataPoints;
             createOrReplaceValuesSetInChart(dataSeries[deviceName + "_Period"], deviceName + "_Period");
         }
+
         chart.render();
     }
 }

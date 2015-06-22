@@ -45,10 +45,18 @@ public class SmartFridgePlugin implements KubiPlugin {
                 temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
                 device.addStateParameters(temperatureParam);
 
+                Device device2 = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("openCheck");
+
+                StateParameter openCheckParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name");
+                openCheckParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
+                device2.addStateParameters(openCheckParam);
+
                 currentTechnology.addDevices(device);
+                currentTechnology.addDevices(device2);
 
                 long[] stateKeys = new long[2];
                 stateKeys[0] = temperatureParam.uuid();
+                stateKeys[1] = openCheckParam.uuid();
 
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
                 initData(universe, stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad));
@@ -86,9 +94,17 @@ public class SmartFridgePlugin implements KubiPlugin {
                         public void on(KObject[] kObjects) {
                             if (("3").equals(data[1])) {
                                 final double temp = Double.parseDouble(data[2]);
-                                listTempValues.add
                                 if(kObjects[0] != null){
                                     ((StateParameter) kObjects[0]).setValue(temp + "");
+                                }
+                            }else if (("2").equals(data[1])) {
+                                float openRawState = Float.parseFloat(data[2]);
+                                boolean openState = false;
+                                if (openRawState == 255) {
+                                    openState = true;
+                                }
+                                if(kObjects[1] != null){
+// TODO to print the value of the openchecker                                    ((StateParameter) kObjects[1]).setValue((openState?0.2:0) + "");
                                 }
                             }
                             kubiKernel.model().save();

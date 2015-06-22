@@ -89,15 +89,6 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
                                 if(kObjects[0] != null){
                                     ((StateParameter) kObjects[0]).setValue(temp + "");
                                 }
-                            } else if (("2").equals(data[1])) {
-                                float openRawState = Float.parseFloat(data[2]);
-                                boolean openState = false;
-                                if (openRawState == 255) {
-                                    openState = true;
-                                }
-                                if(kObjects[1] != null){
-// TODO to print the value of the openchecker                                    ((StateParameter) kObjects[1]).setValue((openState?0.2:0) + "");
-                                }
                             }
                             kubiKernel.model().save();
                         }

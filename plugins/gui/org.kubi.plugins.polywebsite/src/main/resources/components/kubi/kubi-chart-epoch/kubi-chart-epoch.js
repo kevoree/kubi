@@ -102,7 +102,6 @@ function addValueInEpochGraph(deviceName,parameter, start, end, step, haveToShow
     }
     else{
         var deviceDataIndex = getDataIndexByLabelName(deviceName);
-        //lineChartData[deviceDataIndex] = sortOneDataSet(lineChartData[deviceDataIndex].sort());
         try {
             lineChartData[deviceDataIndex].values.sort(function (a, b){return a.x - b.x;});
         }catch(ex){console.log(ex);}

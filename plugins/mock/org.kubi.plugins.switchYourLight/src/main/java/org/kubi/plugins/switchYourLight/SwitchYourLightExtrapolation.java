@@ -17,7 +17,7 @@ public class SwitchYourLightExtrapolation implements Extrapolation {
             //if it's the light we need to phase shift the signal (simulation of the latency)
             phaseShift = 1;
         }
-        return Math.sin(time + phaseShift)+"";
+        return (Math.sin(time + phaseShift)>0)+"";
     }
 
     @Override

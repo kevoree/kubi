@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Démo c3js</title>
+
+    <!-- Load c3.css -->
+    <link href="/c3-0.4.10/c3.css" rel="stylesheet" type="text/css">
+
+    <!-- Load d3.js and c3.js -->
+    <script src="/d3-master/d3.min.js" charset="utf-8"></script>
+    <script src="/c3-0.4.10/c3.min.js"></script>
+</head>
+<body>
+<div id="chart2"></div>
+<script>
+
+
+    var chart2 = c3.generate({
+        bindto: '#chart2',
+        data: {
+            columns: [
+                ['data1', 30, 200, 100, 400, 150, 250],
+                ['data2', 50, 20, 10, 40, 15, 25]
+            ]
+        }
+    });
+</script>
+</body>
+</html>

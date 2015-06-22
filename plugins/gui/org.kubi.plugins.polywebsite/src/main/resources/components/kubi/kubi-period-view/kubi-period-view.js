@@ -22,7 +22,7 @@ function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTe
     viewPeriod.getRoot().then(function (rootNow) {
         var env = nunjuckPeriod.configure('views');
         try {
-            env.addFilter("timestampToDate", function(timestamp){try{console.log("timestampToDate");return new Date(timestamp);}catch(er){console.error("++",er);}}, false);
+            //env.addFilter("timestampToDate", function(timestamp){try{console.log("timestampToDate");return new Date(timestamp);}catch(er){console.error("++",er);}}, false);
             // init the graph
             nunjuckPeriod.renderString((document.getElementById(htmlIdSource)).innerHTML, {
                 ecosystem: rootNow,

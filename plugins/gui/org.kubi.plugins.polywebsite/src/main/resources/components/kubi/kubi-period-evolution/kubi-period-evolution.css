@@ -1,0 +1,17 @@
+#contentPeriodEvolution{
+    display: inline-block;
+    float: right;
+    padding-right: 3em;
+    padding-top: 3em;
+    width: 20%;
+}
+
+#periodEvolutionValue, #periodValue{
+    background-color: #101010;
+    color: #ffffff;
+    margin-left: 1em;
+    margin-right: 1em;
+    padding: 0.1em 1em 0.1em 1em;
+    font-size: 25px;
+    display: none;
+}

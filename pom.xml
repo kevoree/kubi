@@ -69,6 +69,7 @@
 
         <!-- Module for bugs detection -->
         <module>org.kubi.bugsMain</module>
+        <module>plugins/mock/org.kubi.plugins.smartfridgeRepeatRealTime</module>
 
 
         <!-- End Plugins -->

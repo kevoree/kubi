@@ -51,6 +51,12 @@ class org.kubi.ActionParameter : org.kubi.StateParameter {
 class org.kubi.SimulatedParameter : org.kubi.StateParameter {
 }
 
+class org.kubi.SimulatedLightParameter : org.kubi.SimulatedParameter {
+}
+
+class org.kubi.SimulatedSwitchParameter : org.kubi.SimulatedParameter {
+}
+
 class org.kubi.Technology {
     @id
     name : String

@@ -1,0 +1,80 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<script src="./kubi-period-evolution.js"></script>
+
+<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kevoree.modeling.database.websocket.WebSocket.js"></script>
+
+<dom-module id="kubi-period-evolution">
+    <link rel="stylesheet" type="text/css" href="./kubi-period-evolution.css"/>
+    <template>
+        <kubi-model id="modelHandlerPeriodEvolution" on-model-connected="modelConnected"></kubi-model>
+
+
+        <div id="contentPeriodEvolution">
+            <div class="col s12 m6">
+                <div class="card blue-grey darken-1">
+                    <div class="card-content white-text">
+                        <span class="card-title">Period value :</span><br/>
+                        <span id="periodValue"></span>
+                        <span id="periodValueNull">Computing ...</span>
+                    </div>
+                    <div class="card-content white-text">
+                        <span class="card-title">Period evolution :</span>
+                        <p>Compare to <span id="compareScale"></span> hours ago</p>
+                        <span id="periodEvolutionValue"></span>
+                        <span id="periodEvolutionValueNull">Computing ...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-period-evolution",
+        properties: {
+            time: {
+                type: Number,
+                observer: 'updatePeriodEvolution'
+            },
+            scale: {
+                type: Number,
+                observer: 'updatePeriodEvolution'
+            },
+            devices: {
+                type: Array,
+                value: ["plug"],
+                observer: 'updatePeriodEvolution'
+            }
+        },
+        updatePeriodEvolution: function (event) {
+            if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
+                try {
+                    updatePeriodSettings(this.time, this.scale,  this.devices);
+                    // TODO : reaction after parameter changed
+                } catch (e) {
+                    console.error(e);
+                }
+
+            }
+        },
+        ready: function (){
+            try{
+                if (this.$.modelHandlerPeriodEvolution.modelAvailable())
+                {
+                    initWithModelPeriod(this.$.modelHandlerPeriodEvolution.model());
+                    updatePeriodSettings(this.time, this.scale,  this.devices);
+                }
+            }catch (err){console.error(err);}
+        },
+        modelConnected : function(event, details){
+            // TODO : clean & init
+            initWithModelPeriod(details.value);
+            updatePeriodSettings(this.time, this.scale, this.devices);
+        }
+    });
+</script>

@@ -3,4 +3,5 @@
 #chartContainer{
     /* TODO : remove this part  */
     padding-bottom: 500px;
+    display: inline-block;
 }

@@ -1,4 +1,4 @@
-package org.kubi.plugins.smartfridge;
+package org.kubi.plugins.smartfridgerepeatrealtime;
 
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KConfig;
@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 /**
  * Created by jerome on 10/04/15.
  */
-public class SmartFridgePlugin implements KubiPlugin {
+public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
 
     private Technology currentTechnology;
 
@@ -36,7 +36,7 @@ public class SmartFridgePlugin implements KubiPlugin {
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
 
-                currentTechnology = kernel.model().createTechnology(ecosystem.universe(),ecosystem.now()).setName(SmartFridgePlugin.class.getSimpleName());
+                currentTechnology = kernel.model().createTechnology(ecosystem.universe(),ecosystem.now()).setName(SmartFridgeRepeatRealTimePlugin.class.getSimpleName());
                 ecosystem.addTechnologies(currentTechnology);
 
                 Device device = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("plug");
@@ -86,9 +86,17 @@ public class SmartFridgePlugin implements KubiPlugin {
                         public void on(KObject[] kObjects) {
                             if (("3").equals(data[1])) {
                                 final double temp = Double.parseDouble(data[2]);
-                                listTempValues.add
                                 if(kObjects[0] != null){
                                     ((StateParameter) kObjects[0]).setValue(temp + "");
+                                }
+                            } else if (("2").equals(data[1])) {
+                                float openRawState = Float.parseFloat(data[2]);
+                                boolean openState = false;
+                                if (openRawState == 255) {
+                                    openState = true;
+                                }
+                                if(kObjects[1] != null){
+// TODO to print the value of the openchecker                                    ((StateParameter) kObjects[1]).setValue((openState?0.2:0) + "");
                                 }
                             }
                             kubiKernel.model().save();

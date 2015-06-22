@@ -11387,6 +11387,8 @@ var org;
                 tempMetaClasses[2] = org.kubi.meta.MetaTechnology.getInstance();
                 tempMetaClasses[0] = org.kubi.meta.MetaEcosystem.getInstance();
                 tempMetaClasses[6] = org.kubi.meta.MetaPeriod.getInstance();
+                tempMetaClasses[8] = org.kubi.meta.MetaSimulatedLightParameter.getInstance();
+                tempMetaClasses[9] = org.kubi.meta.MetaSimulatedSwitchParameter.getInstance();
                 tempMetaClasses[3] = org.kubi.meta.MetaDevice.getInstance();
                 tempMetaClasses[5] = org.kubi.meta.MetaActionParameter.getInstance();
                 tempMetaClasses[7] = org.kubi.meta.MetaSimulatedParameter.getInstance();
@@ -11413,6 +11415,10 @@ var org;
                         return new org.kubi.impl.EcosystemImpl(universe, time, uuid, p_clazz, this._manager);
                     case 6:
                         return new org.kubi.impl.PeriodImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 8:
+                        return new org.kubi.impl.SimulatedLightParameterImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 9:
+                        return new org.kubi.impl.SimulatedSwitchParameterImpl(universe, time, uuid, p_clazz, this._manager);
                     case 3:
                         return new org.kubi.impl.DeviceImpl(universe, time, uuid, p_clazz, this._manager);
                     case 5:
@@ -11437,6 +11443,12 @@ var org;
             };
             KubiModel.prototype.createPeriod = function (universe, time) {
                 return this.create(org.kubi.meta.MetaPeriod.getInstance(), universe, time);
+            };
+            KubiModel.prototype.createSimulatedLightParameter = function (universe, time) {
+                return this.create(org.kubi.meta.MetaSimulatedLightParameter.getInstance(), universe, time);
+            };
+            KubiModel.prototype.createSimulatedSwitchParameter = function (universe, time) {
+                return this.create(org.kubi.meta.MetaSimulatedSwitchParameter.getInstance(), universe, time);
             };
             KubiModel.prototype.createDevice = function (universe, time) {
                 return this.create(org.kubi.meta.MetaDevice.getInstance(), universe, time);
@@ -11828,6 +11840,12 @@ var org;
                 KubiViewImpl.prototype.createPeriod = function () {
                     return this.create(org.kubi.meta.MetaPeriod.getInstance());
                 };
+                KubiViewImpl.prototype.createSimulatedLightParameter = function () {
+                    return this.create(org.kubi.meta.MetaSimulatedLightParameter.getInstance());
+                };
+                KubiViewImpl.prototype.createSimulatedSwitchParameter = function () {
+                    return this.create(org.kubi.meta.MetaSimulatedSwitchParameter.getInstance());
+                };
                 KubiViewImpl.prototype.createDevice = function () {
                     return this.create(org.kubi.meta.MetaDevice.getInstance());
                 };
@@ -11855,6 +11873,72 @@ var org;
                 return PeriodImpl;
             })(org.kevoree.modeling.api.abs.AbstractKObject);
             impl.PeriodImpl = PeriodImpl;
+            var SimulatedLightParameterImpl = (function (_super) {
+                __extends(SimulatedLightParameterImpl, _super);
+                function SimulatedLightParameterImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                    _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                }
+                SimulatedLightParameterImpl.prototype.getUnit = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_UNIT);
+                };
+                SimulatedLightParameterImpl.prototype.setUnit = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_UNIT, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getValueType = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_VALUETYPE);
+                };
+                SimulatedLightParameterImpl.prototype.setValueType = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_VALUETYPE, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getPrecision = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_PRECISION);
+                };
+                SimulatedLightParameterImpl.prototype.setPrecision = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getName = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_NAME);
+                };
+                SimulatedLightParameterImpl.prototype.setName = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_NAME, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getRange = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_RANGE);
+                };
+                SimulatedLightParameterImpl.prototype.setRange = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_RANGE, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getValue = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_VALUE);
+                };
+                SimulatedLightParameterImpl.prototype.setValue = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.setPeriod = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.SET, org.kubi.meta.MetaSimulatedLightParameter.REF_PERIOD, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getPeriod = function () {
+                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
+                    this.internal_ref(org.kubi.meta.MetaSimulatedLightParameter.REF_PERIOD, function (kObjects) {
+                        if (kObjects.length > 0) {
+                            task.initCallback()(kObjects[0]);
+                        }
+                        else {
+                            task.initCallback()(null);
+                        }
+                    });
+                    return task;
+                };
+                return SimulatedLightParameterImpl;
+            })(org.kevoree.modeling.api.abs.AbstractKObject);
+            impl.SimulatedLightParameterImpl = SimulatedLightParameterImpl;
             var SimulatedParameterImpl = (function (_super) {
                 __extends(SimulatedParameterImpl, _super);
                 function SimulatedParameterImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
@@ -11921,6 +12005,72 @@ var org;
                 return SimulatedParameterImpl;
             })(org.kevoree.modeling.api.abs.AbstractKObject);
             impl.SimulatedParameterImpl = SimulatedParameterImpl;
+            var SimulatedSwitchParameterImpl = (function (_super) {
+                __extends(SimulatedSwitchParameterImpl, _super);
+                function SimulatedSwitchParameterImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                    _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                }
+                SimulatedSwitchParameterImpl.prototype.getUnit = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_UNIT);
+                };
+                SimulatedSwitchParameterImpl.prototype.setUnit = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_UNIT, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getValueType = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_VALUETYPE);
+                };
+                SimulatedSwitchParameterImpl.prototype.setValueType = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_VALUETYPE, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getPrecision = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PRECISION);
+                };
+                SimulatedSwitchParameterImpl.prototype.setPrecision = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getName = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_NAME);
+                };
+                SimulatedSwitchParameterImpl.prototype.setName = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_NAME, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getRange = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_RANGE);
+                };
+                SimulatedSwitchParameterImpl.prototype.setRange = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_RANGE, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getValue = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_VALUE);
+                };
+                SimulatedSwitchParameterImpl.prototype.setValue = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.setPeriod = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.api.KActionType.SET, org.kubi.meta.MetaSimulatedSwitchParameter.REF_PERIOD, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getPeriod = function () {
+                    var task = new org.kevoree.modeling.api.abs.AbstractKDeferWrapper();
+                    this.internal_ref(org.kubi.meta.MetaSimulatedSwitchParameter.REF_PERIOD, function (kObjects) {
+                        if (kObjects.length > 0) {
+                            task.initCallback()(kObjects[0]);
+                        }
+                        else {
+                            task.initCallback()(null);
+                        }
+                    });
+                    return task;
+                };
+                return SimulatedSwitchParameterImpl;
+            })(org.kevoree.modeling.api.abs.AbstractKObject);
+            impl.SimulatedSwitchParameterImpl = SimulatedSwitchParameterImpl;
             var StateParameterImpl = (function (_super) {
                 __extends(StateParameterImpl, _super);
                 function StateParameterImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
@@ -12220,6 +12370,43 @@ var org;
                 return MetaPeriod;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaPeriod = MetaPeriod;
+            var MetaSimulatedLightParameter = (function (_super) {
+                __extends(MetaSimulatedLightParameter, _super);
+                function MetaSimulatedLightParameter() {
+                    _super.call(this, "org.kubi.SimulatedLightParameter", 8);
+                    var temp_all = new Array();
+                    temp_all[0] = MetaSimulatedLightParameter.ATT_UNIT;
+                    temp_all[1] = MetaSimulatedLightParameter.ATT_VALUETYPE;
+                    temp_all[2] = MetaSimulatedLightParameter.ATT_PRECISION;
+                    temp_all[3] = MetaSimulatedLightParameter.ATT_NAME;
+                    temp_all[4] = MetaSimulatedLightParameter.ATT_RANGE;
+                    temp_all[5] = MetaSimulatedLightParameter.ATT_VALUE;
+                    var temp_references = new Array();
+                    temp_all[6] = MetaSimulatedLightParameter.REF_PERIOD;
+                    var temp_operations = new Array();
+                    this.init(temp_all);
+                }
+                MetaSimulatedLightParameter.getInstance = function () {
+                    if (MetaSimulatedLightParameter.INSTANCE == null) {
+                        MetaSimulatedLightParameter.INSTANCE = new org.kubi.meta.MetaSimulatedLightParameter();
+                    }
+                    return MetaSimulatedLightParameter.INSTANCE;
+                };
+                MetaSimulatedLightParameter.INSTANCE = null;
+                MetaSimulatedLightParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.REF_PERIOD = new org.kevoree.modeling.api.abs.AbstractMetaReference("period", 10, true, true, function () {
+                    return org.kubi.meta.MetaPeriod.getInstance();
+                }, null, function () {
+                    return org.kubi.meta.MetaSimulatedLightParameter.getInstance();
+                });
+                return MetaSimulatedLightParameter;
+            })(org.kevoree.modeling.api.abs.AbstractMetaClass);
+            meta.MetaSimulatedLightParameter = MetaSimulatedLightParameter;
             var MetaSimulatedParameter = (function (_super) {
                 __extends(MetaSimulatedParameter, _super);
                 function MetaSimulatedParameter() {
@@ -12257,6 +12444,43 @@ var org;
                 return MetaSimulatedParameter;
             })(org.kevoree.modeling.api.abs.AbstractMetaClass);
             meta.MetaSimulatedParameter = MetaSimulatedParameter;
+            var MetaSimulatedSwitchParameter = (function (_super) {
+                __extends(MetaSimulatedSwitchParameter, _super);
+                function MetaSimulatedSwitchParameter() {
+                    _super.call(this, "org.kubi.SimulatedSwitchParameter", 9);
+                    var temp_all = new Array();
+                    temp_all[0] = MetaSimulatedSwitchParameter.ATT_UNIT;
+                    temp_all[1] = MetaSimulatedSwitchParameter.ATT_VALUETYPE;
+                    temp_all[2] = MetaSimulatedSwitchParameter.ATT_PRECISION;
+                    temp_all[3] = MetaSimulatedSwitchParameter.ATT_NAME;
+                    temp_all[4] = MetaSimulatedSwitchParameter.ATT_RANGE;
+                    temp_all[5] = MetaSimulatedSwitchParameter.ATT_VALUE;
+                    var temp_references = new Array();
+                    temp_all[6] = MetaSimulatedSwitchParameter.REF_PERIOD;
+                    var temp_operations = new Array();
+                    this.init(temp_all);
+                }
+                MetaSimulatedSwitchParameter.getInstance = function () {
+                    if (MetaSimulatedSwitchParameter.INSTANCE == null) {
+                        MetaSimulatedSwitchParameter.INSTANCE = new org.kubi.meta.MetaSimulatedSwitchParameter();
+                    }
+                    return MetaSimulatedSwitchParameter.INSTANCE;
+                };
+                MetaSimulatedSwitchParameter.INSTANCE = null;
+                MetaSimulatedSwitchParameter.ATT_UNIT = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("unit", 4, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_VALUETYPE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("valueType", 5, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_PRECISION = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("precision", 6, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.FLOAT, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_NAME = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("name", 7, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_RANGE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("range", 8, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_VALUE = new org.kevoree.modeling.api.abs.AbstractMetaAttribute("value", 9, 0, false, org.kevoree.modeling.api.meta.PrimitiveTypes.STRING, org.kevoree.modeling.api.extrapolation.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.REF_PERIOD = new org.kevoree.modeling.api.abs.AbstractMetaReference("period", 10, true, true, function () {
+                    return org.kubi.meta.MetaPeriod.getInstance();
+                }, null, function () {
+                    return org.kubi.meta.MetaSimulatedSwitchParameter.getInstance();
+                });
+                return MetaSimulatedSwitchParameter;
+            })(org.kevoree.modeling.api.abs.AbstractMetaClass);
+            meta.MetaSimulatedSwitchParameter = MetaSimulatedSwitchParameter;
             var MetaStateParameter = (function (_super) {
                 __extends(MetaStateParameter, _super);
                 function MetaStateParameter() {

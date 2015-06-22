@@ -67,22 +67,21 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
     public void readValues(KubiUniverse universe, long[] keys) {
         long now = System.currentTimeMillis();
-        int jumingSteps = 3000;
-        for (int i = 0; i < 10000; i++) {
+        int jumingSteps = 6000;
+        for (int i = 0; i < 100000; i++) {
             universe.time(now + (i*jumingSteps)).lookupAll(keys).then(new Callback<KObject[]>() {
                 @Override
                 public void on(KObject[] kObjects) {
                     if(kObjects.length>0){
                         // kObjects[0] -> switchState
                         // kObjects[1] -> lightState
-//                        System.out.println("0\t---\t" + kObjects[0].now() + "\t,,\t" + ((SimulatedParameter) kObjects[0]).getValue());
-//                        System.out.println("1\t---\t" + kObjects[1].now() + "\t,,\t" + ((SimulatedParameter) kObjects[1]).getValue());
+                        System.out.println("" + (kObjects[0].now()-1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[0]).getValue().equals("true")?"Switch_ON":"Switch_OFF"));
+                        System.out.println("" + (kObjects[1].now()+1-1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[1]).getValue().equals("true")?"Light_ON":"Light_OFF"));
 //                        System.out.println((kObjects[0].now())%60000 + "," + (((SimulatedParameter) kObjects[0]).getValue().equals("true")?0:1)+ "," + (((SimulatedParameter) kObjects[1]).getValue().equals("true")?0:1));
 //                        System.out.println((kObjects[0].now()) % 60000 + "," + ((SimulatedParameter) kObjects[0]).getValue() + "," + ((SimulatedParameter) kObjects[1]).getValue());
                     }
                 }
             });
         }
-
     }
 }

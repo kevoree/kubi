@@ -14,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jerome on 10/04/15.
@@ -26,9 +28,11 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
 
     private String fileToLoad = "CSV_Cuisine_9-14_Avril.csv";
     private static final String csvSplitter = ";";
+    private List<TemperatureSensorValue> tempValueList;
 
     @Override
     public void start(KubiKernel kernel) {
+        this.tempValueList = new ArrayList<>();
         kubiKernel = kernel;
         long initialTime = KConfig.BEGINNING_OF_TIME;
         kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {

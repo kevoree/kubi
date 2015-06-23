@@ -29,6 +29,7 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
     private String fileToLoad = "CSV_Cuisine_9-14_Avril.csv";
     private static final String csvSplitter = ";";
     private List<TemperatureSensorValue> tempValueList;
+    private long dataRange;
 
     @Override
     public void start(KubiKernel kernel) {
@@ -79,28 +80,24 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
     private void initData(KubiUniverse universe, long[] keys, InputStream stream) {
         BufferedReader bufferedReader = null;
         String line;
+        long firstValue = -1;
+        long lastValue = -1;
         try {
             bufferedReader = new BufferedReader(new InputStreamReader(stream));
             while ((line = bufferedReader.readLine()) != null) {
                 String[] data = line.split(csvSplitter);
                 if (data.length > 2 && data[1] != null && data[2] != null) {
                     long recordTime = Long.parseLong(data[0]);
-                    universe.time(recordTime).lookupAll(keys).then(new Callback<KObject[]>() {
-                        @Override
-                        public void on(KObject[] kObjects) {
-                            if (("3").equals(data[1])) {
-                                final double temp = Double.parseDouble(data[2]);
-                                if(kObjects[0] != null){
-                                    ((StateParameter) kObjects[0]).setValue(temp + "");
-                                }
-                            }
-                            kubiKernel.model().save();
-                        }
-                    });
+                    final double temp = Double.parseDouble(data[2]);
+                    if (("3").equals(data[1])) {
+                        if(firstValue == -1) firstValue = recordTime;
+                        lastValue = recordTime;
+                        this.tempValueList.add(new TemperatureSensorValue(temp, recordTime));
+                    }
                 }
             }
-
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             e1.printStackTrace();
         } finally {
             if (bufferedReader != null) {
@@ -110,6 +107,26 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
+            }
+        }
+        this.dataRange =  lastValue - firstValue;
+        putDataInKubi(universe, keys);
+    }
+
+    private void putDataInKubi(KubiUniverse universe, long[] keys) {
+        for (int i = 0; i < 10; i++) {
+            for (TemperatureSensorValue tempVal : this.tempValueList) {
+                long recordTime = tempVal.getTime();
+                Double temp = tempVal.getTemperature();
+                universe.time((i*this.dataRange)+recordTime).lookupAll(keys).then(new Callback<KObject[]>() {
+                    @Override
+                    public void on(KObject[] kObjects) {
+                        if (kObjects[0] != null) {
+                            ((StateParameter) kObjects[0]).setValue(temp + "");
+                        }
+                        kubiKernel.model().save();
+                    }
+                });
             }
         }
     }

@@ -4,7 +4,9 @@ import org.kevoree.brain.JavaPeriodCalculatorFFT;
 import org.kevoree.modeling.api.Callback;
 import org.kevoree.modeling.api.KConfig;
 import org.kevoree.modeling.api.KObject;
-import org.kubi.*;
+import org.kubi.Ecosystem;
+import org.kubi.Period;
+import org.kubi.StateParameter;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
 import org.kubi.meta.MetaDevice;
@@ -12,7 +14,8 @@ import org.kubi.meta.MetaEcosystem;
 import org.kubi.meta.MetaStateParameter;
 import org.kubi.meta.MetaTechnology;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PeriodAnalysisPlugin implements KubiPlugin {
 
@@ -35,13 +38,24 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                 Ecosystem ecosystem = (Ecosystem) kObject;
                 ecosystem.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES)
                         .traverse(MetaTechnology.REF_DEVICES)
-                        .traverse(MetaDevice.REF_STATEPARAMETERS).withAttribute(MetaStateParameter.ATT_NAME, "name")
+                        .traverse(MetaDevice.REF_STATEPARAMETERS)
                         .done().then(new Callback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         // TODO : check if the Period is null or not
                         if(kObjects.length >0) {
-                            getPreviousValues((StateParameter) kObjects[0], 7600, 1428997126000L, 50000);
+//                            for (int i =0;i<kObjects.length;i++){
+                            for (int i =0;i<1;i++){
+                                StateParameter parameter = (StateParameter) kObjects[i];
+//                                parameter.timeWalker().allTimes().then(new Callback<long[]>() {
+//                                    @Override
+//                                    public void on(long[] longs) {
+                                long timeMax = 1428997126000L;
+//                                        timeMax = longs[0];
+                                getPreviousValues(parameter, 7600, timeMax, 50000);
+//                                    }
+//                                });
+                            }
                         }else {
                             System.err.println("ERROR PeriodAnalysisPlugin: no device detected");
                         }

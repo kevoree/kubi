@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by jerome on 10/04/15.
  */
-public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
+public class SFridgeRepeatTimePlugin implements KubiPlugin {
 
     private Technology currentTechnology;
 
@@ -41,7 +41,7 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
 
-                currentTechnology = kernel.model().createTechnology(ecosystem.universe(),ecosystem.now()).setName(SmartFridgeRepeatRealTimePlugin.class.getSimpleName());
+                currentTechnology = kernel.model().createTechnology(ecosystem.universe(),ecosystem.now()).setName(SFridgeRepeatTimePlugin.class.getSimpleName());
                 ecosystem.addTechnologies(currentTechnology);
 
                 Device device = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("plug");
@@ -90,7 +90,7 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
                     long recordTime = Long.parseLong(data[0]);
                     final double temp = Double.parseDouble(data[2]);
                     if (("3").equals(data[1])) {
-                        if(firstValue == -1) firstValue = recordTime;
+                        if(firstValue == -1){ firstValue = recordTime;}
                         lastValue = recordTime;
                         this.tempValueList.add(new TemperatureSensorValue(temp, recordTime));
                     }
@@ -110,26 +110,25 @@ public class SmartFridgeRepeatRealTimePlugin implements KubiPlugin {
             }
         }
         this.dataRange =  lastValue - firstValue;
-        putDataInKubi(universe, keys);
+        putDataInKubi(universe, keys, 0);
     }
 
-    private void putDataInKubi(KubiUniverse universe, long[] keys) {
-        for (int i = 0; i < 10; i++) {
-            for (TemperatureSensorValue tempVal : this.tempValueList) {
-                long recordTime = tempVal.getTime();
-                Double temp = tempVal.getTemperature();
-                universe.time((i*this.dataRange)+recordTime).lookupAll(keys).then(new Callback<KObject[]>() {
-                    @Override
-                    public void on(KObject[] kObjects) {
-                        if (kObjects[0] != null) {
-                            ((StateParameter) kObjects[0]).setValue(temp + "");
-                        }
+    private void putDataInKubi(KubiUniverse universe, long[] keys, int it) {
+        for (TemperatureSensorValue tempVal : this.tempValueList) {
+            long recordTime = tempVal.getTime();
+            Double temp = tempVal.getTemperature();
+            universe.time((it * this.dataRange) + recordTime).lookupAll(keys).then(new Callback<KObject[]>() {
+                @Override
+                public void on(KObject[] kObjects) {
+                    if (kObjects[0] != null) {
+                        ((StateParameter) kObjects[0]).setValue(temp + "");
                         kubiKernel.model().save();
                     }
-                });
-            }
+                }
+            });
         }
     }
+
 
     private void readData() {
 

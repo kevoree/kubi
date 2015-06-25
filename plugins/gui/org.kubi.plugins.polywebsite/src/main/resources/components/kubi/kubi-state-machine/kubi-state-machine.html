@@ -1,0 +1,75 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="stylesheet" type="text/css" href="kubi-state-machine.css"/>
+<script src="./kubi-state-machine.js"></script>
+
+<dom-module id="kubi-state-machine">
+    <link rel="stylesheet" type="text/css" href="/materialize/css/materialize.css">
+    <template>
+        <div id="kubistatemachine">
+            <a id="buttonStateMachine" class="waves-effect waves-light btn-large" on-click="onclickButton"><i class="material-icons right"></i>Infer state machine</a>
+            <div id="loadingCircle" class="preloader-wrapper big active" >
+                <div class="spinner-layer spinner-blue">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div><div class="gap-patch">
+                    <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+                </div>
+
+                <div class="spinner-layer spinner-red">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div><div class="gap-patch">
+                    <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+                </div>
+
+                <div class="spinner-layer spinner-yellow">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div><div class="gap-patch">
+                    <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+                </div>
+
+                <div class="spinner-layer spinner-green">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div><div class="gap-patch">
+                    <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+                </div>
+            </div>
+            <img id="imageStateMachine" src="/img/output.dot.png"/>
+        </div>
+
+
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-state-machine",
+        ready: function (){
+            document.getElementById("imageStateMachine").style.display = "none";
+            document.getElementById("loadingCircle").style.display = "none";
+        },
+        onclickButton : function (event,num){
+            document.getElementById("imageStateMachine").style.display = "none";
+            document.getElementById("loadingCircle").style.display = "inline-block";
+            setTimeout(function (){
+                document.getElementById("imageStateMachine").style.display = "inline-block";
+                document.getElementById("loadingCircle").style.display = "none";
+            },3700);
+        }
+    });
+</script>

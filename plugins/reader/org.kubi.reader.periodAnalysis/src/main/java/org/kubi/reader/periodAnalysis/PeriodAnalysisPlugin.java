@@ -91,7 +91,10 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
             public void on(KObject kObject) {
                 StateParameter p = (StateParameter) kObject;
                 if (p != null && numberOfValues > 0 && p.getValue() != null) {
-                    result.add(Double.parseDouble(p.getValue()));
+                    try{
+                        result.add(Double.parseDouble(p.getValue()));
+                    }catch (Exception e){
+                    }
 
                     List<Double> list = new ArrayList<Double>(result);
                     getPreviousValues(list, p, numberOfValues - 1, time - periodOfGets, periodOfGets);

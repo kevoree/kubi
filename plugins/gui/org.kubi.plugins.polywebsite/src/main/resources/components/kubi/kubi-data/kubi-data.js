@@ -57,7 +57,7 @@ function initWithModel(model) {
  */
 function initGraph() {
     chart = new CanvasJS.Chart("chartContainer", {
-        width: 1000,
+        width: 800,
         height: 500,
         backgroundColor: "#F0F0F4",
         theme: "theme3",

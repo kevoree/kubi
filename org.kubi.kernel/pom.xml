@@ -37,22 +37,6 @@
             <version>${kmf.version}</version>
         </dependency>
 
-
-        <!-- web view
-        <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.plugins.web</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        -->
-        <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.plugins.polywebsite</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- web Polymer view
-        -->
         <!-- Zwave
         <dependency>
             <groupId>org.kubi</groupId>
@@ -138,6 +122,22 @@
             <version>${project.version}</version>
         </dependency>
     -->
+
+        <!-- web view
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        -->
+        <!-- web Polymer view
+        -->
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.polywebsite</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

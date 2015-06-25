@@ -7,6 +7,10 @@ import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 /**
  * Created by jerome on 12/05/15.
  */
@@ -14,6 +18,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
     private KubiKernel kubiKernel;
     private Technology currentTechnology;
+    private String filename = "./stateMachine.out";
 
     @Override
     public void start(KubiKernel kernel) {
@@ -64,24 +69,69 @@ public class SwitchYourLightPlugin implements KubiPlugin{
         System.out.println("SmartFridgePlugin stops ...");
     }
 
-
+    private int counter;
     public void readValues(KubiUniverse universe, long[] keys) {
-        long now = System.currentTimeMillis();
-        int jumingSteps = 6000;
-        for (int i = 0; i < 100000; i++) {
-            universe.time(now + (i*jumingSteps)).lookupAll(keys).then(new Callback<KObject[]>() {
-                @Override
-                public void on(KObject[] kObjects) {
-                    if(kObjects.length>0){
-                        // kObjects[0] -> switchState
-                        // kObjects[1] -> lightState
-                        System.out.println("" + (kObjects[0].now()-1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[0]).getValue().equals("true")?"Switch_ON":"Switch_OFF"));
-                        System.out.println("" + (kObjects[1].now()+1-1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[1]).getValue().equals("true")?"Light_ON":"Light_OFF"));
+        this.counter = 0;
+        BufferedWriter writer = null;
+        try{
+            writer = new BufferedWriter( new FileWriter(filename));
+            long now = System.currentTimeMillis();
+            int jumingSteps = 6000;
+            int nbLoops = 10000;
+            for (int i = 0; i < nbLoops; i++) {
+                final BufferedWriter finalWriter = writer;
+                universe.time(now + (i*jumingSteps)).lookupAll(keys).then(new Callback<KObject[]>() {
+                    @Override
+                    public void on(KObject[] kObjects) {
+                        if(kObjects.length>0){
+                            // kObjects[0] -> switchState
+                            // kObjects[1] -> lightState
+                            try {
+                                finalWriter.write("" + (kObjects[0].now() - 1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[0]).getValue().equals("true") ? "Switch_ON" : "Switch_OFF")+"\n");
+                                finalWriter.write("" + (kObjects[1].now() + 1 - 1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[1]).getValue().equals("true") ? "Light_ON" : "Light_OFF")+"\n");
+                                finalWriter.flush();
+                                counter++;
+
+
+                                if (counter== nbLoops){
+                                    // process the file
+//                                    Runtime runtime = Runtime.getRuntime();
+//
+//
+//                                    try {
+//                                        String path = (new File("")).getAbsolutePath();
+//                                        String libs = "/libs/synoptic";
+////                                        Process p = null;
+////                                        ProcessBuilder pb = new ProcessBuilder(
+////                                                );
+////                                        pb.directory(new File( path));
+////                                        p = pb.start();
+//                                        int res = runtime.exec("java -ea -cp " +
+//                                                path+libs+"/lib/*:" +
+//                                                path+libs+"/synoptic/bin/:" +
+//                                                path+libs+"/daikonizer/bin/ " +
+//                                                "synoptic.main.SynopticMain "+
+//
+//                                                " -r '^(?<TIME>)[^-]*--[^{L,S}]*(?<TYPE>)$'" +
+//                                                " -d /usr/local/bin/dot" +
+//                                                " -o "+path+"/libs/synoptic/output " +
+//                                                path +"/stateMachine.out").waitFor();
+//                                        System.out.println(res);
+//                                    } catch (Exception e) {
+//                                        e.printStackTrace();
+//                                    }
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 //                        System.out.println((kObjects[0].now())%60000 + "," + (((SimulatedParameter) kObjects[0]).getValue().equals("true")?0:1)+ "," + (((SimulatedParameter) kObjects[1]).getValue().equals("true")?0:1));
 //                        System.out.println((kObjects[0].now()) % 60000 + "," + ((SimulatedParameter) kObjects[0]).getValue() + "," + ((SimulatedParameter) kObjects[1]).getValue());
+                        }
                     }
-                }
-            });
+                });
+            }
+        }
+        catch ( IOException e) {
         }
     }
 }

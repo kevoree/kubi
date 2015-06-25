@@ -1,0 +1,118 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x000000012a6160c7, pid=55797, tid=30979
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_40-b26) (build 1.8.0_40-b26)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.40-b25 mixed mode bsd-amd64 compressed oops)
+# Problematic frame:
+# C  [libleveldbjni-64-1-8569370211282046048.8+0x120c7]  _ZN7leveldb8MemTable3GetERKNS_9LookupKeyEPSsPNS_6StatusE+0xb7
+#
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007fb05d2a9000):  JavaThread "XNIO-1 I/O-5" [_thread_in_native, id=30979, stack(0x000000012d449000,0x000000012d549000)]
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 0 (unknown), si_addr: 0x0000000000000000
+
+Registers:
+RAX=0x000000000000001d, RBX=0x0000000000000001, RCX=0x00007fb05c824530, RDX=0x00007fb05e9c95c9
+RSP=0x000000012d547a00, RBP=0x000000012d547aa0, RSI=0x000000000000001d, RDI=0xe00007fb05c81abc
+R8 =0x0000000000000031, R9 =0x000000012a645950, R10=0x0000000000000108, R11=0xffff8050d2e11c49
+R12=0x00007fb05e9c9630, R13=0x000000012d547b00, R14=0x00007fb05e9c95c9, R15=0x00007fb05d06f5b8
+RIP=0x000000012a6160c7, EFLAGS=0x0000000000010206, ERR=0x0000000000000000
+  TRAPNO=0x000000000000000d
+
+Top of Stack: (sp=0x000000012d547a00)
+0x000000012d547a00:   ffffffffffffffff 00007fb05c824530
+0x000000012d547a10:   000000012d547af0 00007fb05a735ee0
+0x000000012d547a20:   000000012d547c20 0000000000000000
+0x000000012d547a30:   00007fb05c824530 00007fb05c823f60
+0x000000012d547a40:   000000012d547a80 00007fff878e0b4e
+0x000000012d547a50:   00007fb05c824098 000020602d547c38
+0x000000012d547a60:   000000012d547aa0 000000012a6142ad
+0x000000012d547a70:   000000000000001d 00007fb05a735ee0
+0x000000012d547a80:   00000000000007f7 0000000000000000
+0x000000012d547a90:   00007fb05c824530 00007fb05c823f60
+0x000000012d547aa0:   000000012d547c10 000000012a60e230
+0x000000012d547ab0:   000000012d548108 000000012d547c28
+0x000000012d547ac0:   00007fb05a735ee0 000000012d547c38
+0x000000012d547ad0:   00007fb05cb11cd0 00007fb05c824080
+0x000000012d547ae0:   000000012d547c20 000000010a283800
+0x000000012d547af0:   000000012d547b08 000000012d547b09
+0x000000012d547b00:   000000012d547b26 373030392d2f301d
+0x000000012d547b10:   3437343532393931 f701312f30393930
+0x000000012d547b20:   0000000000000007 00007fff859eb289
+0x000000012d547b30:   000000012d548108 000000010cb57f0c
+0x000000012d547b40:   000000012d547b60 0000000000001e00
+0x000000012d547b50:   000000010a281a00 000000076f8b0260
+0x000000012d547b60:   0000000000001003 000000010a283800
+0x000000012d547b70:   000000012d547c18 0000000000000008
+0x000000012d547b80:   000000002d547bd0 000000010a27e000
+0x000000012d547b90:   0000000000000001 000000010a283800
+0x000000012d547ba0:   ff80000000001003 000000000000ffff
+0x000000012d547bb0:   00000000c004a3f0 0000000000000000
+0x000000012d547bc0:   0000000000000000 000000076f107ed0
+0x000000012d547bd0:   000000010a27e000 0000000000000008
+0x000000012d547be0:   c100f301f8d23de7 00007fb05a735ee0
+0x000000012d547bf0:   00007fb05d2a91f8 000000012d547c38 
+
+Instructions: (pc=0x000000012a6160c7)
+0x000000012a6160a7:   76 05 e8 82 4e 01 00 49 89 c6 8b 45 d0 eb 06 89
+0x000000012a6160b7:   45 d0 49 ff c6 48 8b 8d 68 ff ff ff 48 8b 79 08
+0x000000012a6160c7:   48 8b 0f 4c 8b 41 10 4c 89 75 c0 83 c0 f8 48 89
+0x000000012a6160d7:   45 c8 48 8b 85 70 ff ff ff 48 8b 58 08 48 8b 40 
+
+Register to memory mapping:
+
+RAX=0x000000000000001d is an unknown value
+RBX=0x0000000000000001 is an unknown value
+RCX=0x00007fb05c824530 is an unknown value
+RDX=0x00007fb05e9c95c9 is an unknown value
+RSP=0x000000012d547a00 is pointing into the stack for thread: 0x00007fb05d2a9000
+RBP=0x000000012d547aa0 is pointing into the stack for thread: 0x00007fb05d2a9000
+RSI=0x000000000000001d is an unknown value
+RDI=0xe00007fb05c81abc is an unknown value
+R8 =0x0000000000000031 is an unknown value
+R9 =0x000000012a645950: _ZTVN7leveldb6DBImplE+0x10 in /private/var/folders/fm/5c5lzyq932x281tnqhtw78300000gq/T/libleveldbjni-64-1-8569370211282046048.8 at 0x000000012a604000
+R10=0x0000000000000108 is an unknown value
+R11=0xffff8050d2e11c49 is an unknown value
+R12=0x00007fb05e9c9630 is an unknown value
+R13=0x000000012d547b00 is pointing into the stack for thread: 0x00007fb05d2a9000
+R14=0x00007fb05e9c95c9 is an unknown value
+R15=0x00007fb05d06f5b8 is an unknown value
+
+
+Stack: [0x000000012d449000,0x000000012d549000],  sp=0x000000012d547a00,  free space=1018k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libleveldbjni-64-1-8569370211282046048.8+0x120c7]  _ZN7leveldb8MemTable3GetERKNS_9LookupKeyEPSsPNS_6StatusE+0xb7
+C  [libleveldbjni-64-1-8569370211282046048.8+0xa230]  _ZN7leveldb6DBImpl3GetERKNS_11ReadOptionsERKNS_5SliceEPSs+0x100
+C  [libleveldbjni-64-1-8569370211282046048.8+0x2d54]  Java_org_fusesource_leveldbjni_internal_NativeDB_00024DBJNI_Get+0x94
+J 1584  org.fusesource.leveldbjni.internal.NativeDB$DBJNI.Get(JLorg/fusesource/leveldbjni/internal/NativeReadOptions;Lorg/fusesource/leveldbjni/internal/NativeSlice;J)J (0 bytes) @ 0x000000010c942226 [0x000000010c942140+0xe6]
+J 1581 C1 org.fusesource.leveldbjni.internal.NativeDB.get(Lorg/fusesource/leveldbjni/internal/NativeReadOptions;Lorg/fusesource/leveldbjni/internal/NativeSlice;)[B (124 bytes) @ 0x000000010c94335c [0x000000010c942f80+0x3dc]
+J 1579 C1 org.fusesource.leveldbjni.internal.NativeDB.get(Lorg/fusesource/leveldbjni/internal/NativeReadOptions;[B)[B (41 bytes) @ 0x000000010c94115c [0x000000010c940c80+0x4dc]
+J 1435 C1 org.fusesource.leveldbjni.internal.JniDB.get([BLorg/iq80/leveldb/ReadOptions;)[B (54 bytes) @ 0x000000010c8f553c [0x000000010c8f5440+0xfc]
+J 1433 C1 org.fusesource.leveldbjni.internal.JniDB.get([B)[B (30 bytes) @ 0x000000010c8f62bc [0x000000010c8f6120+0x19c]
+J 1439 C1 org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver.get([Lorg/kevoree/modeling/api/data/cache/KContentKey;Lorg/kevoree/modeling/api/ThrowableCallback;)V (80 bytes) @ 0x000000010c90678c [0x000000010c906360+0x42c]
+j  org.kevoree.modeling.databases.websocket.WebSocketWrapper.onFullTextMessage(Lio/undertow/websockets/core/WebSocketChannel;Lio/undertow/websockets/core/BufferedTextMessage;)V+91
+J 2065 C1 io.undertow.websockets.core.BufferedTextMessage.read(Lio/undertow/websockets/core/StreamSourceFrameChannel;Lio/undertow/websockets/core/WebSocketCallback;)V (265 bytes) @ 0x000000010cb8f68c [0x000000010cb8d400+0x228c]
+J 2062 C1 io.undertow.websockets.core.AbstractReceiveListener.bufferFullMessage(Lio/undertow/websockets/core/StreamSourceFrameChannel;)V (152 bytes) @ 0x000000010cb8b68c [0x000000010cb8a1c0+0x14cc]
+J 1898 C1 io.undertow.websockets.core.AbstractReceiveListener.handleEvent(Lio/undertow/websockets/core/WebSocketChannel;)V (116 bytes) @ 0x000000010c598334 [0x000000010c597c80+0x6b4]
+J 1897 C1 io.undertow.websockets.core.AbstractReceiveListener.handleEvent(Ljava/nio/channels/Channel;)V (9 bytes) @ 0x000000010c607414 [0x000000010c607240+0x1d4]
+J 1483 C1 org.xnio.ChannelListeners.invokeChannelListener(Ljava/nio/channels/Channel;Lorg/xnio/ChannelListener;)Z (40 bytes) @ 0x000000010c918594 [0x000000010c9182a0+0x2f4]
+J 1831 C1 io.undertow.server.protocol.framed.AbstractFramedChannel$FrameReadListener.handleEvent(Lorg/xnio/channels/StreamSourceChannel;)V (145 bytes) @ 0x000000010ca2d654 [0x000000010ca2ce40+0x814]
+J 1830 C1 io.undertow.server.protocol.framed.AbstractFramedChannel$FrameReadListener.handleEvent(Ljava/nio/channels/Channel;)V (9 bytes) @ 0x000000010ca2e974 [0x000000010ca2e780+0x1f4]
+J 1483 C1 org.xnio.ChannelListeners.invokeChannelListener(Ljava/nio/channels/Channel;Lorg/xnio/ChannelListener;)Z (40 bytes) @ 0x000000010c918594 [0x000000010c9182a0+0x2f4]
+J 1895 C1 org.xnio.conduits.ReadReadyHandler$ChannelListenerHandler.readReady()V (39 bytes) @ 0x000000010c605964 [0x000000010c6056a0+0x2c4]
+J 1819 C1 org.xnio.nio.NioSocketConduit.handleReady(I)V (97 bytes) @ 0x000000010ca2faa4 [0x000000010ca2ee20+0xc84]
+j  org.xnio.nio.WorkerThread.run()V+762
+v  ~StubRoutines::call_stub
+V  [libjvm.dylib+0x2e036e]
+V  [libjvm.dylib+0x2e0afc]

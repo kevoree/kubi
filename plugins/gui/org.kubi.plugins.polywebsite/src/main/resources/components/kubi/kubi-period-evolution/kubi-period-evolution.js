@@ -12,6 +12,7 @@ function initWithModelPeriod(model){
 function updatePeriodSettings(time, scale, devices){
     this.periodEvolution.time = time * 1000;
     var currentView = kModeldata.universe(this.periodEvolution.univers).time(this.periodEvolution.time);
+    console.log(devices);
     currentView.getRoot().then(function (root) {
         root.traversal()
             .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)

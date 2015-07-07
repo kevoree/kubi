@@ -6,8 +6,8 @@
 
 #buttonStateMachine, #loadingCircle{
     text-align: center;
-    vertical-align: bottom;
-    margin-bottom: 5em;
+    vertical-align: top;
+    margin-top: 5em;
     margin-left: 5em;
     margin-right: 5em;
 }

@@ -57,11 +57,11 @@ function initWithModel(model) {
  */
 function initGraph() {
     chart = new CanvasJS.Chart("chartContainer", {
-        width: 800,
+        width: 700,
         height: 500,
         backgroundColor: "#F0F0F4",
-        theme: "theme3",
-        colorSet: "colorSet2",
+        theme: "theme",
+        colorSet: "colorSet1",
         interactivityEnabled: true,
         zoomEnabled: true,
         animationEnabled: true,

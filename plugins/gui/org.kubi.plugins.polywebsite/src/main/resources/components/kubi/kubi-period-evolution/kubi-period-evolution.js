@@ -66,6 +66,7 @@ function toAnalogic(value){
     }
     var minutes = value % 60;
     var hours = (value - minutes)/60;
-    return (isNegative?" -  ":"") + hours + " : " + parseInt(minutes);
+    var minutesStr = parseInt(minutes)<10 ? ("0"+parseInt(minutes)) : parseInt(minutes);
+    return (isNegative?" -  ":"") + hours + " : " + minutesStr;
 }
 

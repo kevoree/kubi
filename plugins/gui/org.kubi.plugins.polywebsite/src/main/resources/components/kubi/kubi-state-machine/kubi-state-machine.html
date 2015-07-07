@@ -60,14 +60,14 @@
     Polymer({
         is: "kubi-state-machine",
         ready: function (){
-            document.getElementById("imageStateMachine").style.display = "none";
+            document.getElementById("imageStateMachine").style.visibility = "hidden";
             document.getElementById("loadingCircle").style.display = "none";
         },
         onclickButton : function (event,num){
-            document.getElementById("imageStateMachine").style.display = "none";
+            document.getElementById("imageStateMachine").style.visibility = "hidden";
             document.getElementById("loadingCircle").style.display = "inline-block";
             setTimeout(function (){
-                document.getElementById("imageStateMachine").style.display = "inline-block";
+                document.getElementById("imageStateMachine").style.visibility = "visible";
                 document.getElementById("loadingCircle").style.display = "none";
             },3700);
         }

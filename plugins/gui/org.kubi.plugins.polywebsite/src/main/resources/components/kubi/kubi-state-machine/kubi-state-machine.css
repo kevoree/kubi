@@ -1,9 +1,13 @@
 #kubistatemachine{
     padding-left: 250px;
     height: 410px;
+    vertical-align: middle;
 }
 
 #buttonStateMachine, #loadingCircle{
     text-align: center;
-    vertical-align: middle;
+    vertical-align: bottom;
+    margin-bottom: 5em;
+    margin-left: 5em;
+    margin-right: 5em;
 }

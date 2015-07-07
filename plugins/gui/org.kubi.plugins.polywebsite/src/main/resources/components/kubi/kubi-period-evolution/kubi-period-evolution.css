@@ -3,7 +3,7 @@
     float: right;
     padding-right: 3em;
     padding-top: 3em;
-    width: 20%;
+    width: 23%;
 }
 
 #periodEvolutionValue, #periodValue{
@@ -11,7 +11,9 @@
     color: #ffffff;
     margin-left: 1em;
     margin-right: 1em;
-    padding: 0.1em 1em 0.1em 1em;
-    font-size: 25px;
+    padding: 0.1em 0.1em 0.1em 0.1em;
+    font-size: 22px;
     display: none;
+    width: 80%;
+    text-align: center;
 }

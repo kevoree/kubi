@@ -31,28 +31,25 @@
     </parent>
 
     <properties>
-        <kmf.version>4.18.5-SNAPSHOT</kmf.version>
+        <kmf.version>4.18.4</kmf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <undertow.version>1.1.3.Final</undertow.version>
         <kevoree.log.version>1</kevoree.log.version>
-        <java2typescript.plugin.version>32</java2typescript.plugin.version>
+        <java2typescript.plugin.version>27</java2typescript.plugin.version>
     </properties>
 
     <modules>
         <module>org.kubi.model</module>
         <module>org.kubi.api</module>
         <module>org.kubi.kernel</module>
-        <module>org.kubi.runner</module>
 
         <!-- Plugins -->
-
-        <!-- Web driver -->
         <module>plugins/gui/org.kubi.plugins.web</module>
         <module>plugins/gui/org.kubi.plugins.polywebsite</module>
 
-        <!-- ZWave driver -->
+        <!-- ZWave driver
         <module>plugins/zwave/org.kubi.plugins.zwave</module>
-        <module>plugins/zwave/org.kubi.driver.zwave.productstore</module>
+        <module>plugins/zwave/org.kubi.driver.zwave.productstore</module> -->
 
         <!-- EnOcean driver -->
         <module>plugins/enocean/org.kubi.driver.enocean</module>
@@ -73,6 +70,7 @@
         <!-- Module for bugs detection -->
         <module>org.kubi.bugsMain</module>
         <module>plugins/mock/org.kubi.plugins.smartfridgeRepeatRealTime</module>
+
 
         <!-- End Plugins -->
     </modules>

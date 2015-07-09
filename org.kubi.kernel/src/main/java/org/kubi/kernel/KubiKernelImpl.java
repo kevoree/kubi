@@ -1,10 +1,10 @@
-package org.kubi.runner;
+package org.kubi.kernel;
 
 import org.kevoree.log.Log;
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KConfig;
-import org.kevoree.modeling.api.scheduler.ExecutorServiceScheduler;
-import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KConfig;
+import org.kevoree.modeling.cdn.KContentDeliveryDriver;
+import org.kevoree.modeling.scheduler.impl.ExecutorServiceScheduler;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.KubiView;
@@ -25,11 +25,12 @@ public class KubiKernelImpl implements KubiKernel {
 
     private KubiModel kubiModel;
 
-    public KubiKernelImpl(String dbPath) throws IOException {
+    public KubiKernelImpl(KContentDeliveryDriver cdd) throws IOException {
         kubiModel = new KubiModel();
         kubiModel.setScheduler(new ExecutorServiceScheduler());
-        LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(dbPath);
-        kubiModel.setContentDeliveryDriver(leveldb);
+        if(cdd != null) {
+        kubiModel.setContentDeliveryDriver(cdd);
+        }
     }
 
     private boolean isConnected = false;
@@ -41,30 +42,24 @@ public class KubiKernelImpl implements KubiKernel {
     public synchronized void start() {
         Log.debug("Start");
         if (!isConnected) {
-            kubiModel.connect().then(new Callback<Throwable>() {
+            kubiModel.connect(new KCallback() {
                 @Override
-                public void on(Throwable throwable) {
-                    Log.debug("Connected");
-                    KubiView beginingOfTime = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME);
-                    Ecosystem ecosystem = beginingOfTime.createEcosystem();
+                public void on(Object o) {
+
+                    Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).createEcosystem();
                     ecosystem.setName("KubiRoot");
-                    beginingOfTime.setRoot(ecosystem);
-                    kubiModel.save().then(new Callback<Throwable>() {
+                    kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).setRoot(ecosystem, new KCallback() {
                         @Override
-                        public void on(Throwable throwable) {
-                            if(throwable != null) {
-                                throwable.printStackTrace();
-                            } else {
-                                executorService = Executors.newCachedThreadPool();
-                                isConnected = true;
-                                pluginLoaders = ServiceLoader.load(KubiPlugin.class);
-                                for (KubiPlugin plugin : pluginLoaders) {
-                                    Log.info("Found plugin: {}",plugin.getClass().getSimpleName());
-                                    try {
-                                        addDriver(plugin);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
+                        public void on(Object o) {
+                            executorService = Executors.newCachedThreadPool();
+                            isConnected = true;
+                            pluginLoaders = ServiceLoader.load(KubiPlugin.class);
+                            for (KubiPlugin plugin : pluginLoaders) {
+                                Log.info("Found plugin: {}", plugin.getClass().getSimpleName());
+                                try {
+                                    addDriver(plugin);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -90,7 +85,12 @@ public class KubiKernelImpl implements KubiKernel {
             executorService.shutdownNow();
 
             executorService = null;
-            kubiModel.close();
+            kubiModel.close(new KCallback() {
+                @Override
+                public void on(Object o) {
+
+                }
+            });
             isConnected = false;
         }
     }

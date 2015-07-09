@@ -35,8 +35,9 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <metaModelFile>metamodel/org.kubi.kubi.mm</metaModelFile>
+                            <metaModelFile>metamodel/org.kubi.mm</metaModelFile>
                             <js>true</js>
+                            <metaModelQualifiedName>org.kubi.Kubi</metaModelQualifiedName>
                         </configuration>
                     </execution>
                 </executions>

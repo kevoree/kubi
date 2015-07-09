@@ -15,7 +15,7 @@ public class SwitchYourLightExtrapolation implements Extrapolation {
         double phaseShift = 0;
         if (((StateParameter) kObject).getName().equals("light")){
             //if it's the light we need to phase shift the signal (simulation of the latency)
-            phaseShift = 1;
+            phaseShift = 15000;
         }
         return (Math.sin(time + phaseShift)>0)+"";
     }

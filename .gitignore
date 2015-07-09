@@ -80,5 +80,5 @@ out/
 **/*iml
 .DS_Store
 /kubiDB/
-kubiDB/
+/kubiDB/*
 *.log

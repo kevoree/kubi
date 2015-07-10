@@ -27,8 +27,8 @@ public class KubiKernelImpl implements KubiKernel {
     public KubiKernelImpl(KContentDeliveryDriver cdd) throws IOException {
         kubiModel = new KubiModel();
         kubiModel.setScheduler(new ExecutorServiceScheduler());
-        if(cdd != null) {
-        kubiModel.setContentDeliveryDriver(cdd);
+        if (cdd != null) {
+            kubiModel.setContentDeliveryDriver(cdd);
         }
     }
 
@@ -40,28 +40,31 @@ public class KubiKernelImpl implements KubiKernel {
 
     public synchronized void start() {
         if (!isConnected) {
-            kubiModel.connect(new KCallback() {
+            kubiModel.connect(new KCallback<Exception>() {
                 @Override
-                public void on(Object o) {
-
-                    Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).createEcosystem();
-                    ecosystem.setName("KubiRoot");
-                    kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).setRoot(ecosystem, new KCallback() {
-                        @Override
-                        public void on(Object o) {
-                            executorService = Executors.newCachedThreadPool();
-                            isConnected = true;
-                            pluginLoaders = ServiceLoader.load(KubiPlugin.class);
-                            for (KubiPlugin plugin : pluginLoaders) {
-                                Log.info("Found plugin: {}", plugin.getClass().getSimpleName());
-                                try {
-                                    addDriver(plugin);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                public void on(Exception o) {
+                    if (o != null) {
+                        o.printStackTrace();
+                    } else {
+                        Ecosystem ecosystem = kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).createEcosystem();
+                        ecosystem.setName("KubiRoot");
+                        kubiModel.universe(currentUniverse()).time(KConfig.BEGINNING_OF_TIME).setRoot(ecosystem, new KCallback() {
+                            @Override
+                            public void on(Object o) {
+                                executorService = Executors.newCachedThreadPool();
+                                isConnected = true;
+                                pluginLoaders = ServiceLoader.load(KubiPlugin.class);
+                                for (KubiPlugin plugin : pluginLoaders) {
+                                    Log.info("Found plugin: {}", plugin.getClass().getSimpleName());
+                                    try {
+                                        addDriver(plugin);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             });
         }

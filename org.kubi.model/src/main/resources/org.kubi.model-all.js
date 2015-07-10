@@ -330,6 +330,25 @@ var java;
             return LinkedList;
         })(List);
         util.LinkedList = LinkedList;
+        var Stack = (function () {
+            function Stack() {
+                this.content = new Array();
+            }
+            Stack.prototype.pop = function () {
+                return this.content.pop();
+            };
+            Stack.prototype.push = function (t) {
+                this.content.push(t);
+            };
+            Stack.prototype.isEmpty = function () {
+                return this.content.length == 0;
+            };
+            Stack.prototype.peek = function () {
+                return this.content.slice(-1)[0];
+            };
+            return Stack;
+        })();
+        util.Stack = Stack;
         var Map = (function () {
             function Map() {
             }
@@ -880,24 +899,9 @@ var org;
                             cb(new Array());
                         }
                         else {
-                            var cleanedQuery = query;
-                            if (cleanedQuery.startsWith("/")) {
-                                cleanedQuery = cleanedQuery.substring(1);
-                            }
-                            if (query.startsWith("/")) {
-                                var finalCleanedQuery = cleanedQuery;
-                                this._manager.getRoot(this._universe, this._time, function (rootObj) {
-                                    if (rootObj == null) {
-                                        cb(new Array());
-                                    }
-                                    else {
-                                        org.kevoree.modeling.traversal.impl.selector.Selector.select(rootObj, finalCleanedQuery, cb);
-                                    }
-                                });
-                            }
-                            else {
-                                org.kevoree.modeling.traversal.impl.selector.Selector.select(this, query, cb);
-                            }
+                            var singleRoot = new Array();
+                            singleRoot[0] = this;
+                            org.kevoree.modeling.traversal.query.impl.QueryEngine.getINSTANCE().eval(query, singleRoot, cb);
                         }
                     };
                     AbstractKObject.prototype.listen = function (groupId, listener) {
@@ -1291,7 +1295,9 @@ var org;
                         }
                     };
                     AbstractKObject.prototype.traversal = function () {
-                        return new org.kevoree.modeling.traversal.impl.Traversal(this);
+                        var singleRoot = new Array();
+                        singleRoot[0] = this;
+                        return new org.kevoree.modeling.traversal.impl.Traversal(singleRoot);
                     };
                     AbstractKObject.prototype.referencesWith = function (o) {
                         if (org.kevoree.modeling.util.Checker.isDefined(o)) {
@@ -1333,6 +1339,154 @@ var org;
                     return AbstractKObject;
                 })();
                 abs.AbstractKObject = AbstractKObject;
+                var AbstractKObjectInfer = (function (_super) {
+                    __extends(AbstractKObjectInfer, _super);
+                    function AbstractKObjectInfer(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                        _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                    }
+                    AbstractKObjectInfer.prototype.dependenciesResolver = function (dependencies) {
+                        var _this = this;
+                        return function (indexName) {
+                            var dependency = _this._metaClass.dependencies().dependencyByName(indexName);
+                            if (dependency != null) {
+                                var single = new Array();
+                                single[0] = dependencies[dependency.index()];
+                                return single;
+                            }
+                            return null;
+                        };
+                    };
+                    AbstractKObjectInfer.prototype.train = function (dependencies, expectedOutputs, callback) {
+                        var all_dependencies = new Array(new Array());
+                        all_dependencies[0] = dependencies;
+                        var all_expectedOutputs;
+                        if (expectedOutputs != null) {
+                            all_expectedOutputs = new Array(new Array());
+                            all_expectedOutputs[0] = expectedOutputs;
+                        }
+                        this.trainAll(all_dependencies, all_dependencies, callback);
+                    };
+                    AbstractKObjectInfer.prototype.trainAll = function (p_dependencies, p_outputs, callback) {
+                        var _this = this;
+                        if (p_dependencies == null) {
+                            throw new java.lang.RuntimeException("Dependencies are mandatory for KObjectInfer");
+                        }
+                        var selfObject = this;
+                        var waiter = this.manager().model().defer();
+                        for (var i = 0; i < p_dependencies.length; i++) {
+                            if (p_dependencies[i].length != this._metaClass.dependencies().allDependencies().length) {
+                                throw new java.lang.RuntimeException("Bad number of arguments for allDependencies");
+                            }
+                            var resolver = this.dependenciesResolver(p_dependencies[i]);
+                            for (var j = 0; j < this._metaClass.inputs().length; j++) {
+                                this._metaClass.inputs()[j].extractor().exec(null, resolver, waiter.wait(i + "," + j));
+                            }
+                        }
+                        waiter.then(function (o) {
+                            var extractedInputs = new Array(new Array());
+                            for (var i = 0; i < p_dependencies.length; i++) {
+                                for (var j = 0; j < _this._metaClass.inputs().length; j++) {
+                                    try {
+                                        var extracted = waiter.getResult(i + "," + j);
+                                        if (extracted != null && extracted.length > 0) {
+                                            extractedInputs[i][j] = extracted[0];
+                                        }
+                                    }
+                                    catch ($ex$) {
+                                        if ($ex$ instanceof java.lang.Exception) {
+                                            var e = $ex$;
+                                            e.printStackTrace();
+                                        }
+                                        else {
+                                            throw $ex$;
+                                        }
+                                    }
+                                }
+                            }
+                            var extractedOutputs = new Array(new Array());
+                            for (var i = 0; i < p_dependencies.length; i++) {
+                                for (var j = 0; j < _this._metaClass.outputs().length; j++) {
+                                    var metaInferOutput = _this._metaClass.outputs()[j];
+                                    var currentOutputObject = null;
+                                    if (p_outputs != null) {
+                                        currentOutputObject = p_outputs[i][j];
+                                    }
+                                    extractedOutputs[i][j] = _this.internalConvertOutput(currentOutputObject, metaInferOutput);
+                                }
+                            }
+                            _this._metaClass.inferAlg().train(extractedInputs, extractedOutputs, selfObject);
+                            if (callback != null) {
+                                callback(null);
+                            }
+                        });
+                    };
+                    AbstractKObjectInfer.prototype.infer = function (dependencies, callback) {
+                        var _this = this;
+                        var selfObject = this;
+                        if (dependencies == null || dependencies.length != this._metaClass.dependencies().allDependencies().length) {
+                            throw new java.lang.RuntimeException("Bad number of arguments for allDependencies");
+                        }
+                        var resolver = this.dependenciesResolver(dependencies);
+                        var waiter = this.manager().model().defer();
+                        for (var i = 0; i < this._metaClass.inputs().length; i++) {
+                            this._metaClass.inputs()[i].extractor().exec(null, resolver, waiter.wait("" + i));
+                        }
+                        waiter.then(function (o) {
+                            var extractedInputs = new Array(new Array());
+                            for (var i = 0; i < _this._metaClass.inputs().length; i++) {
+                                try {
+                                    var extracted = waiter.getResult("" + i);
+                                    if (extracted != null && extracted.length > 0) {
+                                        extractedInputs[0][i] = extracted[0];
+                                    }
+                                }
+                                catch ($ex$) {
+                                    if ($ex$ instanceof java.lang.Exception) {
+                                        var e = $ex$;
+                                        e.printStackTrace();
+                                    }
+                                    else {
+                                        throw $ex$;
+                                    }
+                                }
+                            }
+                            var extractedOutputs = _this._metaClass.inferAlg().infer(extractedInputs, selfObject);
+                            if (extractedOutputs[0].length != _this._metaClass.outputs().length) {
+                                callback(null);
+                            }
+                            else {
+                                var result = new Array();
+                                for (var i = 0; i < extractedOutputs.length; i++) {
+                                    result[i] = _this.internalReverseOutput(extractedOutputs[0][i], _this._metaClass.outputs()[i]);
+                                }
+                                callback(result);
+                            }
+                        });
+                    };
+                    AbstractKObjectInfer.prototype.inferAll = function (features, callback) {
+                    };
+                    AbstractKObjectInfer.prototype.resetLearning = function () {
+                        throw new java.lang.RuntimeException("Not Implemented Yet!");
+                    };
+                    AbstractKObjectInfer.prototype.internalConvertOutput = function (output, metaOutput) {
+                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
+                            if (output.equals(true)) {
+                                return 1.0;
+                            }
+                            else {
+                                return 0.0;
+                            }
+                        }
+                        else {
+                            return 0;
+                        }
+                    };
+                    AbstractKObjectInfer.prototype.internalReverseOutput = function (inferred, metaOutput) {
+                        return null;
+                    };
+                    return AbstractKObjectInfer;
+                })(org.kevoree.modeling.abs.AbstractKObject);
+                abs.AbstractKObjectInfer = AbstractKObjectInfer;
                 var AbstractKUniverse = (function () {
                     function AbstractKUniverse(p_key, p_manager) {
                         this._universe = p_key;
@@ -1423,18 +1577,9 @@ var org;
                                         cb(new Array());
                                     }
                                     else {
-                                        var cleanedQuery = query;
-                                        if (query.length == 1 && query.charAt(0) == '/') {
-                                            var param = new Array();
-                                            param[0] = rootObj;
-                                            cb(param);
-                                        }
-                                        else {
-                                            if (cleanedQuery.charAt(0) == '/') {
-                                                cleanedQuery = cleanedQuery.substring(1);
-                                            }
-                                            org.kevoree.modeling.traversal.impl.selector.Selector.select(rootObj, cleanedQuery, cb);
-                                        }
+                                        var singleRoot = new Array();
+                                        singleRoot[0] = rootObj;
+                                        org.kevoree.modeling.traversal.query.impl.QueryEngine.getINSTANCE().eval(query, singleRoot, cb);
                                     }
                                 });
                             }
@@ -2115,7 +2260,7 @@ var org;
                                 }
                                 times[ss] = (time - timeOrigin) / raw.getInferElem(index, PolynomialExtrapolation.STEP, metaClass);
                                 values[ss] = value;
-                                var pf = new org.kevoree.modeling.extrapolation.impl.maths.PolynomialFitEjml(deg);
+                                var pf = new org.kevoree.modeling.util.maths.PolynomialFit(deg);
                                 pf.fit(times, values);
                                 if (this.tempError(pf.getCoef(), times, values) <= maxError) {
                                     raw.extendInfer(index, (raw.getInferSize(index, metaClass) + 1), metaClass);
@@ -2135,21 +2280,12 @@ var org;
                             var temp;
                             var ds;
                             for (var i = 0; i < times.length; i++) {
-                                temp = Math.abs(values[i] - this.test_extrapolate(times[i], computedWeights));
+                                temp = Math.abs(values[i] - org.kevoree.modeling.util.maths.PolynomialFit.extrapolate(times[i], computedWeights));
                                 if (temp > maxErr) {
                                     maxErr = temp;
                                 }
                             }
                             return maxErr;
-                        };
-                        PolynomialExtrapolation.prototype.test_extrapolate = function (time, weights) {
-                            var result = 0;
-                            var power = 1;
-                            for (var j = 0; j < weights.length; j++) {
-                                result += weights[j] * power;
-                                power = power * time;
-                            }
-                            return result;
                         };
                         PolynomialExtrapolation.prototype.internal_extrapolate = function (t, raw, index, metaClass) {
                             var result = 0;
@@ -2203,429 +2339,6 @@ var org;
                         return PolynomialExtrapolation;
                     })();
                     impl.PolynomialExtrapolation = PolynomialExtrapolation;
-                    var maths;
-                    (function (maths) {
-                        var AdjLinearSolverQr = (function () {
-                            function AdjLinearSolverQr() {
-                                this.maxRows = -1;
-                                this.maxCols = -1;
-                                this.decomposer = new org.kevoree.modeling.extrapolation.impl.maths.QRDecompositionHouseholderColumn_D64();
-                            }
-                            AdjLinearSolverQr.prototype.setA = function (A) {
-                                if (A.numRows > this.maxRows || A.numCols > this.maxCols) {
-                                    this.setMaxSize(A.numRows, A.numCols);
-                                }
-                                this.numRows = A.numRows;
-                                this.numCols = A.numCols;
-                                if (!this.decomposer.decompose(A)) {
-                                    return false;
-                                }
-                                this.Q.reshape(this.numRows, this.numRows, false);
-                                this.R.reshape(this.numRows, this.numCols, false);
-                                this.decomposer.getQ(this.Q, false);
-                                this.decomposer.getR(this.R, false);
-                                return true;
-                            };
-                            AdjLinearSolverQr.prototype.solveU = function (U, b, n) {
-                                for (var i = n - 1; i >= 0; i--) {
-                                    var sum = b[i];
-                                    var indexU = i * n + i + 1;
-                                    for (var j = i + 1; j < n; j++) {
-                                        sum -= U[indexU++] * b[j];
-                                    }
-                                    b[i] = sum / U[i * n + i];
-                                }
-                            };
-                            AdjLinearSolverQr.prototype.solve = function (B, X) {
-                                var BnumCols = B.numCols;
-                                this.Y.reshape(this.numRows, 1, false);
-                                this.Z.reshape(this.numRows, 1, false);
-                                for (var colB = 0; colB < BnumCols; colB++) {
-                                    for (var i = 0; i < this.numRows; i++) {
-                                        this.Y.data[i] = B.unsafe_get(i, colB);
-                                    }
-                                    org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.multTransA(this.Q, this.Y, this.Z);
-                                    this.solveU(this.R.data, this.Z.data, this.numCols);
-                                    for (var i = 0; i < this.numCols; i++) {
-                                        X.cset(i, colB, this.Z.data[i]);
-                                    }
-                                }
-                            };
-                            AdjLinearSolverQr.prototype.setMaxSize = function (maxRows, maxCols) {
-                                maxRows += 5;
-                                this.maxRows = maxRows;
-                                this.maxCols = maxCols;
-                                this.Q = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(maxRows, maxRows);
-                                this.R = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(maxRows, maxCols);
-                                this.Y = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(maxRows, 1);
-                                this.Z = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(maxRows, 1);
-                            };
-                            return AdjLinearSolverQr;
-                        })();
-                        maths.AdjLinearSolverQr = AdjLinearSolverQr;
-                        var DenseMatrix64F = (function () {
-                            function DenseMatrix64F(numRows, numCols) {
-                                this.data = new Array();
-                                this.numRows = numRows;
-                                this.numCols = numCols;
-                            }
-                            DenseMatrix64F.multTransA_smallMV = function (A, B, C) {
-                                var cIndex = 0;
-                                for (var i = 0; i < A.numCols; i++) {
-                                    var total = 0.0;
-                                    var indexA = i;
-                                    for (var j = 0; j < A.numRows; j++) {
-                                        total += A.get(indexA) * B.get(j);
-                                        indexA += A.numCols;
-                                    }
-                                    C.set(cIndex++, total);
-                                }
-                            };
-                            DenseMatrix64F.multTransA_reorderMV = function (A, B, C) {
-                                if (A.numRows == 0) {
-                                    org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.fill(C, 0);
-                                    return;
-                                }
-                                var B_val = B.get(0);
-                                for (var i = 0; i < A.numCols; i++) {
-                                    C.set(i, A.get(i) * B_val);
-                                }
-                                var indexA = A.numCols;
-                                for (var i = 1; i < A.numRows; i++) {
-                                    B_val = B.get(i);
-                                    for (var j = 0; j < A.numCols; j++) {
-                                        C.plus(j, A.get(indexA++) * B_val);
-                                    }
-                                }
-                            };
-                            DenseMatrix64F.multTransA_reorderMM = function (a, b, c) {
-                                if (a.numCols == 0 || a.numRows == 0) {
-                                    org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.fill(c, 0);
-                                    return;
-                                }
-                                var valA;
-                                for (var i = 0; i < a.numCols; i++) {
-                                    var indexC_start = i * c.numCols;
-                                    valA = a.get(i);
-                                    var indexB = 0;
-                                    var end = indexB + b.numCols;
-                                    var indexC = indexC_start;
-                                    while (indexB < end) {
-                                        c.set(indexC++, valA * b.get(indexB++));
-                                    }
-                                    for (var k = 1; k < a.numRows; k++) {
-                                        valA = a.unsafe_get(k, i);
-                                        end = indexB + b.numCols;
-                                        indexC = indexC_start;
-                                        while (indexB < end) {
-                                            c.plus(indexC++, valA * b.get(indexB++));
-                                        }
-                                    }
-                                }
-                            };
-                            DenseMatrix64F.multTransA_smallMM = function (a, b, c) {
-                                var cIndex = 0;
-                                for (var i = 0; i < a.numCols; i++) {
-                                    for (var j = 0; j < b.numCols; j++) {
-                                        var indexA = i;
-                                        var indexB = j;
-                                        var end = indexB + b.numRows * b.numCols;
-                                        var total = 0;
-                                        for (; indexB < end; indexB += b.numCols) {
-                                            total += a.get(indexA) * b.get(indexB);
-                                            indexA += a.numCols;
-                                        }
-                                        c.set(cIndex++, total);
-                                    }
-                                }
-                            };
-                            DenseMatrix64F.multTransA = function (a, b, c) {
-                                if (b.numCols == 1) {
-                                    if (a.numCols >= org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.MULT_COLUMN_SWITCH) {
-                                        org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.multTransA_reorderMV(a, b, c);
-                                    }
-                                    else {
-                                        org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.multTransA_smallMV(a, b, c);
-                                    }
-                                }
-                                else {
-                                    if (a.numCols >= org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.MULT_COLUMN_SWITCH || b.numCols >= org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.MULT_COLUMN_SWITCH) {
-                                        org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.multTransA_reorderMM(a, b, c);
-                                    }
-                                    else {
-                                        org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.multTransA_smallMM(a, b, c);
-                                    }
-                                }
-                            };
-                            DenseMatrix64F.setIdentity = function (mat) {
-                                var width = mat.numRows < mat.numCols ? mat.numRows : mat.numCols;
-                                java.util.Arrays.fill(mat.data, 0, mat.getNumElements(), 0);
-                                var index = 0;
-                                for (var i = 0; i < width; i++) {
-                                    mat.data[index] = 1;
-                                    index += mat.numCols + 1;
-                                }
-                            };
-                            DenseMatrix64F.widentity = function (width) {
-                                var ret = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(width, width);
-                                for (var i = 0; i < width; i++) {
-                                    ret.cset(i, i, 1.0);
-                                }
-                                return ret;
-                            };
-                            DenseMatrix64F.identity = function (numRows, numCols) {
-                                var ret = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(numRows, numCols);
-                                var small = numRows < numCols ? numRows : numCols;
-                                for (var i = 0; i < small; i++) {
-                                    ret.cset(i, i, 1.0);
-                                }
-                                return ret;
-                            };
-                            DenseMatrix64F.fill = function (a, value) {
-                                java.util.Arrays.fill(a.data, 0, a.getNumElements(), value);
-                            };
-                            DenseMatrix64F.prototype.get = function (index) {
-                                return this.data[index];
-                            };
-                            DenseMatrix64F.prototype.set = function (index, val) {
-                                return this.data[index] = val;
-                            };
-                            DenseMatrix64F.prototype.plus = function (index, val) {
-                                return this.data[index] += val;
-                            };
-                            DenseMatrix64F.prototype.reshape = function (numRows, numCols, saveValues) {
-                                if (this.data.length < numRows * numCols) {
-                                    var d = new Array();
-                                    if (saveValues) {
-                                        System.arraycopy(this.data, 0, d, 0, this.getNumElements());
-                                    }
-                                    this.data = d;
-                                }
-                                this.numRows = numRows;
-                                this.numCols = numCols;
-                            };
-                            DenseMatrix64F.prototype.cset = function (row, col, value) {
-                                this.data[row * this.numCols + col] = value;
-                            };
-                            DenseMatrix64F.prototype.unsafe_get = function (row, col) {
-                                return this.data[row * this.numCols + col];
-                            };
-                            DenseMatrix64F.prototype.getNumElements = function () {
-                                return this.numRows * this.numCols;
-                            };
-                            DenseMatrix64F.MULT_COLUMN_SWITCH = 15;
-                            return DenseMatrix64F;
-                        })();
-                        maths.DenseMatrix64F = DenseMatrix64F;
-                        var PolynomialFitEjml = (function () {
-                            function PolynomialFitEjml(degree) {
-                                this.coef = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(degree + 1, 1);
-                                this.A = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(1, degree + 1);
-                                this.y = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(1, 1);
-                                this.solver = new org.kevoree.modeling.extrapolation.impl.maths.AdjLinearSolverQr();
-                            }
-                            PolynomialFitEjml.prototype.getCoef = function () {
-                                return this.coef.data;
-                            };
-                            PolynomialFitEjml.prototype.fit = function (samplePoints, observations) {
-                                this.y.reshape(observations.length, 1, false);
-                                System.arraycopy(observations, 0, this.y.data, 0, observations.length);
-                                this.A.reshape(this.y.numRows, this.coef.numRows, false);
-                                for (var i = 0; i < observations.length; i++) {
-                                    var obs = 1;
-                                    for (var j = 0; j < this.coef.numRows; j++) {
-                                        this.A.cset(i, j, obs);
-                                        obs *= samplePoints[i];
-                                    }
-                                }
-                                this.solver.setA(this.A);
-                                this.solver.solve(this.y, this.coef);
-                            };
-                            return PolynomialFitEjml;
-                        })();
-                        maths.PolynomialFitEjml = PolynomialFitEjml;
-                        var QRDecompositionHouseholderColumn_D64 = (function () {
-                            function QRDecompositionHouseholderColumn_D64() {
-                            }
-                            QRDecompositionHouseholderColumn_D64.prototype.setExpectedMaxSize = function (numRows, numCols) {
-                                this.numCols = numCols;
-                                this.numRows = numRows;
-                                this.minLength = Math.min(numCols, numRows);
-                                var maxLength = Math.max(numCols, numRows);
-                                if (this.dataQR == null || this.dataQR.length < numCols || this.dataQR[0].length < numRows) {
-                                    this.dataQR = new Array(new Array());
-                                    for (var i = 0; i < numCols; i++) {
-                                        this.dataQR[i] = new Array();
-                                    }
-                                    this.v = new Array();
-                                    this.gammas = new Array();
-                                }
-                                if (this.v.length < maxLength) {
-                                    this.v = new Array();
-                                }
-                                if (this.gammas.length < this.minLength) {
-                                    this.gammas = new Array();
-                                }
-                            };
-                            QRDecompositionHouseholderColumn_D64.prototype.getQ = function (Q, compact) {
-                                if (compact) {
-                                    if (Q == null) {
-                                        Q = org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.identity(this.numRows, this.minLength);
-                                    }
-                                    else {
-                                        org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.setIdentity(Q);
-                                    }
-                                }
-                                else {
-                                    if (Q == null) {
-                                        Q = org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.widentity(this.numRows);
-                                    }
-                                    else {
-                                        org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F.setIdentity(Q);
-                                    }
-                                }
-                                for (var j = this.minLength - 1; j >= 0; j--) {
-                                    var u = this.dataQR[j];
-                                    var vv = u[j];
-                                    u[j] = 1;
-                                    org.kevoree.modeling.extrapolation.impl.maths.QRDecompositionHouseholderColumn_D64.rank1UpdateMultR(Q, u, this.gammas[j], j, j, this.numRows, this.v);
-                                    u[j] = vv;
-                                }
-                                return Q;
-                            };
-                            QRDecompositionHouseholderColumn_D64.prototype.getR = function (R, compact) {
-                                if (R == null) {
-                                    if (compact) {
-                                        R = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(this.minLength, this.numCols);
-                                    }
-                                    else {
-                                        R = new org.kevoree.modeling.extrapolation.impl.maths.DenseMatrix64F(this.numRows, this.numCols);
-                                    }
-                                }
-                                else {
-                                    for (var i = 0; i < R.numRows; i++) {
-                                        var min = Math.min(i, R.numCols);
-                                        for (var j = 0; j < min; j++) {
-                                            R.cset(i, j, 0);
-                                        }
-                                    }
-                                }
-                                for (var j = 0; j < this.numCols; j++) {
-                                    var colR = this.dataQR[j];
-                                    var l = Math.min(j, this.numRows - 1);
-                                    for (var i = 0; i <= l; i++) {
-                                        var val = colR[i];
-                                        R.cset(i, j, val);
-                                    }
-                                }
-                                return R;
-                            };
-                            QRDecompositionHouseholderColumn_D64.prototype.decompose = function (A) {
-                                this.setExpectedMaxSize(A.numRows, A.numCols);
-                                this.convertToColumnMajor(A);
-                                this.error = false;
-                                for (var j = 0; j < this.minLength; j++) {
-                                    this.householder(j);
-                                    this.updateA(j);
-                                }
-                                return !this.error;
-                            };
-                            QRDecompositionHouseholderColumn_D64.prototype.convertToColumnMajor = function (A) {
-                                for (var x = 0; x < this.numCols; x++) {
-                                    var colQ = this.dataQR[x];
-                                    for (var y = 0; y < this.numRows; y++) {
-                                        colQ[y] = A.data[y * this.numCols + x];
-                                    }
-                                }
-                            };
-                            QRDecompositionHouseholderColumn_D64.prototype.householder = function (j) {
-                                var u = this.dataQR[j];
-                                var max = org.kevoree.modeling.extrapolation.impl.maths.QRDecompositionHouseholderColumn_D64.findMax(u, j, this.numRows - j);
-                                if (max == 0.0) {
-                                    this.gamma = 0;
-                                    this.error = true;
-                                }
-                                else {
-                                    this.tau = org.kevoree.modeling.extrapolation.impl.maths.QRDecompositionHouseholderColumn_D64.computeTauAndDivide(j, this.numRows, u, max);
-                                    var u_0 = u[j] + this.tau;
-                                    org.kevoree.modeling.extrapolation.impl.maths.QRDecompositionHouseholderColumn_D64.divideElements(j + 1, this.numRows, u, u_0);
-                                    this.gamma = u_0 / this.tau;
-                                    this.tau *= max;
-                                    u[j] = -this.tau;
-                                }
-                                this.gammas[j] = this.gamma;
-                            };
-                            QRDecompositionHouseholderColumn_D64.prototype.updateA = function (w) {
-                                var u = this.dataQR[w];
-                                for (var j = w + 1; j < this.numCols; j++) {
-                                    var colQ = this.dataQR[j];
-                                    var val = colQ[w];
-                                    for (var k = w + 1; k < this.numRows; k++) {
-                                        val += u[k] * colQ[k];
-                                    }
-                                    val *= this.gamma;
-                                    colQ[w] -= val;
-                                    for (var i = w + 1; i < this.numRows; i++) {
-                                        colQ[i] -= u[i] * val;
-                                    }
-                                }
-                            };
-                            QRDecompositionHouseholderColumn_D64.findMax = function (u, startU, length) {
-                                var max = -1;
-                                var index = startU;
-                                var stopIndex = startU + length;
-                                for (; index < stopIndex; index++) {
-                                    var val = u[index];
-                                    val = (val < 0.0) ? -val : val;
-                                    if (val > max) {
-                                        max = val;
-                                    }
-                                }
-                                return max;
-                            };
-                            QRDecompositionHouseholderColumn_D64.divideElements = function (j, numRows, u, u_0) {
-                                for (var i = j; i < numRows; i++) {
-                                    u[i] /= u_0;
-                                }
-                            };
-                            QRDecompositionHouseholderColumn_D64.computeTauAndDivide = function (j, numRows, u, max) {
-                                var tau = 0;
-                                for (var i = j; i < numRows; i++) {
-                                    var d = u[i] /= max;
-                                    tau += d * d;
-                                }
-                                tau = Math.sqrt(tau);
-                                if (u[j] < 0) {
-                                    tau = -tau;
-                                }
-                                return tau;
-                            };
-                            QRDecompositionHouseholderColumn_D64.rank1UpdateMultR = function (A, u, gamma, colA0, w0, w1, _temp) {
-                                for (var i = colA0; i < A.numCols; i++) {
-                                    _temp[i] = u[w0] * A.data[w0 * A.numCols + i];
-                                }
-                                for (var k = w0 + 1; k < w1; k++) {
-                                    var indexA = k * A.numCols + colA0;
-                                    var valU = u[k];
-                                    for (var i = colA0; i < A.numCols; i++) {
-                                        _temp[i] += valU * A.data[indexA++];
-                                    }
-                                }
-                                for (var i = colA0; i < A.numCols; i++) {
-                                    _temp[i] *= gamma;
-                                }
-                                for (var i = w0; i < w1; i++) {
-                                    var valU = u[i];
-                                    var indexA = i * A.numCols + colA0;
-                                    for (var j = colA0; j < A.numCols; j++) {
-                                        A.data[indexA++] -= valU * _temp[j];
-                                    }
-                                }
-                            };
-                            return QRDecompositionHouseholderColumn_D64;
-                        })();
-                        maths.QRDecompositionHouseholderColumn_D64 = QRDecompositionHouseholderColumn_D64;
-                    })(maths = impl.maths || (impl.maths = {}));
                 })(impl = extrapolation.impl || (extrapolation.impl = {}));
             })(extrapolation = modeling.extrapolation || (modeling.extrapolation = {}));
             var format;
@@ -3578,929 +3291,222 @@ var org;
             })(format = modeling.format || (modeling.format = {}));
             var infer;
             (function (infer) {
-                var AnalyticKInfer = (function () {
-                    function AnalyticKInfer() {
-                    }
-                    return AnalyticKInfer;
-                })();
-                infer.AnalyticKInfer = AnalyticKInfer;
-                var GaussianClassificationKInfer = (function () {
-                    function GaussianClassificationKInfer() {
-                        this.alpha = 0.05;
-                    }
-                    GaussianClassificationKInfer.prototype.getAlpha = function () {
-                        return this.alpha;
-                    };
-                    GaussianClassificationKInfer.prototype.setAlpha = function (alpha) {
-                        this.alpha = alpha;
-                    };
-                    return GaussianClassificationKInfer;
-                })();
-                infer.GaussianClassificationKInfer = GaussianClassificationKInfer;
-                var KInferState = (function () {
-                    function KInferState() {
-                    }
-                    KInferState.prototype.save = function () {
-                        throw "Abstract method";
-                    };
-                    KInferState.prototype.load = function (payload) {
-                        throw "Abstract method";
-                    };
-                    KInferState.prototype.isDirty = function () {
-                        throw "Abstract method";
-                    };
-                    KInferState.prototype.cloneState = function () {
-                        throw "Abstract method";
-                    };
-                    return KInferState;
-                })();
-                infer.KInferState = KInferState;
-                var LinearRegressionKInfer = (function () {
-                    function LinearRegressionKInfer() {
-                        this.alpha = 0.0001;
-                        this.iterations = 100;
-                    }
-                    LinearRegressionKInfer.prototype.getAlpha = function () {
-                        return this.alpha;
-                    };
-                    LinearRegressionKInfer.prototype.setAlpha = function (alpha) {
-                        this.alpha = alpha;
-                    };
-                    LinearRegressionKInfer.prototype.getIterations = function () {
-                        return this.iterations;
-                    };
-                    LinearRegressionKInfer.prototype.setIterations = function (iterations) {
-                        this.iterations = iterations;
-                    };
-                    LinearRegressionKInfer.prototype.calculate = function (weights, features) {
-                        var result = 0;
-                        for (var i = 0; i < features.length; i++) {
-                            result += weights[i] * features[i];
+                var impl;
+                (function (impl) {
+                    var GaussianClassificationAlg = (function () {
+                        function GaussianClassificationAlg() {
+                            this.maxOutput = 3;
                         }
-                        result += weights[features.length];
-                        return result;
-                    };
-                    return LinearRegressionKInfer;
-                })();
-                infer.LinearRegressionKInfer = LinearRegressionKInfer;
-                var PerceptronClassificationKInfer = (function () {
-                    function PerceptronClassificationKInfer() {
-                        this.alpha = 0.001;
-                        this.iterations = 100;
-                    }
-                    PerceptronClassificationKInfer.prototype.getAlpha = function () {
-                        return this.alpha;
-                    };
-                    PerceptronClassificationKInfer.prototype.setAlpha = function (alpha) {
-                        this.alpha = alpha;
-                    };
-                    PerceptronClassificationKInfer.prototype.getIterations = function () {
-                        return this.iterations;
-                    };
-                    PerceptronClassificationKInfer.prototype.setIterations = function (iterations) {
-                        this.iterations = iterations;
-                    };
-                    PerceptronClassificationKInfer.prototype.calculate = function (weights, features) {
-                        var res = 0;
-                        for (var i = 0; i < features.length; i++) {
-                            res = res + weights[i] * (features[i]);
-                        }
-                        res = res + weights[features.length];
-                        if (res >= 0) {
-                            return 1;
-                        }
-                        else {
-                            return 0;
-                        }
-                    };
-                    return PerceptronClassificationKInfer;
-                })();
-                infer.PerceptronClassificationKInfer = PerceptronClassificationKInfer;
-                var PolynomialOfflineKInfer = (function () {
-                    function PolynomialOfflineKInfer() {
-                        this.maxDegree = 20;
-                        this.toleratedErr = 0.01;
-                    }
-                    PolynomialOfflineKInfer.prototype.getToleratedErr = function () {
-                        return this.toleratedErr;
-                    };
-                    PolynomialOfflineKInfer.prototype.setToleratedErr = function (toleratedErr) {
-                        this.toleratedErr = toleratedErr;
-                    };
-                    PolynomialOfflineKInfer.prototype.getMaxDegree = function () {
-                        return this.maxDegree;
-                    };
-                    PolynomialOfflineKInfer.prototype.setMaxDegree = function (maxDegree) {
-                        this.maxDegree = maxDegree;
-                    };
-                    return PolynomialOfflineKInfer;
-                })();
-                infer.PolynomialOfflineKInfer = PolynomialOfflineKInfer;
-                var PolynomialOnlineKInfer = (function () {
-                    function PolynomialOnlineKInfer() {
-                        this.maxDegree = 20;
-                        this.toleratedErr = 0.01;
-                    }
-                    PolynomialOnlineKInfer.prototype.getToleratedErr = function () {
-                        return this.toleratedErr;
-                    };
-                    PolynomialOnlineKInfer.prototype.setToleratedErr = function (toleratedErr) {
-                        this.toleratedErr = toleratedErr;
-                    };
-                    PolynomialOnlineKInfer.prototype.getMaxDegree = function () {
-                        return this.maxDegree;
-                    };
-                    PolynomialOnlineKInfer.prototype.setMaxDegree = function (maxDegree) {
-                        this.maxDegree = maxDegree;
-                    };
-                    PolynomialOnlineKInfer.prototype.calculateLong = function (time, weights, timeOrigin, unit) {
-                        var t = (time - timeOrigin) / unit;
-                        return this.calculate(weights, t);
-                    };
-                    PolynomialOnlineKInfer.prototype.calculate = function (weights, t) {
-                        var result = 0;
-                        var power = 1;
-                        for (var j = 0; j < weights.length; j++) {
-                            result += weights[j] * power;
-                            power = power * t;
-                        }
-                        return result;
-                    };
-                    return PolynomialOnlineKInfer;
-                })();
-                infer.PolynomialOnlineKInfer = PolynomialOnlineKInfer;
-                var WinnowClassificationKInfer = (function () {
-                    function WinnowClassificationKInfer() {
-                        this.alpha = 2;
-                        this.beta = 2;
-                    }
-                    WinnowClassificationKInfer.prototype.getAlpha = function () {
-                        return this.alpha;
-                    };
-                    WinnowClassificationKInfer.prototype.setAlpha = function (alpha) {
-                        this.alpha = alpha;
-                    };
-                    WinnowClassificationKInfer.prototype.getBeta = function () {
-                        return this.beta;
-                    };
-                    WinnowClassificationKInfer.prototype.setBeta = function (beta) {
-                        this.beta = beta;
-                    };
-                    WinnowClassificationKInfer.prototype.calculate = function (weights, features) {
-                        var result = 0;
-                        for (var i = 0; i < features.length; i++) {
-                            result += weights[i] * features[i];
-                        }
-                        if (result >= features.length) {
-                            return 1.0;
-                        }
-                        else {
-                            return 0.0;
-                        }
-                    };
-                    return WinnowClassificationKInfer;
-                })();
-                infer.WinnowClassificationKInfer = WinnowClassificationKInfer;
-                var states;
-                (function (states) {
-                    var AnalyticKInferState = (function (_super) {
-                        __extends(AnalyticKInferState, _super);
-                        function AnalyticKInferState() {
-                            _super.apply(this, arguments);
-                            this._isDirty = false;
-                            this.sumSquares = 0;
-                            this.sum = 0;
-                            this.nb = 0;
-                        }
-                        AnalyticKInferState.prototype.getSumSquares = function () {
-                            return this.sumSquares;
+                        GaussianClassificationAlg.prototype.getIndex = function (input, output, field, meta) {
+                            return output * (GaussianClassificationAlg.NUMOFFIELDS * meta.origin().inputs().length + 1) + GaussianClassificationAlg.NUMOFFIELDS * input + field;
                         };
-                        AnalyticKInferState.prototype.setSumSquares = function (sumSquares) {
-                            this.sumSquares = sumSquares;
+                        GaussianClassificationAlg.prototype.getCounter = function (output, meta) {
+                            return output * (GaussianClassificationAlg.NUMOFFIELDS * meta.origin().inputs().length + 1) + GaussianClassificationAlg.NUMOFFIELDS * meta.origin().inputs().length;
                         };
-                        AnalyticKInferState.prototype.getMin = function () {
-                            return this.min;
-                        };
-                        AnalyticKInferState.prototype.setMin = function (min) {
-                            this._isDirty = true;
-                            this.min = min;
-                        };
-                        AnalyticKInferState.prototype.getMax = function () {
-                            return this.max;
-                        };
-                        AnalyticKInferState.prototype.setMax = function (max) {
-                            this._isDirty = true;
-                            this.max = max;
-                        };
-                        AnalyticKInferState.prototype.getNb = function () {
-                            return this.nb;
-                        };
-                        AnalyticKInferState.prototype.setNb = function (nb) {
-                            this._isDirty = true;
-                            this.nb = nb;
-                        };
-                        AnalyticKInferState.prototype.getSum = function () {
-                            return this.sum;
-                        };
-                        AnalyticKInferState.prototype.setSum = function (sum) {
-                            this._isDirty = true;
-                            this.sum = sum;
-                        };
-                        AnalyticKInferState.prototype.getAverage = function () {
-                            if (this.nb != 0) {
-                                return this.sum / this.nb;
-                            }
-                            else {
-                                return null;
-                            }
-                        };
-                        AnalyticKInferState.prototype.train = function (value) {
-                            if (this.nb == 0) {
-                                this.max = value;
-                                this.min = value;
-                            }
-                            else {
-                                if (value < this.min) {
-                                    this.min = value;
-                                }
-                                if (value > this.max) {
-                                    this.max = value;
+                        GaussianClassificationAlg.prototype.getAvg = function (output, state, meta) {
+                            var avg = new Array();
+                            var total = state.get(this.getCounter(output, meta));
+                            if (total != 0) {
+                                for (var i = 0; i < meta.origin().inputs().length; i++) {
+                                    avg[i] = state.get(this.getIndex(i, output, GaussianClassificationAlg.SUM, meta)) / total;
                                 }
                             }
-                            this.sum += value;
-                            this.sumSquares += value * value;
-                            this.nb++;
-                            this._isDirty = true;
+                            return avg;
                         };
-                        AnalyticKInferState.prototype.getVariance = function () {
-                            if (this.nb != 0) {
-                                var avg = this.sum / this.nb;
-                                var newvar = this.sumSquares / this.nb - avg * avg;
-                                return newvar;
-                            }
-                            else {
-                                return null;
-                            }
-                        };
-                        AnalyticKInferState.prototype.clear = function () {
-                            this.nb = 0;
-                            this.sum = 0;
-                            this.sumSquares = 0;
-                            this._isDirty = true;
-                        };
-                        AnalyticKInferState.prototype.save = function () {
-                            return this.sum + "/" + this.nb + "/" + this.min + "/" + this.max + "/" + this.sumSquares;
-                        };
-                        AnalyticKInferState.prototype.load = function (payload) {
-                            try {
-                                var previousState = payload.split("/");
-                                this.sum = java.lang.Double.parseDouble(previousState[0]);
-                                this.nb = java.lang.Integer.parseInt(previousState[1]);
-                                this.min = java.lang.Double.parseDouble(previousState[2]);
-                                this.max = java.lang.Double.parseDouble(previousState[3]);
-                                this.sumSquares = java.lang.Double.parseDouble(previousState[4]);
-                            }
-                            catch ($ex$) {
-                                if ($ex$ instanceof java.lang.Exception) {
-                                    var e = $ex$;
-                                    this.sum = 0;
-                                    this.nb = 0;
-                                }
-                                else {
-                                    throw $ex$;
+                        GaussianClassificationAlg.prototype.getVariance = function (output, state, avg, meta) {
+                            var variances = new Array();
+                            var total = state.get(this.getCounter(output, meta));
+                            if (total != 0) {
+                                for (var i = 0; i < meta.origin().inputs().length; i++) {
+                                    variances[i] = state.get(this.getIndex(i, output, GaussianClassificationAlg.SUMSQUARE, meta)) / total - avg[i] * avg[i];
                                 }
                             }
-                            this._isDirty = false;
+                            return variances;
                         };
-                        AnalyticKInferState.prototype.isDirty = function () {
-                            return this._isDirty;
-                        };
-                        AnalyticKInferState.prototype.cloneState = function () {
-                            var cloned = new org.kevoree.modeling.infer.states.AnalyticKInferState();
-                            cloned.setSumSquares(this.getSumSquares());
-                            cloned.setNb(this.getNb());
-                            cloned.setSum(this.getSum());
-                            cloned.setMax(this.getMax());
-                            cloned.setMin(this.getMin());
-                            return cloned;
-                        };
-                        return AnalyticKInferState;
-                    })(org.kevoree.modeling.infer.KInferState);
-                    states.AnalyticKInferState = AnalyticKInferState;
-                    var BayesianClassificationState = (function (_super) {
-                        __extends(BayesianClassificationState, _super);
-                        function BayesianClassificationState() {
-                            _super.apply(this, arguments);
-                        }
-                        BayesianClassificationState.prototype.initialize = function (metaFeatures, MetaClassification) {
-                            this.numOfFeatures = metaFeatures.length;
-                            this.numOfClasses = 0;
-                            this.states = new Array(new Array());
-                            this.classStats = new org.kevoree.modeling.infer.states.Bayesian.EnumSubstate();
-                            this.classStats.initialize(this.numOfClasses);
-                            for (var i = 0; i < this.numOfFeatures; i++) {
+                        GaussianClassificationAlg.prototype.train = function (trainingSet, expectedResultSet, origin) {
+                            var ks = origin.manager().segment(origin.universe(), origin.now(), origin.uuid(), false, origin.metaClass(), null);
+                            var dependenciesIndex = origin.metaClass().dependencies().index();
+                            if (ks.getInferSize(dependenciesIndex, origin.metaClass()) == 0) {
+                                ks.extendInfer(origin.metaClass().dependencies().index(), this.maxOutput * (origin.metaClass().inputs().length * GaussianClassificationAlg.NUMOFFIELDS + 1), origin.metaClass());
                             }
-                        };
-                        BayesianClassificationState.prototype.predict = function (features) {
-                            var temp;
-                            var prediction = -1;
-                            var max = 0;
-                            for (var i = 0; i < this.numOfClasses; i++) {
-                                temp = this.classStats.calculateProbability(i);
-                                for (var j = 0; j < this.numOfFeatures; j++) {
-                                    temp = temp * this.states[i][j].calculateProbability(features[j]);
-                                }
-                                if (temp >= max) {
-                                    max = temp;
-                                    prediction = i;
-                                }
-                            }
-                            return prediction;
-                        };
-                        BayesianClassificationState.prototype.train = function (features, classNum) {
-                            for (var i = 0; i < this.numOfFeatures; i++) {
-                                this.states[classNum][i].train(features[i]);
-                                this.states[this.numOfClasses][i].train(features[i]);
-                            }
-                            this.classStats.train(classNum);
-                        };
-                        BayesianClassificationState.prototype.save = function () {
-                            var sb = new java.lang.StringBuilder();
-                            sb.append(this.numOfClasses + BayesianClassificationState.interStateSep);
-                            sb.append(this.numOfFeatures + BayesianClassificationState.interStateSep);
-                            for (var i = 0; i < this.numOfClasses + 1; i++) {
-                                for (var j = 0; j < this.numOfFeatures; j++) {
-                                    sb.append(this.states[i][j].save(BayesianClassificationState.stateSep));
-                                    sb.append(BayesianClassificationState.interStateSep);
-                                }
-                            }
-                            sb.append(this.classStats.save(BayesianClassificationState.stateSep));
-                            return sb.toString();
-                        };
-                        BayesianClassificationState.prototype.load = function (payload) {
-                            var st = payload.split(BayesianClassificationState.interStateSep);
-                            this.numOfClasses = java.lang.Integer.parseInt(st[0]);
-                            this.numOfFeatures = java.lang.Integer.parseInt(st[1]);
-                            this.states = new Array(new Array());
-                            var counter = 2;
-                            for (var i = 0; i < this.numOfClasses + 1; i++) {
-                                for (var j = 0; j < this.numOfFeatures; j++) {
-                                    var s = st[counter].split(BayesianClassificationState.stateSep)[0];
-                                    if (s.equals("EnumSubstate")) {
-                                        this.states[i][j] = new org.kevoree.modeling.infer.states.Bayesian.EnumSubstate();
+                            var state = new org.kevoree.modeling.util.maths.structure.impl.Array1D(this.maxOutput * (origin.metaClass().inputs().length * GaussianClassificationAlg.NUMOFFIELDS + 1), 0, origin.metaClass().dependencies().index(), ks, origin.metaClass());
+                            for (var i = 0; i < trainingSet.length; i++) {
+                                var output = expectedResultSet[i][0];
+                                for (var j = 0; j < origin.metaClass().inputs().length; j++) {
+                                    if (state.get(this.getCounter(output, origin.metaClass().dependencies())) == 0) {
+                                        state.set(this.getIndex(j, output, GaussianClassificationAlg.MIN, origin.metaClass().dependencies()), trainingSet[i][j]);
+                                        state.set(this.getIndex(j, output, GaussianClassificationAlg.MAX, origin.metaClass().dependencies()), trainingSet[i][j]);
+                                        state.set(this.getIndex(j, output, GaussianClassificationAlg.SUM, origin.metaClass().dependencies()), trainingSet[i][j]);
+                                        state.set(this.getIndex(j, output, GaussianClassificationAlg.SUMSQUARE, origin.metaClass().dependencies()), trainingSet[i][j] * trainingSet[i][j]);
                                     }
                                     else {
-                                        if (s.equals("GaussianSubState")) {
-                                            this.states[i][j] = new org.kevoree.modeling.infer.states.Bayesian.GaussianSubState();
+                                        if (trainingSet[i][j] < state.get(this.getIndex(j, output, GaussianClassificationAlg.MIN, origin.metaClass().dependencies()))) {
+                                            state.set(this.getIndex(j, output, GaussianClassificationAlg.MIN, origin.metaClass().dependencies()), trainingSet[i][j]);
                                         }
-                                    }
-                                    s = st[counter].substring(s.length + 1);
-                                    this.states[i][j].load(s, BayesianClassificationState.stateSep);
-                                    counter++;
-                                }
-                            }
-                            var s = st[counter].split(BayesianClassificationState.stateSep)[0];
-                            s = st[counter].substring(s.length + 1);
-                            this.classStats = new org.kevoree.modeling.infer.states.Bayesian.EnumSubstate();
-                            this.classStats.load(s, BayesianClassificationState.stateSep);
-                        };
-                        BayesianClassificationState.prototype.isDirty = function () {
-                            return false;
-                        };
-                        BayesianClassificationState.prototype.cloneState = function () {
-                            return null;
-                        };
-                        BayesianClassificationState.stateSep = "/";
-                        BayesianClassificationState.interStateSep = "|";
-                        return BayesianClassificationState;
-                    })(org.kevoree.modeling.infer.KInferState);
-                    states.BayesianClassificationState = BayesianClassificationState;
-                    var DoubleArrayKInferState = (function (_super) {
-                        __extends(DoubleArrayKInferState, _super);
-                        function DoubleArrayKInferState() {
-                            _super.apply(this, arguments);
-                            this._isDirty = false;
-                        }
-                        DoubleArrayKInferState.prototype.save = function () {
-                            var s = "";
-                            var sb = new java.lang.StringBuilder();
-                            if (this.weights != null) {
-                                for (var i = 0; i < this.weights.length; i++) {
-                                    sb.append(this.weights[i] + "/");
-                                }
-                                s = sb.toString();
-                            }
-                            return s;
-                        };
-                        DoubleArrayKInferState.prototype.load = function (payload) {
-                            try {
-                                var previousState = payload.split("/");
-                                if (previousState.length > 0) {
-                                    this.weights = new Array();
-                                    for (var i = 0; i < previousState.length; i++) {
-                                        this.weights[i] = java.lang.Double.parseDouble(previousState[i]);
+                                        if (trainingSet[i][j] > state.get(this.getIndex(j, output, GaussianClassificationAlg.MAX, origin.metaClass().dependencies()))) {
+                                            state.set(this.getIndex(j, output, GaussianClassificationAlg.MAX, origin.metaClass().dependencies()), trainingSet[i][j]);
+                                        }
+                                        state.add(this.getIndex(j, output, GaussianClassificationAlg.SUM, origin.metaClass().dependencies()), trainingSet[i][j]);
+                                        state.add(this.getIndex(j, output, GaussianClassificationAlg.SUMSQUARE, origin.metaClass().dependencies()), trainingSet[i][j] * trainingSet[i][j]);
                                     }
                                 }
+                                state.add(this.getCounter(output, origin.metaClass().dependencies()), 1);
                             }
-                            catch ($ex$) {
-                                if ($ex$ instanceof java.lang.Exception) {
-                                    var e = $ex$;
+                        };
+                        GaussianClassificationAlg.prototype.infer = function (features, origin) {
+                            var ks = origin.manager().segment(origin.universe(), origin.now(), origin.uuid(), false, origin.metaClass(), null);
+                            var state = new org.kevoree.modeling.util.maths.structure.impl.Array1D(this.maxOutput * (origin.metaClass().inputs().length * GaussianClassificationAlg.NUMOFFIELDS + 1), 0, origin.metaClass().dependencies().index(), ks, origin.metaClass());
+                            var result = new Array(new Array());
+                            var maxprob = 0;
+                            var prob = 0;
+                            for (var j = 0; j < features.length; j++) {
+                                for (var output = 0; output < this.maxOutput; output++) {
+                                    prob = this.getProba(features[j], output, state, origin.metaClass().dependencies());
+                                    if (prob > maxprob) {
+                                        maxprob = prob;
+                                        result[j][0] = output;
+                                    }
                                 }
-                                else {
-                                    throw $ex$;
-                                }
-                            }
-                            this._isDirty = false;
-                        };
-                        DoubleArrayKInferState.prototype.isDirty = function () {
-                            return this._isDirty;
-                        };
-                        DoubleArrayKInferState.prototype.set_isDirty = function (value) {
-                            this._isDirty = value;
-                        };
-                        DoubleArrayKInferState.prototype.cloneState = function () {
-                            var cloned = new org.kevoree.modeling.infer.states.DoubleArrayKInferState();
-                            var clonearray = new Array();
-                            for (var i = 0; i < this.weights.length; i++) {
-                                clonearray[i] = this.weights[i];
-                            }
-                            cloned.setWeights(clonearray);
-                            return cloned;
-                        };
-                        DoubleArrayKInferState.prototype.getWeights = function () {
-                            return this.weights;
-                        };
-                        DoubleArrayKInferState.prototype.setWeights = function (weights) {
-                            this.weights = weights;
-                            this._isDirty = true;
-                        };
-                        return DoubleArrayKInferState;
-                    })(org.kevoree.modeling.infer.KInferState);
-                    states.DoubleArrayKInferState = DoubleArrayKInferState;
-                    var GaussianArrayKInferState = (function (_super) {
-                        __extends(GaussianArrayKInferState, _super);
-                        function GaussianArrayKInferState() {
-                            _super.apply(this, arguments);
-                            this._isDirty = false;
-                            this.sumSquares = null;
-                            this.sum = null;
-                            this.epsilon = 0;
-                            this.nb = 0;
-                        }
-                        GaussianArrayKInferState.prototype.getSumSquares = function () {
-                            return this.sumSquares;
-                        };
-                        GaussianArrayKInferState.prototype.setSumSquares = function (sumSquares) {
-                            this.sumSquares = sumSquares;
-                        };
-                        GaussianArrayKInferState.prototype.getNb = function () {
-                            return this.nb;
-                        };
-                        GaussianArrayKInferState.prototype.setNb = function (nb) {
-                            this._isDirty = true;
-                            this.nb = nb;
-                        };
-                        GaussianArrayKInferState.prototype.getSum = function () {
-                            return this.sum;
-                        };
-                        GaussianArrayKInferState.prototype.setSum = function (sum) {
-                            this._isDirty = true;
-                            this.sum = sum;
-                        };
-                        GaussianArrayKInferState.prototype.calculateProbability = function (features) {
-                            var size = this.sum.length;
-                            var avg = new Array();
-                            var variances = new Array();
-                            var p = 1;
-                            for (var i = 0; i < size; i++) {
-                                avg[i] = this.sum[i] / this.nb;
-                                variances[i] = this.sumSquares[i] / this.nb - avg[i] * avg[i];
-                                p = p * (1 / Math.sqrt(2 * Math.PI * variances[i])) * Math.exp(-((features[i] - avg[i]) * (features[i] - avg[i])) / (2 * variances[i]));
-                            }
-                            return p;
-                        };
-                        GaussianArrayKInferState.prototype.infer = function (features) {
-                            return (this.calculateProbability(features) <= this.epsilon);
-                        };
-                        GaussianArrayKInferState.prototype.getAverage = function () {
-                            if (this.nb != 0) {
-                                var size = this.sum.length;
-                                var avg = new Array();
-                                for (var i = 0; i < size; i++) {
-                                    avg[i] = this.sum[i] / this.nb;
-                                }
-                                return avg;
-                            }
-                            else {
-                                return null;
-                            }
-                        };
-                        GaussianArrayKInferState.prototype.train = function (features, result, alpha) {
-                            var size = features.length;
-                            if (this.nb == 0) {
-                                this.sumSquares = new Array();
-                                this.sum = new Array();
-                            }
-                            for (var i = 0; i < size; i++) {
-                                this.sum[i] += features[i];
-                                this.sumSquares[i] += features[i] * features[i];
-                            }
-                            this.nb++;
-                            var proba = this.calculateProbability(features);
-                            var diff = proba - this.epsilon;
-                            if ((proba < this.epsilon && result == false) || (proba > this.epsilon && result == true)) {
-                                this.epsilon = this.epsilon + alpha * diff;
-                            }
-                            this._isDirty = true;
-                        };
-                        GaussianArrayKInferState.prototype.getVariance = function () {
-                            if (this.nb != 0) {
-                                var size = this.sum.length;
-                                var avg = new Array();
-                                var newvar = new Array();
-                                for (var i = 0; i < size; i++) {
-                                    avg[i] = this.sum[i] / this.nb;
-                                    newvar[i] = this.sumSquares[i] / this.nb - avg[i] * avg[i];
-                                }
-                                return newvar;
-                            }
-                            else {
-                                return null;
-                            }
-                        };
-                        GaussianArrayKInferState.prototype.clear = function () {
-                            this.nb = 0;
-                            this.sum = null;
-                            this.sumSquares = null;
-                            this._isDirty = true;
-                        };
-                        GaussianArrayKInferState.prototype.save = function () {
-                            var sb = new java.lang.StringBuilder();
-                            sb.append(this.nb + "/");
-                            sb.append(this.epsilon + "/");
-                            var size = this.sumSquares.length;
-                            for (var i = 0; i < size; i++) {
-                                sb.append(this.sum[i] + "/");
-                            }
-                            for (var i = 0; i < size; i++) {
-                                sb.append(this.sumSquares[i] + "/");
-                            }
-                            return sb.toString();
-                        };
-                        GaussianArrayKInferState.prototype.load = function (payload) {
-                            try {
-                                var previousState = payload.split("/");
-                                this.nb = java.lang.Integer.parseInt(previousState[0]);
-                                this.epsilon = java.lang.Double.parseDouble(previousState[1]);
-                                var size = (previousState.length - 2) / 2;
-                                this.sum = new Array();
-                                this.sumSquares = new Array();
-                                for (var i = 0; i < size; i++) {
-                                    this.sum[i] = java.lang.Double.parseDouble(previousState[i + 2]);
-                                }
-                                for (var i = 0; i < size; i++) {
-                                    this.sumSquares[i] = java.lang.Double.parseDouble(previousState[i + 2 + size]);
-                                }
-                            }
-                            catch ($ex$) {
-                                if ($ex$ instanceof java.lang.Exception) {
-                                    var e = $ex$;
-                                    this.sum = null;
-                                    this.sumSquares = null;
-                                    this.nb = 0;
-                                }
-                                else {
-                                    throw $ex$;
-                                }
-                            }
-                            this._isDirty = false;
-                        };
-                        GaussianArrayKInferState.prototype.isDirty = function () {
-                            return this._isDirty;
-                        };
-                        GaussianArrayKInferState.prototype.cloneState = function () {
-                            var cloned = new org.kevoree.modeling.infer.states.GaussianArrayKInferState();
-                            cloned.setNb(this.getNb());
-                            if (this.nb != 0) {
-                                var newSum = new Array();
-                                var newSumSquares = new Array();
-                                for (var i = 0; i < this.sum.length; i++) {
-                                    newSum[i] = this.sum[i];
-                                    newSumSquares[i] = this.sumSquares[i];
-                                }
-                                cloned.setSum(newSum);
-                                cloned.setSumSquares(newSumSquares);
-                            }
-                            return cloned;
-                        };
-                        GaussianArrayKInferState.prototype.getEpsilon = function () {
-                            return this.epsilon;
-                        };
-                        return GaussianArrayKInferState;
-                    })(org.kevoree.modeling.infer.KInferState);
-                    states.GaussianArrayKInferState = GaussianArrayKInferState;
-                    var PolynomialKInferState = (function (_super) {
-                        __extends(PolynomialKInferState, _super);
-                        function PolynomialKInferState() {
-                            _super.apply(this, arguments);
-                            this._isDirty = false;
-                        }
-                        PolynomialKInferState.prototype.getTimeOrigin = function () {
-                            return this.timeOrigin;
-                        };
-                        PolynomialKInferState.prototype.setTimeOrigin = function (timeOrigin) {
-                            this.timeOrigin = timeOrigin;
-                        };
-                        PolynomialKInferState.prototype.is_isDirty = function () {
-                            return this._isDirty;
-                        };
-                        PolynomialKInferState.prototype.getUnit = function () {
-                            return this.unit;
-                        };
-                        PolynomialKInferState.prototype.setUnit = function (unit) {
-                            this.unit = unit;
-                        };
-                        PolynomialKInferState.maxError = function (coef, normalizedTimes, results) {
-                            var maxErr = 0;
-                            var temp = 0;
-                            for (var i = 0; i < normalizedTimes.length; i++) {
-                                var val = org.kevoree.modeling.infer.states.PolynomialKInferState.internal_extrapolate(normalizedTimes[i], coef);
-                                temp = Math.abs(val - results[i]);
-                                if (temp > maxErr) {
-                                    maxErr = temp;
-                                }
-                            }
-                            return maxErr;
-                        };
-                        PolynomialKInferState.internal_extrapolate = function (normalizedTime, coef) {
-                            var result = 0;
-                            var power = 1;
-                            for (var j = 0; j < coef.length; j++) {
-                                result += coef[j] * power;
-                                power = power * normalizedTime;
                             }
                             return result;
                         };
-                        PolynomialKInferState.prototype.save = function () {
-                            var s = "";
-                            var sb = new java.lang.StringBuilder();
-                            sb.append(this.timeOrigin + "/");
-                            sb.append(this.unit + "/");
-                            if (this.weights != null) {
-                                for (var i = 0; i < this.weights.length; i++) {
-                                    sb.append(this.weights[i] + "/");
-                                }
-                                s = sb.toString();
+                        GaussianClassificationAlg.prototype.getProba = function (features, output, state, meta) {
+                            var prob = 0;
+                            var avg = this.getAvg(output, state, meta);
+                            var variance = this.getVariance(output, state, avg, meta);
+                            prob = org.kevoree.modeling.util.maths.Distribution.gaussian(features, avg, variance);
+                            return prob;
+                        };
+                        GaussianClassificationAlg.prototype.getAllProba = function (features, state, meta) {
+                            var results = new Array();
+                            for (var i = 0; i < this.maxOutput; i++) {
+                                results[i] = this.getProba(features, i, state, meta);
                             }
-                            return s;
+                            return results;
                         };
-                        PolynomialKInferState.prototype.load = function (payload) {
-                            try {
-                                var previousState = payload.split("/");
-                                if (previousState.length > 0) {
-                                    this.timeOrigin = java.lang.Long.parseLong(previousState[0]);
-                                    this.unit = java.lang.Long.parseLong(previousState[1]);
-                                    var size = previousState.length - 2;
-                                    this.weights = new Array();
-                                    for (var i = 0; i < size; i++) {
-                                        this.weights[i] = java.lang.Double.parseDouble(previousState[i - 2]);
-                                    }
-                                }
+                        GaussianClassificationAlg.MIN = 0;
+                        GaussianClassificationAlg.MAX = 1;
+                        GaussianClassificationAlg.SUM = 2;
+                        GaussianClassificationAlg.SUMSQUARE = 3;
+                        GaussianClassificationAlg.NUMOFFIELDS = 4;
+                        return GaussianClassificationAlg;
+                    })();
+                    impl.GaussianClassificationAlg = GaussianClassificationAlg;
+                    var StatInferAlg = (function () {
+                        function StatInferAlg() {
+                        }
+                        StatInferAlg.prototype.train = function (trainingSet, expectedResultSet, origin) {
+                            var ks = origin.manager().segment(origin.universe(), origin.now(), origin.uuid(), false, origin.metaClass(), null);
+                            var dependenciesIndex = origin.metaClass().dependencies().index();
+                            if (ks.getInferSize(dependenciesIndex, origin.metaClass()) == 0) {
+                                ks.extendInfer(dependenciesIndex, StatInferAlg.NUMOFFIELDS * trainingSet[0].length + 1, origin.metaClass());
                             }
-                            catch ($ex$) {
-                                if ($ex$ instanceof java.lang.Exception) {
-                                    var e = $ex$;
-                                }
-                                else {
-                                    throw $ex$;
-                                }
-                            }
-                            this._isDirty = false;
-                        };
-                        PolynomialKInferState.prototype.isDirty = function () {
-                            return this._isDirty;
-                        };
-                        PolynomialKInferState.prototype.set_isDirty = function (value) {
-                            this._isDirty = value;
-                        };
-                        PolynomialKInferState.prototype.cloneState = function () {
-                            var cloned = new org.kevoree.modeling.infer.states.PolynomialKInferState();
-                            var clonearray = new Array();
-                            for (var i = 0; i < this.weights.length; i++) {
-                                clonearray[i] = this.weights[i];
-                            }
-                            cloned.setWeights(clonearray);
-                            cloned.setTimeOrigin(this.getTimeOrigin());
-                            cloned.setUnit(this.getUnit());
-                            return cloned;
-                        };
-                        PolynomialKInferState.prototype.getWeights = function () {
-                            return this.weights;
-                        };
-                        PolynomialKInferState.prototype.setWeights = function (weights) {
-                            this.weights = weights;
-                            this._isDirty = true;
-                        };
-                        PolynomialKInferState.prototype.infer = function (time) {
-                            var t = (time - this.timeOrigin) / this.unit;
-                            return org.kevoree.modeling.infer.states.PolynomialKInferState.internal_extrapolate(t, this.weights);
-                        };
-                        return PolynomialKInferState;
-                    })(org.kevoree.modeling.infer.KInferState);
-                    states.PolynomialKInferState = PolynomialKInferState;
-                    var Bayesian;
-                    (function (Bayesian) {
-                        var BayesianSubstate = (function () {
-                            function BayesianSubstate() {
-                            }
-                            BayesianSubstate.prototype.calculateProbability = function (feature) {
-                                throw "Abstract method";
-                            };
-                            BayesianSubstate.prototype.train = function (feature) {
-                                throw "Abstract method";
-                            };
-                            BayesianSubstate.prototype.save = function (separator) {
-                                throw "Abstract method";
-                            };
-                            BayesianSubstate.prototype.load = function (payload, separator) {
-                                throw "Abstract method";
-                            };
-                            BayesianSubstate.prototype.cloneState = function () {
-                                throw "Abstract method";
-                            };
-                            return BayesianSubstate;
-                        })();
-                        Bayesian.BayesianSubstate = BayesianSubstate;
-                        var EnumSubstate = (function (_super) {
-                            __extends(EnumSubstate, _super);
-                            function EnumSubstate() {
-                                _super.apply(this, arguments);
-                                this.total = 0;
-                            }
-                            EnumSubstate.prototype.getCounter = function () {
-                                return this.counter;
-                            };
-                            EnumSubstate.prototype.setCounter = function (counter) {
-                                this.counter = counter;
-                            };
-                            EnumSubstate.prototype.getTotal = function () {
-                                return this.total;
-                            };
-                            EnumSubstate.prototype.setTotal = function (total) {
-                                this.total = total;
-                            };
-                            EnumSubstate.prototype.initialize = function (number) {
-                                this.counter = new Array();
-                            };
-                            EnumSubstate.prototype.calculateProbability = function (feature) {
-                                var res = feature;
-                                var p = this.counter[res];
-                                if (this.total != 0) {
-                                    return p / this.total;
-                                }
-                                else {
-                                    return 0;
-                                }
-                            };
-                            EnumSubstate.prototype.train = function (feature) {
-                                var res = feature;
-                                this.counter[res]++;
-                                this.total++;
-                            };
-                            EnumSubstate.prototype.save = function (separator) {
-                                if (this.counter == null || this.counter.length == 0) {
-                                    return "EnumSubstate" + separator;
-                                }
-                                var sb = new java.lang.StringBuilder();
-                                sb.append("EnumSubstate" + separator);
-                                for (var i = 0; i < this.counter.length; i++) {
-                                    sb.append(this.counter[i] + separator);
-                                }
-                                return sb.toString();
-                            };
-                            EnumSubstate.prototype.load = function (payload, separator) {
-                                var res = payload.split(separator);
-                                this.counter = new Array();
-                                this.total = 0;
-                                for (var i = 0; i < res.length; i++) {
-                                    this.counter[i] = java.lang.Integer.parseInt(res[i]);
-                                    this.total += this.counter[i];
-                                }
-                            };
-                            EnumSubstate.prototype.cloneState = function () {
-                                var cloned = new org.kevoree.modeling.infer.states.Bayesian.EnumSubstate();
-                                var newCounter = new Array();
-                                for (var i = 0; i < this.counter.length; i++) {
-                                    newCounter[i] = this.counter[i];
-                                }
-                                cloned.setCounter(newCounter);
-                                cloned.setTotal(this.total);
-                                return cloned;
-                            };
-                            return EnumSubstate;
-                        })(org.kevoree.modeling.infer.states.Bayesian.BayesianSubstate);
-                        Bayesian.EnumSubstate = EnumSubstate;
-                        var GaussianSubState = (function (_super) {
-                            __extends(GaussianSubState, _super);
-                            function GaussianSubState() {
-                                _super.apply(this, arguments);
-                                this.sumSquares = 0;
-                                this.sum = 0;
-                                this.nb = 0;
-                            }
-                            GaussianSubState.prototype.getSumSquares = function () {
-                                return this.sumSquares;
-                            };
-                            GaussianSubState.prototype.setSumSquares = function (sumSquares) {
-                                this.sumSquares = sumSquares;
-                            };
-                            GaussianSubState.prototype.getNb = function () {
-                                return this.nb;
-                            };
-                            GaussianSubState.prototype.setNb = function (nb) {
-                                this.nb = nb;
-                            };
-                            GaussianSubState.prototype.getSum = function () {
-                                return this.sum;
-                            };
-                            GaussianSubState.prototype.setSum = function (sum) {
-                                this.sum = sum;
-                            };
-                            GaussianSubState.prototype.calculateProbability = function (feature) {
-                                var fet = feature;
-                                var avg = this.sum / this.nb;
-                                var variances = this.sumSquares / this.nb - avg * avg;
-                                return (1 / Math.sqrt(2 * Math.PI * variances)) * Math.exp(-((fet - avg) * (fet - avg)) / (2 * variances));
-                            };
-                            GaussianSubState.prototype.getAverage = function () {
-                                if (this.nb != 0) {
-                                    var avg = this.sum / this.nb;
-                                    return avg;
-                                }
-                                else {
-                                    return null;
-                                }
-                            };
-                            GaussianSubState.prototype.train = function (feature) {
-                                var fet = feature;
-                                this.sum += fet;
-                                this.sumSquares += fet * fet;
-                                this.nb++;
-                            };
-                            GaussianSubState.prototype.getVariance = function () {
-                                if (this.nb != 0) {
-                                    var avg = this.sum / this.nb;
-                                    var newvar = this.sumSquares / this.nb - avg * avg;
-                                    return newvar;
-                                }
-                                else {
-                                    return null;
-                                }
-                            };
-                            GaussianSubState.prototype.clear = function () {
-                                this.nb = 0;
-                                this.sum = 0;
-                                this.sumSquares = 0;
-                            };
-                            GaussianSubState.prototype.save = function (separator) {
-                                var sb = new java.lang.StringBuilder();
-                                sb.append("GaussianSubState" + separator);
-                                sb.append(this.nb + separator);
-                                sb.append(this.sum + separator);
-                                sb.append(this.sumSquares);
-                                return sb.toString();
-                            };
-                            GaussianSubState.prototype.load = function (payload, separator) {
-                                try {
-                                    var previousState = payload.split(separator);
-                                    this.nb = java.lang.Integer.parseInt(previousState[0]);
-                                    this.sum = java.lang.Double.parseDouble(previousState[1]);
-                                    this.sumSquares = java.lang.Double.parseDouble(previousState[2]);
-                                }
-                                catch ($ex$) {
-                                    if ($ex$ instanceof java.lang.Exception) {
-                                        var e = $ex$;
-                                        this.sum = 0;
-                                        this.sumSquares = 0;
-                                        this.nb = 0;
+                            var state = new org.kevoree.modeling.util.maths.structure.impl.Array1D(StatInferAlg.NUMOFFIELDS * trainingSet[0].length + 1, 0, dependenciesIndex, ks, origin.metaClass());
+                            for (var i = 0; i < trainingSet.length; i++) {
+                                for (var j = 0; j < origin.metaClass().inputs().length; j++) {
+                                    if (state.get(StatInferAlg.NUMOFFIELDS * trainingSet[0].length) == 0) {
+                                        state.set(StatInferAlg.MIN + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j]);
+                                        state.set(StatInferAlg.MAX + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j]);
+                                        state.set(StatInferAlg.SUM + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j]);
+                                        state.set(StatInferAlg.SUMSQuare + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j] * trainingSet[i][j]);
                                     }
                                     else {
-                                        throw $ex$;
+                                        if (trainingSet[i][j] < state.get(StatInferAlg.MIN + j * StatInferAlg.NUMOFFIELDS)) {
+                                            state.set(StatInferAlg.MIN + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j]);
+                                        }
+                                        if (trainingSet[i][j] > state.get(StatInferAlg.MAX + j * StatInferAlg.NUMOFFIELDS)) {
+                                            state.set(StatInferAlg.MAX + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j]);
+                                        }
+                                        state.add(StatInferAlg.SUM + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j]);
+                                        state.add(StatInferAlg.SUMSQuare + j * StatInferAlg.NUMOFFIELDS, trainingSet[i][j] * trainingSet[i][j]);
                                     }
                                 }
-                            };
-                            GaussianSubState.prototype.cloneState = function () {
-                                var cloned = new org.kevoree.modeling.infer.states.Bayesian.GaussianSubState();
-                                cloned.setNb(this.getNb());
-                                cloned.setSum(this.getSum());
-                                cloned.setSumSquares(this.getSumSquares());
-                                return cloned;
-                            };
-                            return GaussianSubState;
-                        })(org.kevoree.modeling.infer.states.Bayesian.BayesianSubstate);
-                        Bayesian.GaussianSubState = GaussianSubState;
-                    })(Bayesian = states.Bayesian || (states.Bayesian = {}));
-                })(states = infer.states || (infer.states = {}));
+                                state.add(StatInferAlg.NUMOFFIELDS * origin.metaClass().inputs().length, 1);
+                            }
+                        };
+                        StatInferAlg.prototype.infer = function (features, origin) {
+                            var ks = origin.manager().segment(origin.universe(), origin.now(), origin.uuid(), false, origin.metaClass(), null);
+                            var result = new Array();
+                            result[0] = this.getAvgAll(ks, origin.metaClass().dependencies());
+                            return result;
+                        };
+                        StatInferAlg.prototype.getAvgAll = function (ks, meta) {
+                            var result = new Array();
+                            for (var i = 0; i < meta.origin().inputs().length; i++) {
+                                result[i] = this.getAvg(i, ks, meta);
+                            }
+                            return result;
+                        };
+                        StatInferAlg.prototype.getMinAll = function (ks, meta) {
+                            var result = new Array();
+                            for (var i = 0; i < meta.origin().inputs().length; i++) {
+                                result[i] = this.getMin(i, ks, meta);
+                            }
+                            return result;
+                        };
+                        StatInferAlg.prototype.getMaxAll = function (ks, meta) {
+                            var result = new Array();
+                            for (var i = 0; i < meta.origin().inputs().length; i++) {
+                                result[i] = this.getMax(i, ks, meta);
+                            }
+                            return result;
+                        };
+                        StatInferAlg.prototype.getVarianceAll = function (ks, meta, avgs) {
+                            var result = new Array();
+                            for (var i = 0; i < meta.origin().inputs().length; i++) {
+                                result[i] = this.getVariance(i, ks, meta, avgs[i]);
+                            }
+                            return result;
+                        };
+                        StatInferAlg.prototype.getAvg = function (featureNum, ks, meta) {
+                            if (ks.getInferSize(meta.index(), meta.origin()) == 0) {
+                                return 0;
+                            }
+                            var count = ks.getInferElem(meta.index(), ks.getInferSize(meta.index(), meta.origin()) - 1, meta.origin());
+                            if (count == 0) {
+                                return 0;
+                            }
+                            return ks.getInferElem(meta.index(), featureNum * StatInferAlg.NUMOFFIELDS + StatInferAlg.SUM, meta.origin()) / count;
+                        };
+                        StatInferAlg.prototype.getMin = function (featureNum, ks, meta) {
+                            if (ks.getInferSize(meta.index(), meta.origin()) == 0) {
+                                return 0;
+                            }
+                            var count = ks.getInferElem(meta.index(), ks.getInferSize(meta.index(), meta.origin()) - 1, meta.origin());
+                            if (count == 0) {
+                                return 0;
+                            }
+                            return ks.getInferElem(meta.index(), featureNum * StatInferAlg.NUMOFFIELDS + StatInferAlg.MIN, meta.origin());
+                        };
+                        StatInferAlg.prototype.getMax = function (featureNum, ks, meta) {
+                            if (ks.getInferSize(meta.index(), meta.origin()) == 0) {
+                                return 0;
+                            }
+                            var count = ks.getInferElem(meta.index(), ks.getInferSize(meta.index(), meta.origin()) - 1, meta.origin());
+                            if (count == 0) {
+                                return 0;
+                            }
+                            return ks.getInferElem(meta.index(), featureNum * StatInferAlg.NUMOFFIELDS + StatInferAlg.MAX, meta.origin());
+                        };
+                        StatInferAlg.prototype.getVariance = function (featureNum, ks, meta, avg) {
+                            if (ks.getInferSize(meta.index(), meta.origin()) == 0) {
+                                return 0;
+                            }
+                            var count = ks.getInferElem(meta.index(), ks.getInferSize(meta.index(), meta.origin()) - 1, meta.origin());
+                            if (count == 0) {
+                                return 0;
+                            }
+                            return ks.getInferElem(meta.index(), featureNum * StatInferAlg.NUMOFFIELDS + StatInferAlg.SUMSQuare, meta.origin()) / count - avg * avg;
+                        };
+                        StatInferAlg.MIN = 0;
+                        StatInferAlg.MAX = 1;
+                        StatInferAlg.SUM = 2;
+                        StatInferAlg.SUMSQuare = 3;
+                        StatInferAlg.NUMOFFIELDS = 4;
+                        return StatInferAlg;
+                    })();
+                    impl.StatInferAlg = StatInferAlg;
+                })(impl = infer.impl || (infer.impl = {}));
             })(infer = modeling.infer || (modeling.infer = {}));
             var memory;
             (function (memory) {
@@ -7155,12 +6161,20 @@ var org;
                     };
                     MetaType.ATTRIBUTE = new MetaType();
                     MetaType.REFERENCE = new MetaType();
+                    MetaType.DEPENDENCY = new MetaType();
+                    MetaType.DEPENDENCIES = new MetaType();
+                    MetaType.INPUT = new MetaType();
+                    MetaType.OUTPUT = new MetaType();
                     MetaType.OPERATION = new MetaType();
                     MetaType.CLASS = new MetaType();
                     MetaType.MODEL = new MetaType();
                     MetaType._MetaTypeVALUES = [
                         MetaType.ATTRIBUTE,
                         MetaType.REFERENCE,
+                        MetaType.DEPENDENCY,
+                        MetaType.DEPENDENCIES,
+                        MetaType.INPUT,
+                        MetaType.OUTPUT,
                         MetaType.OPERATION,
                         MetaType.CLASS,
                         MetaType.MODEL
@@ -7183,7 +6197,12 @@ var org;
                             return new org.kevoree.modeling.meta.impl.GenericUniverse(universe, this._manager);
                         };
                         GenericModel.prototype.internalCreateObject = function (universe, time, uuid, clazz) {
-                            return new org.kevoree.modeling.meta.impl.GenericObject(universe, time, uuid, clazz, this._manager);
+                            if (clazz.inferAlg() != null) {
+                                return new org.kevoree.modeling.meta.impl.GenericObjectInfer(universe, time, uuid, clazz, this._manager);
+                            }
+                            else {
+                                return new org.kevoree.modeling.meta.impl.GenericObject(universe, time, uuid, clazz, this._manager);
+                            }
                         };
                         return GenericModel;
                     })(org.kevoree.modeling.abs.AbstractKModel);
@@ -7196,6 +6215,14 @@ var org;
                         return GenericObject;
                     })(org.kevoree.modeling.abs.AbstractKObject);
                     impl.GenericObject = GenericObject;
+                    var GenericObjectInfer = (function (_super) {
+                        __extends(GenericObjectInfer, _super);
+                        function GenericObjectInfer(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                            _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                        }
+                        return GenericObjectInfer;
+                    })(org.kevoree.modeling.abs.AbstractKObjectInfer);
+                    impl.GenericObjectInfer = GenericObjectInfer;
                     var GenericUniverse = (function (_super) {
                         __extends(GenericUniverse, _super);
                         function GenericUniverse(p_key, p_manager) {
@@ -7258,12 +6285,18 @@ var org;
                     })();
                     impl.MetaAttribute = MetaAttribute;
                     var MetaClass = (function () {
-                        function MetaClass(p_name, p_index) {
+                        function MetaClass(p_name, p_index, p_alg) {
                             this._indexes = null;
+                            this._cachedInputs = null;
+                            this._cachedOutputs = null;
                             this._name = p_name;
                             this._index = p_index;
                             this._meta = new Array();
+                            this._alg = p_alg;
                             this._indexes = new org.kevoree.modeling.memory.struct.map.impl.ArrayStringMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
+                            if (this._alg != null) {
+                                this.internal_add_meta(new org.kevoree.modeling.meta.impl.MetaDependencies(this._meta.length, this));
+                            }
                         }
                         MetaClass.prototype.init = function (p_metaElements) {
                             this._indexes.clear();
@@ -7271,6 +6304,7 @@ var org;
                             for (var i = 0; i < this._meta.length; i++) {
                                 this._indexes.put(p_metaElements[i].metaName(), p_metaElements[i].index());
                             }
+                            this.clearCached();
                         };
                         MetaClass.prototype.metaByName = function (name) {
                             if (this._indexes != null) {
@@ -7323,6 +6357,9 @@ var org;
                             }
                         };
                         MetaClass.prototype.addAttribute = function (attributeName, p_type) {
+                            return this.internal_addatt(attributeName, p_type);
+                        };
+                        MetaClass.prototype.internal_addatt = function (attributeName, p_type) {
                             var precisionCleaned = -1;
                             var extrapolation;
                             if (p_type == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
@@ -7337,6 +6374,9 @@ var org;
                             return tempAttribute;
                         };
                         MetaClass.prototype.addReference = function (referenceName, p_metaClass, oppositeName, toMany) {
+                            return this.internal_addref(referenceName, p_metaClass, oppositeName, toMany);
+                        };
+                        MetaClass.prototype.internal_addref = function (referenceName, p_metaClass, oppositeName, toMany) {
                             var tempOrigin = this;
                             var opName = oppositeName;
                             if (opName == null) {
@@ -7370,19 +6410,235 @@ var org;
                         };
                         MetaClass.prototype.addOperation = function (operationName) {
                             var tempOrigin = this;
-                            var tempOperation = new org.kevoree.modeling.meta.impl.MetaOperation(operationName, this._meta.length + 1, function () {
+                            var tempOperation = new org.kevoree.modeling.meta.impl.MetaOperation(operationName, this._meta.length, function () {
                                 return tempOrigin;
                             });
                             this.internal_add_meta(tempOperation);
                             return tempOperation;
                         };
+                        MetaClass.prototype.inferAlg = function () {
+                            return this._alg;
+                        };
+                        MetaClass.prototype.addDependency = function (dependencyName, p_metaClass, oppositeName) {
+                            var currentDeps = this.dependencies();
+                            if (currentDeps != null) {
+                                return currentDeps.addDependency(dependencyName, p_metaClass, oppositeName);
+                            }
+                            return null;
+                        };
+                        MetaClass.prototype.addInput = function (p_name, p_extractor) {
+                            var newInput = new org.kevoree.modeling.meta.impl.MetaInferInput(p_name, this._meta.length, p_extractor);
+                            this.internal_add_meta(newInput);
+                            return newInput;
+                        };
+                        MetaClass.prototype.addOutput = function (p_name, p_type) {
+                            var newOutput = new org.kevoree.modeling.meta.impl.MetaInferOutput(p_name, this._meta.length, p_type);
+                            this.internal_add_meta(newOutput);
+                            return newOutput;
+                        };
+                        MetaClass.prototype.dependencies = function () {
+                            return this.metaByName(org.kevoree.modeling.meta.impl.MetaDependencies.DEPENDENCIES_NAME);
+                        };
+                        MetaClass.prototype.inputs = function () {
+                            if (this._cachedInputs == null) {
+                                this.cacheInputs();
+                            }
+                            return this._cachedInputs;
+                        };
+                        MetaClass.prototype.cacheInputs = function () {
+                            var nb = 0;
+                            for (var i = 0; i < this._meta.length; i++) {
+                                if (this._meta[i].metaType().equals(org.kevoree.modeling.meta.MetaType.INPUT)) {
+                                    nb++;
+                                }
+                            }
+                            this._cachedInputs = new Array();
+                            nb = 0;
+                            for (var i = 0; i < this._meta.length; i++) {
+                                if (this._meta[i].metaType().equals(org.kevoree.modeling.meta.MetaType.INPUT)) {
+                                    this._cachedInputs[nb] = this._meta[i];
+                                    nb++;
+                                }
+                            }
+                        };
+                        MetaClass.prototype.outputs = function () {
+                            if (this._cachedOutputs == null) {
+                                this.cacheOuputs();
+                            }
+                            return this._cachedOutputs;
+                        };
+                        MetaClass.prototype.cacheOuputs = function () {
+                            var nb = 0;
+                            for (var i = 0; i < this._meta.length; i++) {
+                                if (this._meta[i].metaType().equals(org.kevoree.modeling.meta.MetaType.OUTPUT)) {
+                                    nb++;
+                                }
+                            }
+                            this._cachedOutputs = new Array();
+                            nb = 0;
+                            for (var i = 0; i < this._meta.length; i++) {
+                                if (this._meta[i].metaType().equals(org.kevoree.modeling.meta.MetaType.OUTPUT)) {
+                                    this._cachedOutputs[nb] = this._meta[i];
+                                    nb++;
+                                }
+                            }
+                        };
+                        MetaClass.prototype.clearCached = function () {
+                            this._cachedOutputs = null;
+                            this._cachedInputs = null;
+                        };
                         MetaClass.prototype.internal_add_meta = function (p_new_meta) {
+                            this.clearCached();
                             this._meta[p_new_meta.index()] = p_new_meta;
                             this._indexes.put(p_new_meta.metaName(), p_new_meta.index());
                         };
                         return MetaClass;
                     })();
                     impl.MetaClass = MetaClass;
+                    var MetaDependencies = (function () {
+                        function MetaDependencies(p_index, p_origin) {
+                            this._indexes = null;
+                            this._index = p_index;
+                            this._origin = p_origin;
+                            this._dependencies = new Array();
+                            this._indexes = new org.kevoree.modeling.memory.struct.map.impl.ArrayStringMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
+                        }
+                        MetaDependencies.prototype.origin = function () {
+                            return this._origin;
+                        };
+                        MetaDependencies.prototype.allDependencies = function () {
+                            return this._dependencies;
+                        };
+                        MetaDependencies.prototype.dependencyByName = function (dependencyName) {
+                            var foundedIndex = this._indexes.get(dependencyName);
+                            if (foundedIndex != null) {
+                                return this._dependencies[foundedIndex];
+                            }
+                            else {
+                                return null;
+                            }
+                        };
+                        MetaDependencies.prototype.index = function () {
+                            return this._index;
+                        };
+                        MetaDependencies.prototype.metaName = function () {
+                            return MetaDependencies.DEPENDENCIES_NAME;
+                        };
+                        MetaDependencies.prototype.metaType = function () {
+                            return org.kevoree.modeling.meta.MetaType.DEPENDENCIES;
+                        };
+                        MetaDependencies.prototype.addDependency = function (p_dependencyName, p_type, op_name) {
+                            if (op_name != null) {
+                                throw new java.lang.RuntimeException("Not Implemented Yet!");
+                            }
+                            var newDependency = new org.kevoree.modeling.meta.impl.MetaDependency(p_dependencyName, this._dependencies.length, this, function () {
+                                return p_type;
+                            }, op_name);
+                            this.internal_add_dep(newDependency);
+                            return newDependency;
+                        };
+                        MetaDependencies.prototype.internal_add_dep = function (p_new_meta) {
+                            this._dependencies[p_new_meta.index()] = p_new_meta;
+                            this._indexes.put(p_new_meta.metaName(), p_new_meta.index());
+                        };
+                        MetaDependencies.DEPENDENCIES_NAME = "allDependencies";
+                        return MetaDependencies;
+                    })();
+                    impl.MetaDependencies = MetaDependencies;
+                    var MetaDependency = (function () {
+                        function MetaDependency(p_name, p_index, p_origin, p_lazyMetaType, p_oppositeName) {
+                            this._name = p_name;
+                            this._index = p_index;
+                            this._origin = p_origin;
+                            this._lazyMetaType = p_lazyMetaType;
+                            this._oppositeName = p_oppositeName;
+                        }
+                        MetaDependency.prototype.type = function () {
+                            if (this._lazyMetaType != null) {
+                                return this._lazyMetaType();
+                            }
+                            else {
+                                return null;
+                            }
+                        };
+                        MetaDependency.prototype.opposite = function () {
+                            if (this._oppositeName != null) {
+                                var dependencies = this.type().dependencies();
+                                if (dependencies != null) {
+                                    return dependencies.dependencyByName(this._oppositeName);
+                                }
+                            }
+                            return null;
+                        };
+                        MetaDependency.prototype.origin = function () {
+                            return this._origin;
+                        };
+                        MetaDependency.prototype.index = function () {
+                            return this._index;
+                        };
+                        MetaDependency.prototype.metaName = function () {
+                            return this._name;
+                        };
+                        MetaDependency.prototype.metaType = function () {
+                            return org.kevoree.modeling.meta.MetaType.DEPENDENCY;
+                        };
+                        return MetaDependency;
+                    })();
+                    impl.MetaDependency = MetaDependency;
+                    var MetaInferInput = (function () {
+                        function MetaInferInput(p_name, p_index, p_extractor) {
+                            this._name = p_name;
+                            this._index = p_index;
+                            this._extractor = p_extractor;
+                        }
+                        MetaInferInput.prototype.extractorQuery = function () {
+                            return this._extractor;
+                        };
+                        MetaInferInput.prototype.extractor = function () {
+                            if (this._cachedTraversal != null) {
+                                return this._cachedTraversal;
+                            }
+                            else {
+                                return this.cacheTraversal();
+                            }
+                        };
+                        MetaInferInput.prototype.cacheTraversal = function () {
+                            this._cachedTraversal = org.kevoree.modeling.traversal.query.impl.QueryEngine.getINSTANCE().buildTraversal(this._extractor);
+                            return this._cachedTraversal;
+                        };
+                        MetaInferInput.prototype.index = function () {
+                            return this._index;
+                        };
+                        MetaInferInput.prototype.metaName = function () {
+                            return this._name;
+                        };
+                        MetaInferInput.prototype.metaType = function () {
+                            return org.kevoree.modeling.meta.MetaType.INPUT;
+                        };
+                        return MetaInferInput;
+                    })();
+                    impl.MetaInferInput = MetaInferInput;
+                    var MetaInferOutput = (function () {
+                        function MetaInferOutput(p_name, p_index, p_type) {
+                            this._name = p_name;
+                            this._index = p_index;
+                            this._type = p_type;
+                        }
+                        MetaInferOutput.prototype.index = function () {
+                            return this._index;
+                        };
+                        MetaInferOutput.prototype.metaName = function () {
+                            return this._name;
+                        };
+                        MetaInferOutput.prototype.metaType = function () {
+                            return org.kevoree.modeling.meta.MetaType.OUTPUT;
+                        };
+                        MetaInferOutput.prototype.type = function () {
+                            return this._type;
+                        };
+                        return MetaInferOutput;
+                    })();
+                    impl.MetaInferOutput = MetaInferOutput;
                     var MetaModel = (function () {
                         function MetaModel(p_name) {
                             this._metaClasses_indexes = null;
@@ -7428,18 +6684,24 @@ var org;
                             return null;
                         };
                         MetaModel.prototype.addMetaClass = function (metaClassName) {
+                            return this.internal_addmetaclass(metaClassName, null);
+                        };
+                        MetaModel.prototype.addInferMetaClass = function (metaClassName, inferAlg) {
+                            return this.internal_addmetaclass(metaClassName, inferAlg);
+                        };
+                        MetaModel.prototype.internal_addmetaclass = function (metaClassName, alg) {
                             if (this._metaClasses_indexes.contains(metaClassName)) {
                                 return this.metaClassByName(metaClassName);
                             }
                             else {
                                 if (this._metaClasses == null) {
                                     this._metaClasses = new Array();
-                                    this._metaClasses[0] = new org.kevoree.modeling.meta.impl.MetaClass(metaClassName, 0);
+                                    this._metaClasses[0] = new org.kevoree.modeling.meta.impl.MetaClass(metaClassName, 0, alg);
                                     this._metaClasses_indexes.put(metaClassName, this._metaClasses[0].index());
                                     return this._metaClasses[0];
                                 }
                                 else {
-                                    var newMetaClass = new org.kevoree.modeling.meta.impl.MetaClass(metaClassName, this._metaClasses.length);
+                                    var newMetaClass = new org.kevoree.modeling.meta.impl.MetaClass(metaClassName, this._metaClasses.length, alg);
                                     this.interal_add_meta_class(newMetaClass);
                                     return newMetaClass;
                                 }
@@ -7671,14 +6933,13 @@ var org;
                 })(impl = scheduler.impl || (scheduler.impl = {}));
             })(scheduler = modeling.scheduler || (modeling.scheduler = {}));
             var traversal;
-            (function (traversal) {
+            (function (traversal_1) {
                 var impl;
                 (function (impl) {
                     var Traversal = (function () {
-                        function Traversal(p_root) {
+                        function Traversal(p_roots) {
                             this._terminated = false;
-                            this._initObjs = new Array();
-                            this._initObjs[0] = p_root;
+                            this._initObjs = p_roots;
                         }
                         Traversal.prototype.internal_chain_action = function (p_action) {
                             if (this._terminated) {
@@ -7714,20 +6975,66 @@ var org;
                         Traversal.prototype.collect = function (metaReference, continueCondition) {
                             return this.internal_chain_action(new org.kevoree.modeling.traversal.impl.actions.DeepCollectAction(metaReference, continueCondition));
                         };
+                        Traversal.prototype.traverseIndex = function (p_indexName) {
+                            return this.internal_chain_action(new org.kevoree.modeling.traversal.impl.actions.TraverseIndexAction(p_indexName));
+                        };
+                        Traversal.prototype.traverseTime = function (timeOffset, steps, continueCondition) {
+                            throw new java.lang.RuntimeException("Not Implemented Yet!");
+                        };
+                        Traversal.prototype.traverseUniverse = function (universeOffset, continueCondition) {
+                            throw new java.lang.RuntimeException("Not Implemented Yet!");
+                        };
                         Traversal.prototype.then = function (cb) {
-                            this.internal_chain_action(new org.kevoree.modeling.traversal.impl.actions.FinalAction(cb));
+                            if (this._initObjs != null) {
+                                this._initAction.execute(new org.kevoree.modeling.traversal.impl.TraversalContext(this._initObjs, null, function (objects) {
+                                    cb(objects);
+                                }));
+                            }
+                        };
+                        Traversal.prototype.eval = function (p_expression, callback) {
+                            this.internal_chain_action(new org.kevoree.modeling.traversal.impl.actions.MathExpressionAction(p_expression));
                             this._terminated = true;
-                            this._initAction.execute(this._initObjs);
+                            if (this._initObjs != null) {
+                                this._initAction.execute(new org.kevoree.modeling.traversal.impl.TraversalContext(this._initObjs, null, callback));
+                            }
                         };
                         Traversal.prototype.map = function (attribute, cb) {
-                            this.internal_chain_action(new org.kevoree.modeling.traversal.impl.actions.MapAction(attribute, cb));
+                            this.internal_chain_action(new org.kevoree.modeling.traversal.impl.actions.MapAction(attribute));
                             this._terminated = true;
-                            this._initAction.execute(this._initObjs);
+                            if (this._initObjs != null) {
+                                this._initAction.execute(new org.kevoree.modeling.traversal.impl.TraversalContext(this._initObjs, null, cb));
+                            }
                         };
-                        Traversal.TERMINATED_MESSAGE = "Promise is terminated by the call of done method, please create another promise";
+                        Traversal.prototype.exec = function (origins, resolver, callback) {
+                            if (this._initObjs == null) {
+                                this._initAction.execute(new org.kevoree.modeling.traversal.impl.TraversalContext(origins, resolver, callback));
+                            }
+                        };
+                        Traversal.TERMINATED_MESSAGE = "Traversal is terminated by the call of done method, please create another promise";
                         return Traversal;
                     })();
                     impl.Traversal = Traversal;
+                    var TraversalContext = (function () {
+                        function TraversalContext(_inputs, _resolver, p_finalCallback) {
+                            this._inputs = _inputs;
+                            this._resolver = _resolver;
+                            this._finalCallback = p_finalCallback;
+                        }
+                        TraversalContext.prototype.inputObjects = function () {
+                            return this._inputs;
+                        };
+                        TraversalContext.prototype.setInputObjects = function (p_newSet) {
+                            this._inputs = p_newSet;
+                        };
+                        TraversalContext.prototype.indexResolver = function () {
+                            return this._resolver;
+                        };
+                        TraversalContext.prototype.finalCallback = function () {
+                            return this._finalCallback;
+                        };
+                        return TraversalContext;
+                    })();
+                    impl.TraversalContext = TraversalContext;
                     var actions;
                     (function (actions) {
                         var DeepCollectAction = (function () {
@@ -7740,20 +7047,24 @@ var org;
                             DeepCollectAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            DeepCollectAction.prototype.execute = function (p_inputs) {
+                            DeepCollectAction.prototype.execute = function (context) {
                                 var _this = this;
-                                if (p_inputs == null || p_inputs.length == 0) {
-                                    this._next.execute(p_inputs);
-                                    return;
+                                if (context.inputObjects() == null || context.inputObjects().length == 0) {
+                                    if (this._next != null) {
+                                        this._next.execute(context);
+                                    }
+                                    else {
+                                        context.finalCallback()(context.inputObjects());
+                                    }
                                 }
                                 else {
                                     this._alreadyPassed = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
                                     this._finalElements = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
                                     var filtered_inputs = new Array();
-                                    for (var i = 0; i < p_inputs.length; i++) {
-                                        if (this._continueCondition == null || this._continueCondition(p_inputs[i])) {
-                                            filtered_inputs[i] = p_inputs[i];
-                                            this._alreadyPassed.put(p_inputs[i].uuid(), p_inputs[i]);
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
+                                        if (this._continueCondition == null || this._continueCondition(context.inputObjects()[i])) {
+                                            filtered_inputs[i] = context.inputObjects()[i];
+                                            this._alreadyPassed.put(context.inputObjects()[i].uuid(), context.inputObjects()[i]);
                                         }
                                     }
                                     var iterationCallbacks = new Array();
@@ -7778,7 +7089,13 @@ var org;
                                                 trimmed[nbInserted[0]] = value;
                                                 nbInserted[0]++;
                                             });
-                                            _this._next.execute(trimmed);
+                                            if (_this._next == null) {
+                                                context.finalCallback()(trimmed);
+                                            }
+                                            else {
+                                                context.setInputObjects(trimmed);
+                                                _this._next.execute(context);
+                                            }
                                         }
                                     };
                                     this.executeStep(filtered_inputs, iterationCallbacks[0]);
@@ -7851,12 +7168,12 @@ var org;
                             FilterAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            FilterAction.prototype.execute = function (p_inputs) {
+                            FilterAction.prototype.execute = function (context) {
                                 var selectedIndex = new Array();
                                 var selected = 0;
-                                for (var i = 0; i < p_inputs.length; i++) {
+                                for (var i = 0; i < context.inputObjects().length; i++) {
                                     try {
-                                        if (this._filter(p_inputs[i])) {
+                                        if (this._filter(context.inputObjects()[i])) {
                                             selectedIndex[i] = true;
                                             selected++;
                                         }
@@ -7873,13 +7190,19 @@ var org;
                                 }
                                 var nextStepElement = new Array();
                                 var inserted = 0;
-                                for (var i = 0; i < p_inputs.length; i++) {
+                                for (var i = 0; i < context.inputObjects().length; i++) {
                                     if (selectedIndex[i]) {
-                                        nextStepElement[inserted] = p_inputs[i];
+                                        nextStepElement[inserted] = context.inputObjects()[i];
                                         inserted++;
                                     }
                                 }
-                                this._next.execute(nextStepElement);
+                                if (this._next == null) {
+                                    context.finalCallback()(nextStepElement);
+                                }
+                                else {
+                                    context.setInputObjects(nextStepElement);
+                                    this._next.execute(context);
+                                }
                             };
                             return FilterAction;
                         })();
@@ -7892,17 +7215,21 @@ var org;
                             FilterAttributeAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            FilterAttributeAction.prototype.execute = function (p_inputs) {
-                                if (p_inputs == null || p_inputs.length == 0) {
-                                    this._next.execute(p_inputs);
-                                    return;
+                            FilterAttributeAction.prototype.execute = function (context) {
+                                if (context.inputObjects() == null || context.inputObjects().length == 0) {
+                                    if (this._next != null) {
+                                        this._next.execute(context);
+                                    }
+                                    else {
+                                        context.finalCallback()(context.inputObjects());
+                                    }
                                 }
                                 else {
                                     var selectedIndexes = new Array();
                                     var nbSelected = 0;
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         try {
-                                            var loopObj = p_inputs[i];
+                                            var loopObj = context.inputObjects()[i];
                                             var raw = (loopObj)._manager.segment(loopObj.universe(), loopObj.now(), loopObj.uuid(), true, loopObj.metaClass(), null);
                                             if (raw != null) {
                                                 if (this._attribute == null) {
@@ -7988,13 +7315,19 @@ var org;
                                     }
                                     var nextStepElement = new Array();
                                     var inserted = 0;
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         if (selectedIndexes[i]) {
-                                            nextStepElement[inserted] = p_inputs[i];
+                                            nextStepElement[inserted] = context.inputObjects()[i];
                                             inserted++;
                                         }
                                     }
-                                    this._next.execute(nextStepElement);
+                                    if (this._next == null) {
+                                        context.finalCallback()(nextStepElement);
+                                    }
+                                    else {
+                                        context.setInputObjects(nextStepElement);
+                                        this._next.execute(context);
+                                    }
                                 }
                             };
                             return FilterAttributeAction;
@@ -8007,17 +7340,21 @@ var org;
                             FilterAttributeQueryAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            FilterAttributeQueryAction.prototype.execute = function (p_inputs) {
-                                if (p_inputs == null || p_inputs.length == 0) {
-                                    this._next.execute(p_inputs);
-                                    return;
+                            FilterAttributeQueryAction.prototype.execute = function (context) {
+                                if (context.inputObjects() == null || context.inputObjects().length == 0) {
+                                    if (this._next != null) {
+                                        this._next.execute(context);
+                                    }
+                                    else {
+                                        context.finalCallback()(context.inputObjects());
+                                    }
                                 }
                                 else {
                                     var selectedIndexes = new Array();
                                     var nbSelected = 0;
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         try {
-                                            var loopObj = p_inputs[i];
+                                            var loopObj = context.inputObjects()[i];
                                             if (this._attributeQuery == null) {
                                                 selectedIndexes[i] = true;
                                                 nbSelected++;
@@ -8080,13 +7417,19 @@ var org;
                                     }
                                     var nextStepElement = new Array();
                                     var inserted = 0;
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         if (selectedIndexes[i]) {
-                                            nextStepElement[inserted] = p_inputs[i];
+                                            nextStepElement[inserted] = context.inputObjects()[i];
                                             inserted++;
                                         }
                                     }
-                                    this._next.execute(nextStepElement);
+                                    if (this._next == null) {
+                                        context.finalCallback()(nextStepElement);
+                                    }
+                                    else {
+                                        context.setInputObjects(nextStepElement);
+                                        this._next.execute(context);
+                                    }
                                 }
                             };
                             FilterAttributeQueryAction.prototype.buildParams = function (p_paramString) {
@@ -8105,7 +7448,7 @@ var org;
                                             if (pArray.length > 1) {
                                                 var paramKey = pArray[0].trim();
                                                 var negative = paramKey.endsWith("!");
-                                                pObject = new org.kevoree.modeling.traversal.impl.selector.QueryParam(paramKey.replace("!", "").replace("*", ".*"), pArray[1].trim().replace("*", ".*"), negative);
+                                                pObject = new org.kevoree.modeling.traversal.impl.actions.FilterAttributeQueryAction.QueryParam(paramKey.replace("!", "").replace("*", ".*"), pArray[1].trim().replace("*", ".*"), negative);
                                                 params.put(pObject.name(), pObject);
                                             }
                                         }
@@ -8123,7 +7466,7 @@ var org;
                                     if (pArray.length > 1) {
                                         var paramKey = pArray[0].trim();
                                         var negative = paramKey.endsWith("!");
-                                        pObject = new org.kevoree.modeling.traversal.impl.selector.QueryParam(paramKey.replace("!", "").replace("*", ".*"), pArray[1].trim().replace("*", ".*"), negative);
+                                        pObject = new org.kevoree.modeling.traversal.impl.actions.FilterAttributeQueryAction.QueryParam(paramKey.replace("!", "").replace("*", ".*"), pArray[1].trim().replace("*", ".*"), negative);
                                         params.put(pObject.name(), pObject);
                                     }
                                 }
@@ -8132,6 +7475,27 @@ var org;
                             return FilterAttributeQueryAction;
                         })();
                         actions.FilterAttributeQueryAction = FilterAttributeQueryAction;
+                        var FilterAttributeQueryAction;
+                        (function (FilterAttributeQueryAction) {
+                            var QueryParam = (function () {
+                                function QueryParam(p_name, p_value, p_negative) {
+                                    this._name = p_name;
+                                    this._value = p_value;
+                                    this._negative = p_negative;
+                                }
+                                QueryParam.prototype.name = function () {
+                                    return this._name;
+                                };
+                                QueryParam.prototype.value = function () {
+                                    return this._value;
+                                };
+                                QueryParam.prototype.isNegative = function () {
+                                    return this._negative;
+                                };
+                                return QueryParam;
+                            })();
+                            FilterAttributeQueryAction.QueryParam = QueryParam;
+                        })(FilterAttributeQueryAction = actions.FilterAttributeQueryAction || (actions.FilterAttributeQueryAction = {}));
                         var FilterNotAttributeAction = (function () {
                             function FilterNotAttributeAction(p_attribute, p_expectedValue) {
                                 this._attribute = p_attribute;
@@ -8140,16 +7504,21 @@ var org;
                             FilterNotAttributeAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            FilterNotAttributeAction.prototype.execute = function (p_inputs) {
-                                if (p_inputs == null || p_inputs.length == 0) {
-                                    this._next.execute(p_inputs);
+                            FilterNotAttributeAction.prototype.execute = function (context) {
+                                if (context.inputObjects() == null || context.inputObjects().length == 0) {
+                                    if (this._next != null) {
+                                        this._next.execute(context);
+                                    }
+                                    else {
+                                        context.finalCallback()(context.inputObjects());
+                                    }
                                 }
                                 else {
                                     var selectedIndexes = new Array();
                                     var nbSelected = 0;
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         try {
-                                            var loopObj = p_inputs[i];
+                                            var loopObj = context.inputObjects()[i];
                                             var raw = loopObj._manager.segment(loopObj.universe(), loopObj.now(), loopObj.uuid(), true, loopObj.metaClass(), null);
                                             if (raw != null) {
                                                 if (this._attribute == null) {
@@ -8236,43 +7605,36 @@ var org;
                                     }
                                     var nextStepElement = new Array();
                                     var inserted = 0;
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         if (selectedIndexes[i]) {
-                                            nextStepElement[inserted] = p_inputs[i];
+                                            nextStepElement[inserted] = context.inputObjects()[i];
                                             inserted++;
                                         }
                                     }
-                                    this._next.execute(nextStepElement);
+                                    if (this._next == null) {
+                                        context.finalCallback()(nextStepElement);
+                                    }
+                                    else {
+                                        context.setInputObjects(nextStepElement);
+                                        this._next.execute(context);
+                                    }
                                 }
                             };
                             return FilterNotAttributeAction;
                         })();
                         actions.FilterNotAttributeAction = FilterNotAttributeAction;
-                        var FinalAction = (function () {
-                            function FinalAction(p_callback) {
-                                this._finalCallback = p_callback;
-                            }
-                            FinalAction.prototype.chain = function (next) {
-                            };
-                            FinalAction.prototype.execute = function (inputs) {
-                                this._finalCallback(inputs);
-                            };
-                            return FinalAction;
-                        })();
-                        actions.FinalAction = FinalAction;
                         var MapAction = (function () {
-                            function MapAction(p_attribute, p_callback) {
-                                this._finalCallback = p_callback;
+                            function MapAction(p_attribute) {
                                 this._attribute = p_attribute;
                             }
                             MapAction.prototype.chain = function (next) {
                             };
-                            MapAction.prototype.execute = function (inputs) {
+                            MapAction.prototype.execute = function (context) {
                                 var selected = new Array();
                                 var nbElem = 0;
-                                for (var i = 0; i < inputs.length; i++) {
-                                    if (inputs[i] != null) {
-                                        var resolved = inputs[i].get(this._attribute);
+                                for (var i = 0; i < context.inputObjects().length; i++) {
+                                    if (context.inputObjects()[i] != null) {
+                                        var resolved = context.inputObjects()[i].get(this._attribute);
                                         if (resolved != null) {
                                             selected[i] = resolved;
                                             nbElem++;
@@ -8281,27 +7643,77 @@ var org;
                                 }
                                 var trimmed = new Array();
                                 var nbInserted = 0;
-                                for (var i = 0; i < inputs.length; i++) {
+                                for (var i = 0; i < context.inputObjects().length; i++) {
                                     if (selected[i] != null) {
                                         trimmed[nbInserted] = selected[i];
                                         nbInserted++;
                                     }
                                 }
-                                this._finalCallback(trimmed);
+                                if (context.finalCallback() != null) {
+                                    context.finalCallback()(trimmed);
+                                }
                             };
                             return MapAction;
                         })();
                         actions.MapAction = MapAction;
+                        var MathExpressionAction = (function () {
+                            function MathExpressionAction(p_expression) {
+                                this._expression = p_expression;
+                                this._engine = new org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine();
+                            }
+                            MathExpressionAction.prototype.chain = function (next) {
+                            };
+                            MathExpressionAction.prototype.execute = function (context) {
+                                var selected = new Array();
+                                for (var i = 0; i < context.inputObjects().length; i++) {
+                                    if (context.inputObjects()[i] != null) {
+                                        var finalI = i;
+                                        this._engine.setVarResolver(function (potentialVarName) {
+                                            if (potentialVarName.equals("PI")) {
+                                                return Math.PI;
+                                            }
+                                            if (potentialVarName.equals("TRUE")) {
+                                                return 1.0;
+                                            }
+                                            if (potentialVarName.equals("FALSE")) {
+                                                return 0.0;
+                                            }
+                                            var resolved = context.inputObjects()[finalI].getByName(potentialVarName);
+                                            if (resolved != null) {
+                                                try {
+                                                    return java.lang.Double.parseDouble(resolved.toString());
+                                                }
+                                                catch ($ex$) {
+                                                    if ($ex$ instanceof java.lang.Exception) {
+                                                        var e = $ex$;
+                                                    }
+                                                    else {
+                                                        throw $ex$;
+                                                    }
+                                                }
+                                            }
+                                            return null;
+                                        });
+                                        selected[finalI] = this._engine.eval(this._expression);
+                                    }
+                                }
+                                if (context.finalCallback() != null) {
+                                    context.finalCallback()(selected);
+                                }
+                            };
+                            return MathExpressionAction;
+                        })();
+                        actions.MathExpressionAction = MathExpressionAction;
                         var RemoveDuplicateAction = (function () {
                             function RemoveDuplicateAction() {
                             }
                             RemoveDuplicateAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            RemoveDuplicateAction.prototype.execute = function (p_inputs) {
-                                var elems = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongMap(p_inputs.length, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
-                                for (var i = 0; i < p_inputs.length; i++) {
-                                    elems.put(p_inputs[i].uuid(), p_inputs[i]);
+                            RemoveDuplicateAction.prototype.execute = function (context) {
+                                var elems = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongMap(context.inputObjects().length, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
+                                for (var i = 0; i < context.inputObjects().length; i++) {
+                                    elems.put(context.inputObjects()[i].uuid(), context.inputObjects()[i]);
                                 }
                                 var trimmed = new Array();
                                 var nbInserted = [0];
@@ -8309,7 +7721,13 @@ var org;
                                     trimmed[nbInserted[0]] = value;
                                     nbInserted[0]++;
                                 });
-                                this._next.execute(trimmed);
+                                if (this._next == null) {
+                                    context.finalCallback()(trimmed);
+                                }
+                                else {
+                                    context.setInputObjects(trimmed);
+                                    this._next.execute(context);
+                                }
                             };
                             return RemoveDuplicateAction;
                         })();
@@ -8321,18 +7739,22 @@ var org;
                             TraverseAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            TraverseAction.prototype.execute = function (p_inputs) {
+                            TraverseAction.prototype.execute = function (context) {
                                 var _this = this;
-                                if (p_inputs == null || p_inputs.length == 0) {
-                                    this._next.execute(p_inputs);
-                                    return;
+                                if (context.inputObjects() == null || context.inputObjects().length == 0) {
+                                    if (this._next != null) {
+                                        this._next.execute(context);
+                                    }
+                                    else {
+                                        context.finalCallback()(context.inputObjects());
+                                    }
                                 }
                                 else {
-                                    var currentObject = p_inputs[0];
+                                    var currentObject = context.inputObjects()[0];
                                     var nextIds = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongLongMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         try {
-                                            var loopObj = p_inputs[i];
+                                            var loopObj = context.inputObjects()[i];
                                             var raw = currentObject._manager.segment(loopObj.universe(), loopObj.now(), loopObj.uuid(), true, loopObj.metaClass(), null);
                                             if (raw != null) {
                                                 if (this._reference == null) {
@@ -8379,13 +7801,70 @@ var org;
                                         inserted[0]++;
                                     });
                                     currentObject._manager.lookupAllobjects(currentObject.universe(), currentObject.now(), trimmed, function (kObjects) {
-                                        _this._next.execute(kObjects);
+                                        if (_this._next == null) {
+                                            context.finalCallback()(kObjects);
+                                        }
+                                        else {
+                                            context.setInputObjects(kObjects);
+                                            _this._next.execute(context);
+                                        }
                                     });
                                 }
                             };
                             return TraverseAction;
                         })();
                         actions.TraverseAction = TraverseAction;
+                        var TraverseIndexAction = (function () {
+                            function TraverseIndexAction(p_indexName) {
+                                this._indexName = p_indexName;
+                            }
+                            TraverseIndexAction.prototype.chain = function (p_next) {
+                                this._next = p_next;
+                            };
+                            TraverseIndexAction.prototype.execute = function (context) {
+                                var _this = this;
+                                if (this._indexName.equals("root")) {
+                                    if (context.inputObjects().length > 0) {
+                                        context.inputObjects()[0].manager().getRoot(context.inputObjects()[0].universe(), context.inputObjects()[0].now(), function (root) {
+                                            var selectedElems = new Array();
+                                            selectedElems[0] = root;
+                                            if (_this._next == null) {
+                                                context.finalCallback()(selectedElems);
+                                            }
+                                            else {
+                                                context.setInputObjects(selectedElems);
+                                                _this._next.execute(context);
+                                            }
+                                        });
+                                    }
+                                }
+                                else {
+                                    var resolver = context.indexResolver();
+                                    if (resolver != null) {
+                                        var resolved = resolver(this._indexName);
+                                        if (resolved != null) {
+                                            if (this._next == null) {
+                                                context.finalCallback()(resolved);
+                                            }
+                                            else {
+                                                context.setInputObjects(resolved);
+                                                this._next.execute(context);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        if (this._next == null) {
+                                            context.finalCallback()(context.inputObjects());
+                                        }
+                                        else {
+                                            this._next.execute(context);
+                                        }
+                                    }
+                                }
+                            };
+                            return TraverseIndexAction;
+                        })();
+                        actions.TraverseIndexAction = TraverseIndexAction;
                         var TraverseQueryAction = (function () {
                             function TraverseQueryAction(p_referenceQuery) {
                                 this.SEP = ",";
@@ -8394,18 +7873,22 @@ var org;
                             TraverseQueryAction.prototype.chain = function (p_next) {
                                 this._next = p_next;
                             };
-                            TraverseQueryAction.prototype.execute = function (p_inputs) {
+                            TraverseQueryAction.prototype.execute = function (context) {
                                 var _this = this;
-                                if (p_inputs == null || p_inputs.length == 0) {
-                                    this._next.execute(p_inputs);
-                                    return;
+                                if (context.inputObjects() == null || context.inputObjects().length == 0) {
+                                    if (this._next != null) {
+                                        this._next.execute(context);
+                                    }
+                                    else {
+                                        context.finalCallback()(context.inputObjects());
+                                    }
                                 }
                                 else {
-                                    var currentFirstObject = p_inputs[0];
+                                    var currentFirstObject = context.inputObjects()[0];
                                     var nextIds = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongLongMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
-                                    for (var i = 0; i < p_inputs.length; i++) {
+                                    for (var i = 0; i < context.inputObjects().length; i++) {
                                         try {
-                                            var loopObj = p_inputs[i];
+                                            var loopObj = context.inputObjects()[i];
                                             var raw = loopObj._manager.segment(loopObj.universe(), loopObj.now(), loopObj.uuid(), true, loopObj.metaClass(), null);
                                             var metaElements = loopObj.metaClass().metaElements();
                                             if (raw != null) {
@@ -8432,7 +7915,7 @@ var org;
                                                             var metaReference = metaElements[h];
                                                             var selected = false;
                                                             for (var k = 0; k < queries.length; k++) {
-                                                                if (queries[k] != null && queries[k].startsWith("#")) {
+                                                                if (queries[k] != null && queries[k].startsWith("<<")) {
                                                                     if (metaReference.opposite().metaName().matches(queries[k].substring(1))) {
                                                                         selected = true;
                                                                         break;
@@ -8474,8 +7957,14 @@ var org;
                                         trimmed[inserted[0]] = key;
                                         inserted[0]++;
                                     });
-                                    currentFirstObject._manager.lookupAllobjects(currentFirstObject.universe(), currentFirstObject.now(), trimmed, function (kObjects) {
-                                        _this._next.execute(kObjects);
+                                    currentFirstObject._manager.lookupAllobjects(currentFirstObject.universe(), currentFirstObject.now(), trimmed, function (nextStepElement) {
+                                        if (_this._next == null) {
+                                            context.finalCallback()(nextStepElement);
+                                        }
+                                        else {
+                                            context.setInputObjects(nextStepElement);
+                                            _this._next.execute(context);
+                                        }
                                     });
                                 }
                             };
@@ -8483,146 +7972,140 @@ var org;
                         })();
                         actions.TraverseQueryAction = TraverseQueryAction;
                     })(actions = impl.actions || (impl.actions = {}));
-                    var selector;
-                    (function (selector) {
-                        var Query = (function () {
-                            function Query(relationName, params) {
-                                this.relationName = relationName;
-                                this.params = params;
+                })(impl = traversal_1.impl || (traversal_1.impl = {}));
+                var query;
+                (function (query_1) {
+                    var impl;
+                    (function (impl) {
+                        var QueryEngine = (function () {
+                            function QueryEngine() {
                             }
-                            Query.prototype.toString = function () {
-                                return "KQuery{" + "relationName='" + this.relationName + '\'' + ", params='" + this.params + '\'' + '}';
+                            QueryEngine.getINSTANCE = function () {
+                                if (QueryEngine.INSTANCE == null) {
+                                    QueryEngine.INSTANCE = new org.kevoree.modeling.traversal.query.impl.QueryEngine();
+                                }
+                                return QueryEngine.INSTANCE;
                             };
-                            Query.buildChain = function (query) {
-                                var result = new java.util.ArrayList();
+                            QueryEngine.prototype.eval = function (query, origins, callback) {
+                                if (callback != null) {
+                                    this.buildTraversal(query).exec(origins, null, callback);
+                                }
+                            };
+                            QueryEngine.prototype.buildTraversal = function (query) {
                                 if (query == null || query.length == 0) {
                                     return null;
                                 }
-                                var i = 0;
-                                var escaped = false;
-                                var previousKQueryStart = 0;
-                                var previousKQueryNameEnd = -1;
-                                var previousKQueryAttributesEnd = -1;
-                                var previousKQueryAttributesStart = 0;
-                                while (i < query.length) {
-                                    var notLastElem = (i + 1) != query.length;
-                                    if (escaped && notLastElem) {
-                                        escaped = false;
-                                    }
-                                    else {
-                                        var currentChar = query.charAt(i);
-                                        if (currentChar == Query.CLOSE_BRACKET && notLastElem) {
-                                            previousKQueryAttributesEnd = i;
+                                else {
+                                    var traversal = new org.kevoree.modeling.traversal.impl.Traversal(null);
+                                    var i = 0;
+                                    var escaped = false;
+                                    var previousKQueryStart = 0;
+                                    var previousKQueryNameEnd = -1;
+                                    var previousKQueryAttributesEnd = -1;
+                                    var previousKQueryAttributesStart = 0;
+                                    var endEval = false;
+                                    while (i < query.length && !endEval) {
+                                        var notLastElem = (i + 1) != query.length;
+                                        if (escaped && notLastElem) {
+                                            escaped = false;
                                         }
                                         else {
-                                            if (currentChar == '\\' && notLastElem) {
-                                                escaped = true;
+                                            var currentChar = query.charAt(i);
+                                            if (currentChar == QueryEngine.CLOSE_BRACKET && notLastElem) {
+                                                previousKQueryAttributesEnd = i;
                                             }
                                             else {
-                                                if (currentChar == Query.OPEN_BRACKET && notLastElem) {
-                                                    previousKQueryNameEnd = i;
-                                                    previousKQueryAttributesStart = i + 1;
+                                                if (currentChar == '\\' && notLastElem) {
+                                                    escaped = true;
                                                 }
                                                 else {
-                                                    if (currentChar == Query.QUERY_SEP || !notLastElem) {
-                                                        var relationName;
-                                                        var atts = null;
-                                                        if (previousKQueryNameEnd == -1) {
-                                                            if (notLastElem) {
-                                                                previousKQueryNameEnd = i;
+                                                    if (currentChar == QueryEngine.OPEN_BRACKET && notLastElem) {
+                                                        previousKQueryNameEnd = i;
+                                                        previousKQueryAttributesStart = i + 1;
+                                                    }
+                                                    else {
+                                                        if (currentChar == QueryEngine.PIPE_SEP || !notLastElem) {
+                                                            var relationName;
+                                                            var atts = null;
+                                                            if (previousKQueryNameEnd == -1) {
+                                                                if (notLastElem) {
+                                                                    previousKQueryNameEnd = i;
+                                                                }
+                                                                else {
+                                                                    previousKQueryNameEnd = i + 1;
+                                                                }
                                                             }
                                                             else {
-                                                                previousKQueryNameEnd = i + 1;
+                                                                if (previousKQueryAttributesStart != -1) {
+                                                                    if (previousKQueryAttributesEnd == -1) {
+                                                                        if (notLastElem || currentChar == QueryEngine.PIPE_SEP || currentChar == QueryEngine.CLOSE_BRACKET) {
+                                                                            previousKQueryAttributesEnd = i;
+                                                                        }
+                                                                        else {
+                                                                            previousKQueryAttributesEnd = i + 1;
+                                                                        }
+                                                                    }
+                                                                    atts = query.substring(previousKQueryAttributesStart, previousKQueryAttributesEnd);
+                                                                    if (atts.length == 0) {
+                                                                        atts = null;
+                                                                    }
+                                                                }
                                                             }
-                                                        }
-                                                        else {
-                                                            if (previousKQueryAttributesStart != -1) {
-                                                                if (previousKQueryAttributesEnd == -1) {
-                                                                    if (notLastElem || currentChar == Query.QUERY_SEP || currentChar == Query.CLOSE_BRACKET) {
-                                                                        previousKQueryAttributesEnd = i;
+                                                            relationName = query.substring(previousKQueryStart, previousKQueryNameEnd).trim();
+                                                            if (relationName.startsWith("@")) {
+                                                                traversal = traversal.traverseIndex(relationName.substring(1));
+                                                            }
+                                                            else {
+                                                                if (relationName.startsWith("=")) {
+                                                                    traversal.eval(relationName.substring(1), null);
+                                                                    endEval = true;
+                                                                }
+                                                                else {
+                                                                    if (relationName.startsWith(">>")) {
+                                                                        traversal = traversal.traverseQuery(relationName.substring(2));
+                                                                        if (atts != null) {
+                                                                            traversal = traversal.attributeQuery(atts);
+                                                                        }
                                                                     }
                                                                     else {
-                                                                        previousKQueryAttributesEnd = i + 1;
+                                                                        if (relationName.startsWith("<<")) {
+                                                                            traversal = traversal.traverseQuery(relationName);
+                                                                            if (atts != null) {
+                                                                                traversal = traversal.attributeQuery(atts);
+                                                                            }
+                                                                        }
+                                                                        else {
+                                                                            traversal = traversal.traverseQuery(relationName);
+                                                                            if (atts != null) {
+                                                                                traversal = traversal.attributeQuery(atts);
+                                                                            }
+                                                                        }
                                                                     }
                                                                 }
-                                                                atts = query.substring(previousKQueryAttributesStart, previousKQueryAttributesEnd);
-                                                                if (atts.length == 0) {
-                                                                    atts = null;
-                                                                }
                                                             }
+                                                            previousKQueryStart = i + 1;
+                                                            previousKQueryNameEnd = -1;
+                                                            previousKQueryAttributesEnd = -1;
+                                                            previousKQueryAttributesStart = -1;
                                                         }
-                                                        relationName = query.substring(previousKQueryStart, previousKQueryNameEnd);
-                                                        var additionalQuery = new org.kevoree.modeling.traversal.impl.selector.Query(relationName, atts);
-                                                        result.add(additionalQuery);
-                                                        previousKQueryStart = i + 1;
-                                                        previousKQueryNameEnd = -1;
-                                                        previousKQueryAttributesEnd = -1;
-                                                        previousKQueryAttributesStart = -1;
                                                     }
                                                 }
                                             }
                                         }
+                                        i = i + 1;
                                     }
-                                    i = i + 1;
+                                    return traversal;
                                 }
-                                return result;
                             };
-                            Query.OPEN_BRACKET = '[';
-                            Query.CLOSE_BRACKET = ']';
-                            Query.QUERY_SEP = '/';
-                            return Query;
+                            QueryEngine.INSTANCE = null;
+                            QueryEngine.OPEN_BRACKET = '[';
+                            QueryEngine.CLOSE_BRACKET = ']';
+                            QueryEngine.PIPE_SEP = '|';
+                            return QueryEngine;
                         })();
-                        selector.Query = Query;
-                        var QueryParam = (function () {
-                            function QueryParam(p_name, p_value, p_negative) {
-                                this._name = p_name;
-                                this._value = p_value;
-                                this._negative = p_negative;
-                            }
-                            QueryParam.prototype.name = function () {
-                                return this._name;
-                            };
-                            QueryParam.prototype.value = function () {
-                                return this._value;
-                            };
-                            QueryParam.prototype.isNegative = function () {
-                                return this._negative;
-                            };
-                            return QueryParam;
-                        })();
-                        selector.QueryParam = QueryParam;
-                        var Selector = (function () {
-                            function Selector() {
-                            }
-                            Selector.select = function (root, query, callback) {
-                                if (callback == null) {
-                                    return;
-                                }
-                                var current = null;
-                                var extracted = org.kevoree.modeling.traversal.impl.selector.Query.buildChain(query);
-                                if (extracted != null) {
-                                    for (var i = 0; i < extracted.size(); i++) {
-                                        if (current == null) {
-                                            current = root.traversal().traverseQuery(extracted.get(i).relationName);
-                                        }
-                                        else {
-                                            current = current.traverseQuery(extracted.get(i).relationName);
-                                        }
-                                        current = current.attributeQuery(extracted.get(i).params);
-                                    }
-                                }
-                                if (current != null) {
-                                    current.then(callback);
-                                }
-                                else {
-                                    callback(new Array());
-                                }
-                            };
-                            return Selector;
-                        })();
-                        selector.Selector = Selector;
-                    })(selector = impl.selector || (impl.selector = {}));
-                })(impl = traversal.impl || (traversal.impl = {}));
+                        impl.QueryEngine = QueryEngine;
+                    })(impl = query_1.impl || (query_1.impl = {}));
+                })(query = traversal_1.query || (traversal_1.query = {}));
                 var visitor;
                 (function (visitor) {
                     var KVisitResult = (function () {
@@ -8645,7 +8128,7 @@ var org;
                         return KVisitResult;
                     })();
                     visitor.KVisitResult = KVisitResult;
-                })(visitor = traversal.visitor || (traversal.visitor = {}));
+                })(visitor = traversal_1.visitor || (traversal_1.visitor = {}));
             })(traversal = modeling.traversal || (modeling.traversal = {}));
             var util;
             (function (util) {
@@ -8658,6 +8141,1144 @@ var org;
                     return Checker;
                 })();
                 util.Checker = Checker;
+                var maths;
+                (function (maths) {
+                    var AdjLinearSolverQr = (function () {
+                        function AdjLinearSolverQr() {
+                            this.maxRows = -1;
+                            this.maxCols = -1;
+                            this.decomposer = new org.kevoree.modeling.util.maths.QRDecompositionHouseholderColumn_D64();
+                        }
+                        AdjLinearSolverQr.prototype.setA = function (A) {
+                            if (A.numRows > this.maxRows || A.numCols > this.maxCols) {
+                                this.setMaxSize(A.numRows, A.numCols);
+                            }
+                            this.numRows = A.numRows;
+                            this.numCols = A.numCols;
+                            if (!this.decomposer.decompose(A)) {
+                                return false;
+                            }
+                            this.Q.reshape(this.numRows, this.numRows, false);
+                            this.R.reshape(this.numRows, this.numCols, false);
+                            this.decomposer.getQ(this.Q, false);
+                            this.decomposer.getR(this.R, false);
+                            return true;
+                        };
+                        AdjLinearSolverQr.prototype.solveU = function (U, b, n) {
+                            for (var i = n - 1; i >= 0; i--) {
+                                var sum = b[i];
+                                var indexU = i * n + i + 1;
+                                for (var j = i + 1; j < n; j++) {
+                                    sum -= U[indexU++] * b[j];
+                                }
+                                b[i] = sum / U[i * n + i];
+                            }
+                        };
+                        AdjLinearSolverQr.prototype.solve = function (B, X) {
+                            var BnumCols = B.numCols;
+                            this.Y.reshape(this.numRows, 1, false);
+                            this.Z.reshape(this.numRows, 1, false);
+                            for (var colB = 0; colB < BnumCols; colB++) {
+                                for (var i = 0; i < this.numRows; i++) {
+                                    this.Y.data[i] = B.unsafe_get(i, colB);
+                                }
+                                org.kevoree.modeling.util.maths.DenseMatrix64F.multTransA(this.Q, this.Y, this.Z);
+                                this.solveU(this.R.data, this.Z.data, this.numCols);
+                                for (var i = 0; i < this.numCols; i++) {
+                                    X.cset(i, colB, this.Z.data[i]);
+                                }
+                            }
+                        };
+                        AdjLinearSolverQr.prototype.setMaxSize = function (maxRows, maxCols) {
+                            maxRows += 5;
+                            this.maxRows = maxRows;
+                            this.maxCols = maxCols;
+                            this.Q = new org.kevoree.modeling.util.maths.DenseMatrix64F(maxRows, maxRows);
+                            this.R = new org.kevoree.modeling.util.maths.DenseMatrix64F(maxRows, maxCols);
+                            this.Y = new org.kevoree.modeling.util.maths.DenseMatrix64F(maxRows, 1);
+                            this.Z = new org.kevoree.modeling.util.maths.DenseMatrix64F(maxRows, 1);
+                        };
+                        return AdjLinearSolverQr;
+                    })();
+                    maths.AdjLinearSolverQr = AdjLinearSolverQr;
+                    var Correlations = (function () {
+                        function Correlations() {
+                        }
+                        Correlations.pearson = function (x, y) {
+                            var meanX = 0.0;
+                            var meanY = 0.0;
+                            for (var i = 0; i < x.length; i++) {
+                                meanX += x[i];
+                                meanY += y[i];
+                            }
+                            meanX /= x.length;
+                            meanY /= x.length;
+                            var sumXY = 0.0;
+                            var sumX2 = 0.0;
+                            var sumY2 = 0.0;
+                            for (var i = 0; i < x.length; i++) {
+                                sumXY += ((x[i] - meanX) * (y[i] - meanY));
+                                sumX2 += (x[i] - meanX) * (x[i] - meanX);
+                                sumY2 += (y[i] - meanY) * (y[i] - meanY);
+                            }
+                            return (sumXY / (Math.sqrt(sumX2) * Math.sqrt(sumY2)));
+                        };
+                        return Correlations;
+                    })();
+                    maths.Correlations = Correlations;
+                    var DenseMatrix64F = (function () {
+                        function DenseMatrix64F(numRows, numCols) {
+                            this.data = new Array();
+                            this.numRows = numRows;
+                            this.numCols = numCols;
+                        }
+                        DenseMatrix64F.multTransA_smallMV = function (A, B, C) {
+                            var cIndex = 0;
+                            for (var i = 0; i < A.numCols; i++) {
+                                var total = 0.0;
+                                var indexA = i;
+                                for (var j = 0; j < A.numRows; j++) {
+                                    total += A.get(indexA) * B.get(j);
+                                    indexA += A.numCols;
+                                }
+                                C.set(cIndex++, total);
+                            }
+                        };
+                        DenseMatrix64F.multTransA_reorderMV = function (A, B, C) {
+                            if (A.numRows == 0) {
+                                org.kevoree.modeling.util.maths.DenseMatrix64F.fill(C, 0);
+                                return;
+                            }
+                            var B_val = B.get(0);
+                            for (var i = 0; i < A.numCols; i++) {
+                                C.set(i, A.get(i) * B_val);
+                            }
+                            var indexA = A.numCols;
+                            for (var i = 1; i < A.numRows; i++) {
+                                B_val = B.get(i);
+                                for (var j = 0; j < A.numCols; j++) {
+                                    C.plus(j, A.get(indexA++) * B_val);
+                                }
+                            }
+                        };
+                        DenseMatrix64F.multTransA_reorderMM = function (a, b, c) {
+                            if (a.numCols == 0 || a.numRows == 0) {
+                                org.kevoree.modeling.util.maths.DenseMatrix64F.fill(c, 0);
+                                return;
+                            }
+                            var valA;
+                            for (var i = 0; i < a.numCols; i++) {
+                                var indexC_start = i * c.numCols;
+                                valA = a.get(i);
+                                var indexB = 0;
+                                var end = indexB + b.numCols;
+                                var indexC = indexC_start;
+                                while (indexB < end) {
+                                    c.set(indexC++, valA * b.get(indexB++));
+                                }
+                                for (var k = 1; k < a.numRows; k++) {
+                                    valA = a.unsafe_get(k, i);
+                                    end = indexB + b.numCols;
+                                    indexC = indexC_start;
+                                    while (indexB < end) {
+                                        c.plus(indexC++, valA * b.get(indexB++));
+                                    }
+                                }
+                            }
+                        };
+                        DenseMatrix64F.multTransA_smallMM = function (a, b, c) {
+                            var cIndex = 0;
+                            for (var i = 0; i < a.numCols; i++) {
+                                for (var j = 0; j < b.numCols; j++) {
+                                    var indexA = i;
+                                    var indexB = j;
+                                    var end = indexB + b.numRows * b.numCols;
+                                    var total = 0;
+                                    for (; indexB < end; indexB += b.numCols) {
+                                        total += a.get(indexA) * b.get(indexB);
+                                        indexA += a.numCols;
+                                    }
+                                    c.set(cIndex++, total);
+                                }
+                            }
+                        };
+                        DenseMatrix64F.multTransA = function (a, b, c) {
+                            if (b.numCols == 1) {
+                                if (a.numCols >= org.kevoree.modeling.util.maths.DenseMatrix64F.MULT_COLUMN_SWITCH) {
+                                    org.kevoree.modeling.util.maths.DenseMatrix64F.multTransA_reorderMV(a, b, c);
+                                }
+                                else {
+                                    org.kevoree.modeling.util.maths.DenseMatrix64F.multTransA_smallMV(a, b, c);
+                                }
+                            }
+                            else {
+                                if (a.numCols >= org.kevoree.modeling.util.maths.DenseMatrix64F.MULT_COLUMN_SWITCH || b.numCols >= org.kevoree.modeling.util.maths.DenseMatrix64F.MULT_COLUMN_SWITCH) {
+                                    org.kevoree.modeling.util.maths.DenseMatrix64F.multTransA_reorderMM(a, b, c);
+                                }
+                                else {
+                                    org.kevoree.modeling.util.maths.DenseMatrix64F.multTransA_smallMM(a, b, c);
+                                }
+                            }
+                        };
+                        DenseMatrix64F.setIdentity = function (mat) {
+                            var width = mat.numRows < mat.numCols ? mat.numRows : mat.numCols;
+                            java.util.Arrays.fill(mat.data, 0, mat.getNumElements(), 0);
+                            var index = 0;
+                            for (var i = 0; i < width; i++) {
+                                mat.data[index] = 1;
+                                index += mat.numCols + 1;
+                            }
+                        };
+                        DenseMatrix64F.widentity = function (width) {
+                            var ret = new org.kevoree.modeling.util.maths.DenseMatrix64F(width, width);
+                            for (var i = 0; i < width; i++) {
+                                ret.cset(i, i, 1.0);
+                            }
+                            return ret;
+                        };
+                        DenseMatrix64F.identity = function (numRows, numCols) {
+                            var ret = new org.kevoree.modeling.util.maths.DenseMatrix64F(numRows, numCols);
+                            var small = numRows < numCols ? numRows : numCols;
+                            for (var i = 0; i < small; i++) {
+                                ret.cset(i, i, 1.0);
+                            }
+                            return ret;
+                        };
+                        DenseMatrix64F.fill = function (a, value) {
+                            java.util.Arrays.fill(a.data, 0, a.getNumElements(), value);
+                        };
+                        DenseMatrix64F.prototype.get = function (index) {
+                            return this.data[index];
+                        };
+                        DenseMatrix64F.prototype.set = function (index, val) {
+                            return this.data[index] = val;
+                        };
+                        DenseMatrix64F.prototype.plus = function (index, val) {
+                            return this.data[index] += val;
+                        };
+                        DenseMatrix64F.prototype.reshape = function (numRows, numCols, saveValues) {
+                            if (this.data.length < numRows * numCols) {
+                                var d = new Array();
+                                if (saveValues) {
+                                    System.arraycopy(this.data, 0, d, 0, this.getNumElements());
+                                }
+                                this.data = d;
+                            }
+                            this.numRows = numRows;
+                            this.numCols = numCols;
+                        };
+                        DenseMatrix64F.prototype.cset = function (row, col, value) {
+                            this.data[row * this.numCols + col] = value;
+                        };
+                        DenseMatrix64F.prototype.unsafe_get = function (row, col) {
+                            return this.data[row * this.numCols + col];
+                        };
+                        DenseMatrix64F.prototype.getNumElements = function () {
+                            return this.numRows * this.numCols;
+                        };
+                        DenseMatrix64F.MULT_COLUMN_SWITCH = 15;
+                        return DenseMatrix64F;
+                    })();
+                    maths.DenseMatrix64F = DenseMatrix64F;
+                    var Distribution = (function () {
+                        function Distribution() {
+                        }
+                        Distribution.inverseNormalCDF = function (q) {
+                            var b = [1.570796288, 0.03706987906, -0.8364353589e-3, -0.2250947176e-3, 0.6841218299e-5, 0.5824238515e-5, -0.104527497e-5, 0.8360937017e-7, -0.3231081277e-8, 0.3657763036e-10, 0.6936233982e-12];
+                            if (q < 0.0 || 1.0 < q || q == 0.5) {
+                                return 0.0;
+                            }
+                            var w1 = q;
+                            if (q > 0.5) {
+                                w1 = 1.0 - q;
+                            }
+                            var w3 = -Math.log(4.0 * w1 * (1.0 - w1));
+                            w1 = b[0];
+                            for (var i = 1; i < 11; i++) {
+                                w1 += b[i] * Math.pow(w3, i);
+                            }
+                            return q > 0.5 ? Math.sqrt(w1 * w3) : -Math.sqrt(w1 * w3);
+                        };
+                        Distribution.gaussian = function (features, means, variances) {
+                            var dim = features.length;
+                            var p = 1;
+                            for (var i = 0; i < dim; i++) {
+                                p = p * (1 / Math.sqrt(2 * Math.PI * variances[i])) * Math.exp(-((features[i] - means[i]) * (features[i] - means[i])) / (2 * variances[i]));
+                            }
+                            return p;
+                        };
+                        Distribution.parallelGaussian = function (features, means, variances) {
+                            var dim = features.length;
+                            var p = new Array();
+                            for (var i = 0; i < dim; i++) {
+                                p[i] = (1 / Math.sqrt(2 * Math.PI * variances[i])) * Math.exp(-((features[i] - means[i]) * (features[i] - means[i])) / (2 * variances[i]));
+                            }
+                            return p;
+                        };
+                        Distribution.gaussianOneFeature = function (feature, mean, variance) {
+                            return (1 / Math.sqrt(2 * Math.PI * variance)) * Math.exp(-((feature - mean) * (feature - mean)) / (2 * variance));
+                        };
+                        return Distribution;
+                    })();
+                    maths.Distribution = Distribution;
+                    var PolynomialFit = (function () {
+                        function PolynomialFit(degree) {
+                            this.coef = new org.kevoree.modeling.util.maths.DenseMatrix64F(degree + 1, 1);
+                            this.A = new org.kevoree.modeling.util.maths.DenseMatrix64F(1, degree + 1);
+                            this.y = new org.kevoree.modeling.util.maths.DenseMatrix64F(1, 1);
+                            this.solver = new org.kevoree.modeling.util.maths.AdjLinearSolverQr();
+                        }
+                        PolynomialFit.prototype.getCoef = function () {
+                            return this.coef.data;
+                        };
+                        PolynomialFit.prototype.fit = function (samplePoints, observations) {
+                            this.y.reshape(observations.length, 1, false);
+                            System.arraycopy(observations, 0, this.y.data, 0, observations.length);
+                            this.A.reshape(this.y.numRows, this.coef.numRows, false);
+                            for (var i = 0; i < observations.length; i++) {
+                                var obs = 1;
+                                for (var j = 0; j < this.coef.numRows; j++) {
+                                    this.A.cset(i, j, obs);
+                                    obs *= samplePoints[i];
+                                }
+                            }
+                            this.solver.setA(this.A);
+                            this.solver.solve(this.y, this.coef);
+                        };
+                        PolynomialFit.extrapolate = function (time, weights) {
+                            var result = 0;
+                            var power = 1;
+                            for (var j = 0; j < weights.length; j++) {
+                                result += weights[j] * power;
+                                power = power * time;
+                            }
+                            return result;
+                        };
+                        return PolynomialFit;
+                    })();
+                    maths.PolynomialFit = PolynomialFit;
+                    var QRDecompositionHouseholderColumn_D64 = (function () {
+                        function QRDecompositionHouseholderColumn_D64() {
+                        }
+                        QRDecompositionHouseholderColumn_D64.prototype.setExpectedMaxSize = function (numRows, numCols) {
+                            this.numCols = numCols;
+                            this.numRows = numRows;
+                            this.minLength = Math.min(numCols, numRows);
+                            var maxLength = Math.max(numCols, numRows);
+                            if (this.dataQR == null || this.dataQR.length < numCols || this.dataQR[0].length < numRows) {
+                                this.dataQR = new Array(new Array());
+                                for (var i = 0; i < numCols; i++) {
+                                    this.dataQR[i] = new Array();
+                                }
+                                this.v = new Array();
+                                this.gammas = new Array();
+                            }
+                            if (this.v.length < maxLength) {
+                                this.v = new Array();
+                            }
+                            if (this.gammas.length < this.minLength) {
+                                this.gammas = new Array();
+                            }
+                        };
+                        QRDecompositionHouseholderColumn_D64.prototype.getQ = function (Q, compact) {
+                            if (compact) {
+                                if (Q == null) {
+                                    Q = org.kevoree.modeling.util.maths.DenseMatrix64F.identity(this.numRows, this.minLength);
+                                }
+                                else {
+                                    org.kevoree.modeling.util.maths.DenseMatrix64F.setIdentity(Q);
+                                }
+                            }
+                            else {
+                                if (Q == null) {
+                                    Q = org.kevoree.modeling.util.maths.DenseMatrix64F.widentity(this.numRows);
+                                }
+                                else {
+                                    org.kevoree.modeling.util.maths.DenseMatrix64F.setIdentity(Q);
+                                }
+                            }
+                            for (var j = this.minLength - 1; j >= 0; j--) {
+                                var u = this.dataQR[j];
+                                var vv = u[j];
+                                u[j] = 1;
+                                org.kevoree.modeling.util.maths.QRDecompositionHouseholderColumn_D64.rank1UpdateMultR(Q, u, this.gammas[j], j, j, this.numRows, this.v);
+                                u[j] = vv;
+                            }
+                            return Q;
+                        };
+                        QRDecompositionHouseholderColumn_D64.prototype.getR = function (R, compact) {
+                            if (R == null) {
+                                if (compact) {
+                                    R = new org.kevoree.modeling.util.maths.DenseMatrix64F(this.minLength, this.numCols);
+                                }
+                                else {
+                                    R = new org.kevoree.modeling.util.maths.DenseMatrix64F(this.numRows, this.numCols);
+                                }
+                            }
+                            else {
+                                for (var i = 0; i < R.numRows; i++) {
+                                    var min = Math.min(i, R.numCols);
+                                    for (var j = 0; j < min; j++) {
+                                        R.cset(i, j, 0);
+                                    }
+                                }
+                            }
+                            for (var j = 0; j < this.numCols; j++) {
+                                var colR = this.dataQR[j];
+                                var l = Math.min(j, this.numRows - 1);
+                                for (var i = 0; i <= l; i++) {
+                                    var val = colR[i];
+                                    R.cset(i, j, val);
+                                }
+                            }
+                            return R;
+                        };
+                        QRDecompositionHouseholderColumn_D64.prototype.decompose = function (A) {
+                            this.setExpectedMaxSize(A.numRows, A.numCols);
+                            this.convertToColumnMajor(A);
+                            this.error = false;
+                            for (var j = 0; j < this.minLength; j++) {
+                                this.householder(j);
+                                this.updateA(j);
+                            }
+                            return !this.error;
+                        };
+                        QRDecompositionHouseholderColumn_D64.prototype.convertToColumnMajor = function (A) {
+                            for (var x = 0; x < this.numCols; x++) {
+                                var colQ = this.dataQR[x];
+                                for (var y = 0; y < this.numRows; y++) {
+                                    colQ[y] = A.data[y * this.numCols + x];
+                                }
+                            }
+                        };
+                        QRDecompositionHouseholderColumn_D64.prototype.householder = function (j) {
+                            var u = this.dataQR[j];
+                            var max = org.kevoree.modeling.util.maths.QRDecompositionHouseholderColumn_D64.findMax(u, j, this.numRows - j);
+                            if (max == 0.0) {
+                                this.gamma = 0;
+                                this.error = true;
+                            }
+                            else {
+                                this.tau = org.kevoree.modeling.util.maths.QRDecompositionHouseholderColumn_D64.computeTauAndDivide(j, this.numRows, u, max);
+                                var u_0 = u[j] + this.tau;
+                                org.kevoree.modeling.util.maths.QRDecompositionHouseholderColumn_D64.divideElements(j + 1, this.numRows, u, u_0);
+                                this.gamma = u_0 / this.tau;
+                                this.tau *= max;
+                                u[j] = -this.tau;
+                            }
+                            this.gammas[j] = this.gamma;
+                        };
+                        QRDecompositionHouseholderColumn_D64.prototype.updateA = function (w) {
+                            var u = this.dataQR[w];
+                            for (var j = w + 1; j < this.numCols; j++) {
+                                var colQ = this.dataQR[j];
+                                var val = colQ[w];
+                                for (var k = w + 1; k < this.numRows; k++) {
+                                    val += u[k] * colQ[k];
+                                }
+                                val *= this.gamma;
+                                colQ[w] -= val;
+                                for (var i = w + 1; i < this.numRows; i++) {
+                                    colQ[i] -= u[i] * val;
+                                }
+                            }
+                        };
+                        QRDecompositionHouseholderColumn_D64.findMax = function (u, startU, length) {
+                            var max = -1;
+                            var index = startU;
+                            var stopIndex = startU + length;
+                            for (; index < stopIndex; index++) {
+                                var val = u[index];
+                                val = (val < 0.0) ? -val : val;
+                                if (val > max) {
+                                    max = val;
+                                }
+                            }
+                            return max;
+                        };
+                        QRDecompositionHouseholderColumn_D64.divideElements = function (j, numRows, u, u_0) {
+                            for (var i = j; i < numRows; i++) {
+                                u[i] /= u_0;
+                            }
+                        };
+                        QRDecompositionHouseholderColumn_D64.computeTauAndDivide = function (j, numRows, u, max) {
+                            var tau = 0;
+                            for (var i = j; i < numRows; i++) {
+                                var d = u[i] /= max;
+                                tau += d * d;
+                            }
+                            tau = Math.sqrt(tau);
+                            if (u[j] < 0) {
+                                tau = -tau;
+                            }
+                            return tau;
+                        };
+                        QRDecompositionHouseholderColumn_D64.rank1UpdateMultR = function (A, u, gamma, colA0, w0, w1, _temp) {
+                            for (var i = colA0; i < A.numCols; i++) {
+                                _temp[i] = u[w0] * A.data[w0 * A.numCols + i];
+                            }
+                            for (var k = w0 + 1; k < w1; k++) {
+                                var indexA = k * A.numCols + colA0;
+                                var valU = u[k];
+                                for (var i = colA0; i < A.numCols; i++) {
+                                    _temp[i] += valU * A.data[indexA++];
+                                }
+                            }
+                            for (var i = colA0; i < A.numCols; i++) {
+                                _temp[i] *= gamma;
+                            }
+                            for (var i = w0; i < w1; i++) {
+                                var valU = u[i];
+                                var indexA = i * A.numCols + colA0;
+                                for (var j = colA0; j < A.numCols; j++) {
+                                    A.data[indexA++] -= valU * _temp[j];
+                                }
+                            }
+                        };
+                        return QRDecompositionHouseholderColumn_D64;
+                    })();
+                    maths.QRDecompositionHouseholderColumn_D64 = QRDecompositionHouseholderColumn_D64;
+                    var Ranking = (function () {
+                        function Ranking() {
+                        }
+                        Ranking.wilsonRank = function (positive, negative, confidence) {
+                            var n = positive + negative;
+                            if (n == 0) {
+                                return 0.0;
+                            }
+                            var z = org.kevoree.modeling.util.maths.Distribution.inverseNormalCDF(1.0 - confidence / 2.0);
+                            var p_hat = (1.0 * positive) / n;
+                            return (p_hat + z * z / (2.0 * n) - z * Math.sqrt((p_hat * (1.0 - p_hat) + z * z / (4.0 * n)) / n)) / (1.0 + z * z / n);
+                        };
+                        return Ranking;
+                    })();
+                    maths.Ranking = Ranking;
+                    var Statistic = (function () {
+                        function Statistic() {
+                        }
+                        Statistic.calcHistogram = function (data, dataratings, numBins) {
+                            var result = new Array();
+                            var max;
+                            var min;
+                            min = data[0];
+                            max = data[0];
+                            for (var i = 0; i < data.length; i++) {
+                                if (data[i] < min) {
+                                    min = data[i];
+                                }
+                                if (data[i] > max) {
+                                    max = data[i];
+                                }
+                            }
+                            var binSize = (max - min) / numBins;
+                            for (var i = 0; i < data.length; i++) {
+                                var bin = ((data[i] - min) / binSize);
+                                result[bin]++;
+                            }
+                        };
+                        return Statistic;
+                    })();
+                    maths.Statistic = Statistic;
+                    var StringDistance = (function () {
+                        function StringDistance() {
+                        }
+                        StringDistance.levenshtein = function (s0, s1) {
+                            var len0 = s0.length + 1;
+                            var len1 = s1.length + 1;
+                            var cost = new Array();
+                            var newcost = new Array();
+                            for (var i = 0; i < len0; i++) {
+                                cost[i] = i;
+                            }
+                            for (var j = 1; j < len1; j++) {
+                                newcost[0] = j;
+                                for (var i = 1; i < len0; i++) {
+                                    var match = (s0.charAt(i - 1) == s1.charAt(j - 1)) ? 0 : 1;
+                                    var cost_replace = cost[i - 1] + match;
+                                    var cost_insert = cost[i] + 1;
+                                    var cost_delete = newcost[i - 1] + 1;
+                                    newcost[i] = Math.min(Math.min(cost_insert, cost_delete), cost_replace);
+                                }
+                                var swap = cost;
+                                cost = newcost;
+                                newcost = swap;
+                            }
+                            return cost[len0 - 1];
+                        };
+                        return StringDistance;
+                    })();
+                    maths.StringDistance = StringDistance;
+                    var expression;
+                    (function (expression_1) {
+                        var impl;
+                        (function (impl) {
+                            var MathEntities = (function () {
+                                function MathEntities() {
+                                    this.operators = new org.kevoree.modeling.memory.struct.map.impl.ArrayStringMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
+                                    this.operators.put("+", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("+", 20, true));
+                                    this.operators.put("-", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("-", 20, true));
+                                    this.operators.put("*", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("*", 30, true));
+                                    this.operators.put("/", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("/", 30, true));
+                                    this.operators.put("%", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("%", 30, true));
+                                    this.operators.put("^", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("^", 40, false));
+                                    this.operators.put("&&", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("&&", 4, false));
+                                    this.operators.put("||", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("||", 2, false));
+                                    this.operators.put(">", new org.kevoree.modeling.util.maths.expression.impl.MathOperation(">", 10, false));
+                                    this.operators.put(">=", new org.kevoree.modeling.util.maths.expression.impl.MathOperation(">=", 10, false));
+                                    this.operators.put("<", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("<", 10, false));
+                                    this.operators.put("<=", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("<=", 10, false));
+                                    this.operators.put("==", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("==", 7, false));
+                                    this.operators.put("!=", new org.kevoree.modeling.util.maths.expression.impl.MathOperation("!=", 7, false));
+                                    this.functions = new org.kevoree.modeling.memory.struct.map.impl.ArrayStringMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
+                                    this.functions.put("NOT", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("NOT", 1));
+                                    this.functions.put("IF", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("IF", 3));
+                                    this.functions.put("RAND", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("RAND", 0));
+                                    this.functions.put("SIN", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("SIN", 1));
+                                    this.functions.put("COS", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("COS", 1));
+                                    this.functions.put("TAN", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("TAN", 1));
+                                    this.functions.put("ASIN", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("ASIN", 1));
+                                    this.functions.put("ACOS", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("ACOS", 1));
+                                    this.functions.put("ATAN", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("ATAN", 1));
+                                    this.functions.put("MAX", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("MAX", 2));
+                                    this.functions.put("MIN", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("MIN", 2));
+                                    this.functions.put("ABS", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("ABS", 1));
+                                    this.functions.put("LOG", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("LOG", 1));
+                                    this.functions.put("ROUND", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("ROUND", 2));
+                                    this.functions.put("FLOOR", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("FLOOR", 1));
+                                    this.functions.put("CEILING", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("CEILING", 1));
+                                    this.functions.put("SQRT", new org.kevoree.modeling.util.maths.expression.impl.MathFunction("SQRT", 1));
+                                }
+                                MathEntities.getINSTANCE = function () {
+                                    if (MathEntities.INSTANCE == null) {
+                                        MathEntities.INSTANCE = new org.kevoree.modeling.util.maths.expression.impl.MathEntities();
+                                    }
+                                    return MathEntities.INSTANCE;
+                                };
+                                MathEntities.INSTANCE = null;
+                                return MathEntities;
+                            })();
+                            impl.MathEntities = MathEntities;
+                            var MathExpressionEngine = (function () {
+                                function MathExpressionEngine() {
+                                    this.varResolver = function (potentialVarName) {
+                                        if (potentialVarName.equals("PI")) {
+                                            return Math.PI;
+                                        }
+                                        if (potentialVarName.equals("TRUE")) {
+                                            return 1.0;
+                                        }
+                                        if (potentialVarName.equals("FALSE")) {
+                                            return 0.0;
+                                        }
+                                        return null;
+                                    };
+                                }
+                                MathExpressionEngine.isNumber = function (st) {
+                                    return !isNaN(+st);
+                                };
+                                MathExpressionEngine.isDigit = function (c) {
+                                    var cc = c.charCodeAt(0);
+                                    if (cc >= 0x30 && cc <= 0x39) {
+                                        return true;
+                                    }
+                                    return false;
+                                };
+                                MathExpressionEngine.isLetter = function (c) {
+                                    var cc = c.charCodeAt(0);
+                                    if ((cc >= 0x41 && cc <= 0x5A) || (cc >= 0x61 && cc <= 0x7A)) {
+                                        return true;
+                                    }
+                                    return false;
+                                };
+                                MathExpressionEngine.isWhitespace = function (c) {
+                                    var cc = c.charCodeAt(0);
+                                    if ((cc >= 0x0009 && cc <= 0x000D) || (cc == 0x0020) || (cc == 0x0085) || (cc == 0x00A0)) {
+                                        return true;
+                                    }
+                                    return false;
+                                };
+                                MathExpressionEngine.prototype.shuntingYard = function (expression) {
+                                    var outputQueue = new java.util.ArrayList();
+                                    var stack = new java.util.Stack();
+                                    var tokenizer = new org.kevoree.modeling.util.maths.expression.impl.MathExpressionTokenizer(expression);
+                                    var lastFunction = null;
+                                    var previousToken = null;
+                                    while (tokenizer.hasNext()) {
+                                        var token = tokenizer.next();
+                                        if (org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isNumber(token)) {
+                                            outputQueue.add(token);
+                                        }
+                                        else {
+                                            if (this.varResolver(token) != null) {
+                                                outputQueue.add(token);
+                                            }
+                                            else {
+                                                if (org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().functions.contains(token.toUpperCase())) {
+                                                    stack.push(token);
+                                                    lastFunction = token;
+                                                }
+                                                else {
+                                                    if (org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isLetter(token.charAt(0))) {
+                                                        stack.push(token);
+                                                    }
+                                                    else {
+                                                        if (",".equals(token)) {
+                                                            while (!stack.isEmpty() && !"(".equals(stack.peek())) {
+                                                                outputQueue.add(stack.pop());
+                                                            }
+                                                            if (stack.isEmpty()) {
+                                                                throw new java.lang.RuntimeException("Parse error for function '" + lastFunction + "'");
+                                                            }
+                                                        }
+                                                        else {
+                                                            if (org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.contains(token)) {
+                                                                var o1 = org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.get(token);
+                                                                var token2 = stack.isEmpty() ? null : stack.peek();
+                                                                while (org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.contains(token2) && ((o1.isLeftAssoc() && o1.getPrecedence() <= org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.get(token2).getPrecedence()) || (o1.getPrecedence() < org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.get(token2).getPrecedence()))) {
+                                                                    outputQueue.add(stack.pop());
+                                                                    token2 = stack.isEmpty() ? null : stack.peek();
+                                                                }
+                                                                stack.push(token);
+                                                            }
+                                                            else {
+                                                                if ("(".equals(token)) {
+                                                                    if (previousToken != null) {
+                                                                        if (org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isNumber(previousToken)) {
+                                                                            throw new java.lang.RuntimeException("Missing operator at character position " + tokenizer.getPos());
+                                                                        }
+                                                                    }
+                                                                    stack.push(token);
+                                                                }
+                                                                else {
+                                                                    if (")".equals(token)) {
+                                                                        while (!stack.isEmpty() && !"(".equals(stack.peek())) {
+                                                                            outputQueue.add(stack.pop());
+                                                                        }
+                                                                        if (stack.isEmpty()) {
+                                                                            throw new java.lang.RuntimeException("Mismatched parentheses");
+                                                                        }
+                                                                        stack.pop();
+                                                                        if (!stack.isEmpty() && org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().functions.contains(stack.peek().toUpperCase())) {
+                                                                            outputQueue.add(stack.pop());
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        previousToken = token;
+                                    }
+                                    while (!stack.isEmpty()) {
+                                        var element = stack.pop();
+                                        if ("(".equals(element) || ")".equals(element)) {
+                                            throw new java.lang.RuntimeException("Mismatched parentheses");
+                                        }
+                                        if (!org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.contains(element)) {
+                                            throw new java.lang.RuntimeException("Unknown operator or function: " + element);
+                                        }
+                                        outputQueue.add(element);
+                                    }
+                                    return outputQueue;
+                                };
+                                MathExpressionEngine.prototype.eval = function (p_expression) {
+                                    var rpn = this.shuntingYard(p_expression);
+                                    var stack = new java.util.Stack();
+                                    for (var ii = 0; ii < rpn.size(); ii++) {
+                                        var token = rpn.get(ii);
+                                        if (org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.contains(token)) {
+                                            var v1 = stack.pop();
+                                            var v2 = stack.pop();
+                                            stack.push(org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.get(token).eval(v2, v1));
+                                        }
+                                        else {
+                                            if (this.varResolver(token) != null) {
+                                                stack.push(this.varResolver(token));
+                                            }
+                                            else {
+                                                if (org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().functions.contains(token.toUpperCase())) {
+                                                    var f = org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().functions.get(token.toUpperCase());
+                                                    var p = new Array();
+                                                    for (var i = f.getNumParams() - 1; i >= 0; i--) {
+                                                        p[i] = stack.pop();
+                                                    }
+                                                    var fResult = f.eval(p);
+                                                    stack.push(fResult);
+                                                }
+                                                else {
+                                                    stack.push(java.lang.Double.parseDouble(token));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return stack.pop();
+                                };
+                                MathExpressionEngine.prototype.setVarResolver = function (p_resolver) {
+                                    this.varResolver = p_resolver;
+                                };
+                                MathExpressionEngine.decimalSeparator = '.';
+                                MathExpressionEngine.minusSign = '-';
+                                return MathExpressionEngine;
+                            })();
+                            impl.MathExpressionEngine = MathExpressionEngine;
+                            var MathExpressionTokenizer = (function () {
+                                function MathExpressionTokenizer(input) {
+                                    this.pos = 0;
+                                    this.input = input.trim();
+                                }
+                                MathExpressionTokenizer.prototype.hasNext = function () {
+                                    return (this.pos < this.input.length);
+                                };
+                                MathExpressionTokenizer.prototype.peekNextChar = function () {
+                                    if (this.pos < (this.input.length - 1)) {
+                                        return this.input.charAt(this.pos + 1);
+                                    }
+                                    else {
+                                        return '\0';
+                                    }
+                                };
+                                MathExpressionTokenizer.prototype.next = function () {
+                                    var token = new java.lang.StringBuilder();
+                                    if (this.pos >= this.input.length) {
+                                        return this.previousToken = null;
+                                    }
+                                    var ch = this.input.charAt(this.pos);
+                                    while (org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isWhitespace(ch) && this.pos < this.input.length) {
+                                        ch = this.input.charAt(++this.pos);
+                                    }
+                                    if (org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isDigit(ch)) {
+                                        while ((org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isDigit(ch) || ch == org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.decimalSeparator) && (this.pos < this.input.length)) {
+                                            token.append(this.input.charAt(this.pos++));
+                                            ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
+                                        }
+                                    }
+                                    else {
+                                        if (ch == org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.minusSign && org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isDigit(this.peekNextChar()) && ("(".equals(this.previousToken) || ",".equals(this.previousToken) || this.previousToken == null || org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.contains(this.previousToken))) {
+                                            token.append(org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.minusSign);
+                                            this.pos++;
+                                            token.append(this.next());
+                                        }
+                                        else {
+                                            if (org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isLetter(ch) || (ch == '_')) {
+                                                while ((org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isLetter(ch) || org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isDigit(ch) || (ch == '_')) && (this.pos < this.input.length)) {
+                                                    token.append(this.input.charAt(this.pos++));
+                                                    ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
+                                                }
+                                            }
+                                            else {
+                                                if (ch == '(' || ch == ')' || ch == ',') {
+                                                    token.append(ch);
+                                                    this.pos++;
+                                                }
+                                                else {
+                                                    while (!org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isLetter(ch) && !org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isDigit(ch) && ch != '_' && !org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.isWhitespace(ch) && ch != '(' && ch != ')' && ch != ',' && (this.pos < this.input.length)) {
+                                                        token.append(this.input.charAt(this.pos));
+                                                        this.pos++;
+                                                        ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
+                                                        if (ch == org.kevoree.modeling.util.maths.expression.impl.MathExpressionEngine.minusSign) {
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!org.kevoree.modeling.util.maths.expression.impl.MathEntities.getINSTANCE().operators.contains(token.toString())) {
+                                                        throw new java.lang.RuntimeException("Unknown operator '" + token + "' at position " + (this.pos - token.length + 1));
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return this.previousToken = token.toString();
+                                };
+                                MathExpressionTokenizer.prototype.getPos = function () {
+                                    return this.pos;
+                                };
+                                return MathExpressionTokenizer;
+                            })();
+                            impl.MathExpressionTokenizer = MathExpressionTokenizer;
+                            var MathFunction = (function () {
+                                function MathFunction(name, numParams) {
+                                    this.name = name.toUpperCase();
+                                    this.numParams = numParams;
+                                }
+                                MathFunction.prototype.getName = function () {
+                                    return this.name;
+                                };
+                                MathFunction.prototype.getNumParams = function () {
+                                    return this.numParams;
+                                };
+                                MathFunction.prototype.eval = function (p) {
+                                    if (this.name.equals("NOT")) {
+                                        return (p[0] == 0) ? 1 : 0;
+                                    }
+                                    else {
+                                        if (this.name.equals("IF")) {
+                                            return !(p[0] == 0) ? p[1] : p[2];
+                                        }
+                                        else {
+                                            if (this.name.equals("RAND")) {
+                                                return Math.random();
+                                            }
+                                            else {
+                                                if (this.name.equals("SIN")) {
+                                                    return Math.sin(p[0]);
+                                                }
+                                                else {
+                                                    if (this.name.equals("COS")) {
+                                                        return Math.cos(p[0]);
+                                                    }
+                                                    else {
+                                                        if (this.name.equals("TAN")) {
+                                                            return Math.tan(p[0]);
+                                                        }
+                                                        else {
+                                                            if (this.name.equals("ASIN")) {
+                                                                return Math.asin(p[0]);
+                                                            }
+                                                            else {
+                                                                if (this.name.equals("ACOS")) {
+                                                                    return Math.acos(p[0]);
+                                                                }
+                                                                else {
+                                                                    if (this.name.equals("ATAN")) {
+                                                                        return Math.atan(p[0]);
+                                                                    }
+                                                                    else {
+                                                                        if (this.name.equals("MAX")) {
+                                                                            return p[0] > p[1] ? p[0] : p[1];
+                                                                        }
+                                                                        else {
+                                                                            if (this.name.equals("MIN")) {
+                                                                                return p[0] < p[1] ? p[0] : p[1];
+                                                                            }
+                                                                            else {
+                                                                                if (this.name.equals("ABS")) {
+                                                                                    return Math.abs(p[0]);
+                                                                                }
+                                                                                else {
+                                                                                    if (this.name.equals("LOG")) {
+                                                                                        return Math.log(p[0]);
+                                                                                    }
+                                                                                    else {
+                                                                                        if (this.name.equals("ROUND")) {
+                                                                                        }
+                                                                                        else {
+                                                                                            if (this.name.equals("FLOOR")) {
+                                                                                            }
+                                                                                            else {
+                                                                                                if (this.name.equals("CEILING")) {
+                                                                                                }
+                                                                                                else {
+                                                                                                    if (this.name.equals("SQRT")) {
+                                                                                                        return Math.sqrt(p[0]);
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return 0;
+                                };
+                                return MathFunction;
+                            })();
+                            impl.MathFunction = MathFunction;
+                            var MathOperation = (function () {
+                                function MathOperation(oper, precedence, leftAssoc) {
+                                    this.oper = oper;
+                                    this.precedence = precedence;
+                                    this.leftAssoc = leftAssoc;
+                                }
+                                MathOperation.prototype.getOper = function () {
+                                    return this.oper;
+                                };
+                                MathOperation.prototype.getPrecedence = function () {
+                                    return this.precedence;
+                                };
+                                MathOperation.prototype.isLeftAssoc = function () {
+                                    return this.leftAssoc;
+                                };
+                                MathOperation.prototype.eval = function (v1, v2) {
+                                    if (this.oper.equals("+")) {
+                                        return v1 + v2;
+                                    }
+                                    else {
+                                        if (this.oper.equals("-")) {
+                                            return v1 - v2;
+                                        }
+                                        else {
+                                            if (this.oper.equals("*")) {
+                                                return v1 * v2;
+                                            }
+                                            else {
+                                                if (this.oper.equals("/")) {
+                                                    return v1 / v2;
+                                                }
+                                                else {
+                                                    if (this.oper.equals("%")) {
+                                                        return v1 % v2;
+                                                    }
+                                                    else {
+                                                        if (this.oper.equals("^")) {
+                                                            return Math.pow(v1, v2);
+                                                        }
+                                                        else {
+                                                            if (this.oper.equals("&&")) {
+                                                                var b1 = !(v1 == 0);
+                                                                var b2 = !(v2 == 0);
+                                                                return b1 && b2 ? 1 : 0;
+                                                            }
+                                                            else {
+                                                                if (this.oper.equals("||")) {
+                                                                    var b1 = !(v1 == 0);
+                                                                    var b2 = !(v2 == 0);
+                                                                    return b1 || b2 ? 1 : 0;
+                                                                }
+                                                                else {
+                                                                    if (this.oper.equals(">")) {
+                                                                        return v1 > v2 ? 1 : 0;
+                                                                    }
+                                                                    else {
+                                                                        if (this.oper.equals(">=")) {
+                                                                            return v1 >= v2 ? 1 : 0;
+                                                                        }
+                                                                        else {
+                                                                            if (this.oper.equals("<")) {
+                                                                                return v1 < v2 ? 1 : 0;
+                                                                            }
+                                                                            else {
+                                                                                if (this.oper.equals("<=")) {
+                                                                                    return v1 <= v2 ? 1 : 0;
+                                                                                }
+                                                                                else {
+                                                                                    if (this.oper.equals("==")) {
+                                                                                        return v1 == v2 ? 1 : 0;
+                                                                                    }
+                                                                                    else {
+                                                                                        if (this.oper.equals("!=")) {
+                                                                                            return v1 != v2 ? 1 : 0;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return 0;
+                                };
+                                return MathOperation;
+                            })();
+                            impl.MathOperation = MathOperation;
+                        })(impl = expression_1.impl || (expression_1.impl = {}));
+                    })(expression = maths.expression || (maths.expression = {}));
+                    var structure;
+                    (function (structure) {
+                        var impl;
+                        (function (impl) {
+                            var Array1D = (function () {
+                                function Array1D(p_size, p_offset, p_segmentIndex, p_segment, p_metaClass) {
+                                    this._size = p_size;
+                                    this._offset = p_offset;
+                                    this._segmentIndex = p_segmentIndex;
+                                    this._segment = p_segment;
+                                    this._metaClass = p_metaClass;
+                                }
+                                Array1D.prototype.size = function () {
+                                    return this._size;
+                                };
+                                Array1D.prototype.get = function (p_index) {
+                                    return this._segment.getInferElem(this._segmentIndex, this._offset + p_index, this._metaClass);
+                                };
+                                Array1D.prototype.set = function (p_index, p_value) {
+                                    this._segment.setInferElem(this._segmentIndex, this._offset + p_index, p_value, this._metaClass);
+                                    return p_value;
+                                };
+                                Array1D.prototype.add = function (index, value) {
+                                    return this.set(index, this.get(index) + value);
+                                };
+                                return Array1D;
+                            })();
+                            impl.Array1D = Array1D;
+                            var Array2D = (function () {
+                                function Array2D(p_nbRaws, p_nbColumns, p_offset, p_segmentIndex, p_segment, p_metaClass) {
+                                    this._nbRaws = p_nbRaws;
+                                    this._nbColumns = p_nbColumns;
+                                    this._offset = p_offset;
+                                    this._segment = p_segment;
+                                    this._segmentIndex = p_segmentIndex;
+                                    this._metaClass = p_metaClass;
+                                }
+                                Array2D.prototype.nbRaws = function () {
+                                    return this._nbRaws;
+                                };
+                                Array2D.prototype.nbColumns = function () {
+                                    return this._nbColumns;
+                                };
+                                Array2D.prototype.get = function (p_rawIndex, p_columnIndex) {
+                                    return this._segment.getInferElem(this._segmentIndex, this._offset + (p_rawIndex * this._nbColumns) + p_columnIndex, this._metaClass);
+                                };
+                                Array2D.prototype.set = function (p_rawIndex, p_columnIndex, value) {
+                                    this._segment.setInferElem(this._segmentIndex, this._offset + (p_rawIndex * this._nbColumns) + p_columnIndex, value, this._metaClass);
+                                    return value;
+                                };
+                                Array2D.prototype.add = function (rawIndex, columnIndex, value) {
+                                    return this.set(rawIndex, columnIndex, this.get(rawIndex, columnIndex) + value);
+                                };
+                                return Array2D;
+                            })();
+                            impl.Array2D = Array2D;
+                            var Array3D = (function () {
+                                function Array3D(p_nbRaws, p_nbColumns, p_nbDeeps, p_offset, p_segmentIndex, p_segment, p_metaClass) {
+                                    this._nbRaws = p_nbRaws;
+                                    this._nbColumns = p_nbColumns;
+                                    this._nbDeeps = p_nbDeeps;
+                                    this._offset = p_offset;
+                                    this._segmentIndex = p_segmentIndex;
+                                    this._segment = p_segment;
+                                    this._metaClass = p_metaClass;
+                                }
+                                Array3D.prototype.nbRaws = function () {
+                                    return this._nbRaws;
+                                };
+                                Array3D.prototype.nbColumns = function () {
+                                    return this._nbColumns;
+                                };
+                                Array3D.prototype.nbDeeps = function () {
+                                    return this._nbDeeps;
+                                };
+                                Array3D.prototype.get = function (p_rawIndex, p_columnIndex, p_deepIndex) {
+                                    return this._segment.getInferElem(this._segmentIndex, this._offset + (p_rawIndex * this._nbColumns * this._nbDeeps) + p_columnIndex + p_deepIndex, this._metaClass);
+                                };
+                                Array3D.prototype.set = function (p_rawIndex, p_columnIndex, p_deepIndex, p_value) {
+                                    this._segment.setInferElem(this._segmentIndex, this._offset + (p_rawIndex * this._nbColumns * this._nbDeeps) + p_columnIndex + p_deepIndex, p_value, this._metaClass);
+                                    return p_value;
+                                };
+                                Array3D.prototype.add = function (p_rawIndex, p_columnIndex, p_deepIndex, value) {
+                                    return this.set(p_rawIndex, p_columnIndex, p_deepIndex, this.get(p_rawIndex, p_columnIndex, p_deepIndex) + value);
+                                };
+                                return Array3D;
+                            })();
+                            impl.Array3D = Array3D;
+                        })(impl = structure.impl || (structure.impl = {}));
+                    })(structure = maths.structure || (maths.structure = {}));
+                })(maths = util.maths || (util.maths = {}));
             })(util = modeling.util || (modeling.util = {}));
         })(modeling = kevoree.modeling || (kevoree.modeling = {}));
     })(kevoree = org.kevoree || (org.kevoree = {}));
@@ -9483,7 +10104,7 @@ var org;
             var MetaActionParameter = (function (_super) {
                 __extends(MetaActionParameter, _super);
                 function MetaActionParameter() {
-                    _super.call(this, "org.kubi.ActionParameter", 5);
+                    _super.call(this, "org.kubi.ActionParameter", 5, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaActionParameter.ATT_UNIT;
                     temp_all[1] = MetaActionParameter.ATT_DESIRED;
@@ -9528,7 +10149,7 @@ var org;
             var MetaCatalog = (function (_super) {
                 __extends(MetaCatalog, _super);
                 function MetaCatalog() {
-                    _super.call(this, "org.kubi.Catalog", 6);
+                    _super.call(this, "org.kubi.Catalog", 6, null);
                     var temp_all = new Array();
                     var temp_references = new Array();
                     temp_all[0] = MetaCatalog.REF_MANUFACTURERS;
@@ -9559,7 +10180,7 @@ var org;
             var MetaDevice = (function (_super) {
                 __extends(MetaDevice, _super);
                 function MetaDevice() {
-                    _super.call(this, "org.kubi.Device", 3);
+                    _super.call(this, "org.kubi.Device", 3, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaDevice.ATT_NAME;
                     temp_all[1] = MetaDevice.ATT_ID;
@@ -9626,7 +10247,7 @@ var org;
             var MetaEcosystem = (function (_super) {
                 __extends(MetaEcosystem, _super);
                 function MetaEcosystem() {
-                    _super.call(this, "org.kubi.Ecosystem", 0);
+                    _super.call(this, "org.kubi.Ecosystem", 0, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaEcosystem.ATT_NAME;
                     var temp_references = new Array();
@@ -9659,7 +10280,7 @@ var org;
             var MetaGroup = (function (_super) {
                 __extends(MetaGroup, _super);
                 function MetaGroup() {
-                    _super.call(this, "org.kubi.Group", 1);
+                    _super.call(this, "org.kubi.Group", 1, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaGroup.ATT_NAME;
                     var temp_references = new Array();
@@ -9698,7 +10319,7 @@ var org;
             var MetaManufacturer = (function (_super) {
                 __extends(MetaManufacturer, _super);
                 function MetaManufacturer() {
-                    _super.call(this, "org.kubi.Manufacturer", 7);
+                    _super.call(this, "org.kubi.Manufacturer", 7, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaManufacturer.ATT_NAME;
                     temp_all[1] = MetaManufacturer.ATT_ID;
@@ -9809,7 +10430,7 @@ var org;
             var MetaProduct = (function (_super) {
                 __extends(MetaProduct, _super);
                 function MetaProduct() {
-                    _super.call(this, "org.kubi.Product", 8);
+                    _super.call(this, "org.kubi.Product", 8, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaProduct.ATT_NAME;
                     temp_all[1] = MetaProduct.ATT_ID;
@@ -9838,7 +10459,7 @@ var org;
             var MetaStateParameter = (function (_super) {
                 __extends(MetaStateParameter, _super);
                 function MetaStateParameter() {
-                    _super.call(this, "org.kubi.StateParameter", 4);
+                    _super.call(this, "org.kubi.StateParameter", 4, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaStateParameter.ATT_UNIT;
                     temp_all[1] = MetaStateParameter.ATT_VALUETYPE;
@@ -9875,7 +10496,7 @@ var org;
             var MetaTechnology = (function (_super) {
                 __extends(MetaTechnology, _super);
                 function MetaTechnology() {
-                    _super.call(this, "org.kubi.Technology", 2);
+                    _super.call(this, "org.kubi.Technology", 2, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaTechnology.ATT_NAME;
                     var temp_references = new Array();
@@ -9914,7 +10535,7 @@ var org;
             var MetaZWaveProduct = (function (_super) {
                 __extends(MetaZWaveProduct, _super);
                 function MetaZWaveProduct() {
-                    _super.call(this, "org.kubi.ZWaveProduct", 9);
+                    _super.call(this, "org.kubi.ZWaveProduct", 9, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaZWaveProduct.ATT_NAME;
                     temp_all[1] = MetaZWaveProduct.ATT_ID;
@@ -10224,7 +10845,7 @@ var org;
                 var MetaAssociation = (function (_super) {
                     __extends(MetaAssociation, _super);
                     function MetaAssociation() {
-                        _super.call(this, "org.kubi.zwave.Association", 12);
+                        _super.call(this, "org.kubi.zwave.Association", 12, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaAssociation.ATT_NUMGROUPS;
                         var temp_references = new Array();
@@ -10257,7 +10878,7 @@ var org;
                 var MetaAssociationGroup = (function (_super) {
                     __extends(MetaAssociationGroup, _super);
                     function MetaAssociationGroup() {
-                        _super.call(this, "org.kubi.zwave.AssociationGroup", 14);
+                        _super.call(this, "org.kubi.zwave.AssociationGroup", 14, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaAssociationGroup.ATT_AUTO;
                         temp_all[1] = MetaAssociationGroup.ATT_MAXASSOCIATIONS;
@@ -10290,7 +10911,7 @@ var org;
                 var MetaCommandClass = (function (_super) {
                     __extends(MetaCommandClass, _super);
                     function MetaCommandClass() {
-                        _super.call(this, "org.kubi.zwave.CommandClass", 10);
+                        _super.call(this, "org.kubi.zwave.CommandClass", 10, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaCommandClass.ATT_ID;
                         var temp_references = new Array();
@@ -10329,7 +10950,7 @@ var org;
                 var MetaParameter = (function (_super) {
                     __extends(MetaParameter, _super);
                     function MetaParameter() {
-                        _super.call(this, "org.kubi.zwave.Parameter", 11);
+                        _super.call(this, "org.kubi.zwave.Parameter", 11, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaParameter.ATT_HELP;
                         temp_all[1] = MetaParameter.ATT_INSTANCE;
@@ -10382,7 +11003,7 @@ var org;
                 var MetaParameterItem = (function (_super) {
                     __extends(MetaParameterItem, _super);
                     function MetaParameterItem() {
-                        _super.call(this, "org.kubi.zwave.ParameterItem", 13);
+                        _super.call(this, "org.kubi.zwave.ParameterItem", 13, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaParameterItem.ATT_LABEL;
                         temp_all[1] = MetaParameterItem.ATT_VALUE;

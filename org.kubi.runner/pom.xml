@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>org.kubi.root</artifactId>
+        <groupId>org.kubi</groupId>
+        <version>1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <name>Kubi :: Default Runner</name>
+
+    <artifactId>org.kubi.runner</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.kernel</artifactId>
+            <version>1-SNAPSHOT</version>
+        </dependency>
+
+
+        <!-- Comment under -->
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.fakemock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.zwave</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.madmock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+        <!--
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.driver.madmock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.driver.smartcampus</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
+    </dependencies>
+
+
+</project>

@@ -1,17 +1,15 @@
-package org.kubi.plugins.mock.madmock;
+package org.kubi.plugins.mock.fakemock;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KObject;
-import org.kevoree.modeling.api.extrapolation.Extrapolation;
-import org.kevoree.modeling.api.meta.MetaAttribute;
-import org.kevoree.modeling.api.meta.MetaClass;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KObject;
+import org.kevoree.modeling.extrapolation.Extrapolation;
+import org.kevoree.modeling.meta.KMetaAttribute;
 import org.kubi.Device;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.Technology;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
-import org.kubi.meta.MetaDevice;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -21,8 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by duke on 20/03/15.
  */
-public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation
-{
+public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation {
 
     ScheduledExecutorService service = null;
 
@@ -35,16 +32,20 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation
         this.model = kernel.model();
 
         //Demonstration of MetaClass wide hacked extrapolation
-        (this.model.metaModel().metaClass("org.kubi.Device")).attribute("homeId").setExtrapolation(this);
+        (this.model.metaModel().metaClassByName("org.kubi.Device")).attribute("homeId").setExtrapolation(this);
 
         service = Executors.newScheduledThreadPool(1);
         technology = model.universe(kernel.currentUniverse()).time(System.currentTimeMillis()).createTechnology();
         technology.setName("FakeTechnology");
-        kernel.model().universe(kernel.currentUniverse()).time(System.currentTimeMillis()).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(System.currentTimeMillis()).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 ((Ecosystem) kObject).addTechnologies(technology);
-                model.save();
+                model.save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+                    }
+                });
             }
         });
         service.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
@@ -60,7 +61,7 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation
         try {
             //add devices or change values
             Random rand = new Random();
-            technology.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
+            technology.jump(System.currentTimeMillis(), new KCallback<KObject>() {
                 @Override
                 public void on(KObject kObject) {
                     Technology currentTechno = (Technology) kObject;
@@ -72,19 +73,27 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation
                         newDevice.setName(deviceName);
                         currentTechno.addDevices(newDevice);
                     }
-                    currentTechno.getDevices().then(new Callback<Device[]>() {
+                    currentTechno.getDevices(new KCallback<Device[]>() {
                         @Override
                         public void on(Device[] devices) {
                             for (Device device : devices) {
                                 device.setVersion(System.currentTimeMillis() + "");
-                                System.err.println("Extrapolated HomeId="+device.getHomeId());
+                                System.err.println("Extrapolated HomeId=" + device.getHomeId());
                             }
-                            model.save();
+                            model.save(new KCallback() {
+                                @Override
+                                public void on(Object o) {
+                                }
+                            });
                         }
                     });
                 }
             });
-            model.save();
+            model.save(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -93,22 +102,12 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation
     private Random random = new Random();
 
     @Override
-    public Object extrapolate(KObject current, MetaAttribute attribute) {
-        return ""+random.nextInt();
+    public Object extrapolate(KObject current, KMetaAttribute attribute) {
+        return "" + random.nextInt();
     }
 
     @Override
-    public void mutate(KObject current, MetaAttribute attribute, Object payload) {
+    public void mutate(KObject current, KMetaAttribute attribute, Object payload) {
 
-    }
-
-    @Override
-    public String save(Object cache, MetaAttribute attribute) {
-        return null;
-    }
-
-    @Override
-    public Object load(String payload, MetaAttribute attribute, long now) {
-        return null;
     }
 }

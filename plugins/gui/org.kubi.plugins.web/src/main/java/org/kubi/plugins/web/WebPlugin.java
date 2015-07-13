@@ -1,6 +1,6 @@
 package org.kubi.plugins.web;
 
-import org.kevoree.modeling.databases.websocket.WebSocketWrapper;
+import org.kevoree.modeling.drivers.websocket.WebSocketGateway;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
 
@@ -10,10 +10,8 @@ public class WebPlugin implements KubiPlugin {
 
     @Override
     public void start(KubiKernel kernel) {
-        WebSocketWrapper webSocketWrapper = new WebSocketWrapper(kernel.model().manager().cdn(), PORT);
-        webSocketWrapper.exposeResourcesOf(this.getClass().getClassLoader());
-        kernel.model().setContentDeliveryDriver(webSocketWrapper);
-        webSocketWrapper.connect(null);
+        WebSocketGateway webSocketGateway = WebSocketGateway.exposeModelAndResources(kernel.model(), PORT, this.getClass().getClassLoader());
+        webSocketGateway.start();
     }
 
     @Override

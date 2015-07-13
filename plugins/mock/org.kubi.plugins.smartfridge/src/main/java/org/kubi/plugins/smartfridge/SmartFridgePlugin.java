@@ -1,8 +1,8 @@
 package org.kubi.plugins.smartfridge;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KConfig;
-import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KConfig;
+import org.kevoree.modeling.KObject;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -31,7 +31,7 @@ public class SmartFridgePlugin implements KubiPlugin {
     public void start(KubiKernel kernel) {
         kubiKernel = kernel;
         long initialTime = KConfig.BEGINNING_OF_TIME;
-        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
@@ -60,7 +60,11 @@ public class SmartFridgePlugin implements KubiPlugin {
 
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
                 initData(universe, stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad));
-                kernel.model().save();
+                kernel.model().save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+                    }
+                });
 
 
                 // TODO : reader
@@ -73,8 +77,16 @@ public class SmartFridgePlugin implements KubiPlugin {
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete();
-            kubiKernel.model().save();
+            currentTechnology.delete(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
+            kubiKernel.model().save(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
 //            currentTechnology.view().universe().model().save();
         }
         System.out.println("SmartFridgePlugin stops ...");
@@ -89,25 +101,29 @@ public class SmartFridgePlugin implements KubiPlugin {
                 String[] data = line.split(csvSplitter);
                 if (data.length > 2 && data[1] != null && data[2] != null) {
                     long recordTime = Long.parseLong(data[0]);
-                    universe.time(recordTime).lookupAll(keys).then(new Callback<KObject[]>() {
+                    universe.time(recordTime).lookupAll(keys, new KCallback<KObject[]>() {
                         @Override
                         public void on(KObject[] kObjects) {
                             if (("3").equals(data[1])) {
                                 final double temp = Double.parseDouble(data[2]);
-                                if(kObjects[0] != null){
+                                if (kObjects[0] != null) {
                                     ((StateParameter) kObjects[0]).setValue(temp + "");
                                 }
-                            }else if (("2").equals(data[1])) {
+                            } else if (("2").equals(data[1])) {
                                 float openRawState = Float.parseFloat(data[2]);
                                 boolean openState = false;
                                 if (openRawState == 255) {
                                     openState = true;
                                 }
-                                if(kObjects[1] != null){
+                                if (kObjects[1] != null) {
 // TODO to print the value of the openchecker                                    ((StateParameter) kObjects[1]).setValue((openState?0.2:0) + "");
                                 }
                             }
-                            kubiKernel.model().save();
+                            kubiKernel.model().save(new KCallback() {
+                                @Override
+                                public void on(Object o) {
+                                }
+                            });
                         }
                     });
                 }
@@ -135,21 +151,21 @@ public class SmartFridgePlugin implements KubiPlugin {
             e.printStackTrace();
         }
 
-        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot().then(new Callback<KObject>() {
+        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
 
-                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).done().then(new Callback<KObject[]>() {
+                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).then(new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         for (KObject t : kObjects){
                             System.out.println((Technology)t);
                             t.traversal().traverse(MetaTechnology.REF_DEVICES)
-                                    .traverse(MetaDevice.REF_STATEPARAMETERS).done().then(new Callback<KObject[]>() {
+                                    .traverse(MetaDevice.REF_STATEPARAMETERS).then(new KCallback<KObject[]>() {
                                 @Override
                                 public void on(KObject[] a) {
                                     for(KObject stateP : a){
-                                        stateP.timeWalker().allTimes().then(new Callback<long[]>() {
+                                        stateP.timeWalker().allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
                                             }

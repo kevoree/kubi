@@ -1,7 +1,7 @@
 package org.kubi.plugins.mock.madmock;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KObject;
 import org.kubi.Device;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
@@ -31,11 +31,15 @@ public class MadMockPlugin implements KubiPlugin, Runnable {
         service = Executors.newScheduledThreadPool(1);
         technology = model.universe(kernel.currentUniverse()).time(System.currentTimeMillis()).createTechnology();
         technology.setName("MadTechnology");
-        kernel.model().universe(kernel.currentUniverse()).time(System.currentTimeMillis()).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(System.currentTimeMillis()).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 ((Ecosystem) kObject).addTechnologies(technology);
-                model.save();
+                model.save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+                    }
+                });
             }
         });
         service.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
@@ -51,7 +55,7 @@ public class MadMockPlugin implements KubiPlugin, Runnable {
         try {
             //add devices or change values
             Random rand = new Random();
-            technology.jump(System.currentTimeMillis()).then(new Callback<KObject>() {
+            technology.jump(System.currentTimeMillis(), new KCallback<KObject>() {
                 @Override
                 public void on(KObject kObject) {
                     Technology currentTechno = (Technology) kObject;
@@ -63,18 +67,26 @@ public class MadMockPlugin implements KubiPlugin, Runnable {
                         newDevice.setName(deviceName);
                         currentTechno.addDevices(newDevice);
                     }
-                    currentTechno.getDevices().then(new Callback<Device[]>() {
+                    currentTechno.getDevices(new KCallback<Device[]>() {
                         @Override
                         public void on(Device[] devices) {
                             for (Device device : devices) {
                                 device.setVersion(System.currentTimeMillis() + "");
                             }
-                            model.save();
+                            model.save(new KCallback() {
+                                @Override
+                                public void on(Object o) {
+                                }
+                            });
                         }
                     });
                 }
             });
-            model.save();
+            model.save(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
         } catch (Exception e){
             e.printStackTrace();
         }

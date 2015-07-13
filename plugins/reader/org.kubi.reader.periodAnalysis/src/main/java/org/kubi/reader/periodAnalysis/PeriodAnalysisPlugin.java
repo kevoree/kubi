@@ -1,9 +1,9 @@
 package org.kubi.reader.periodAnalysis;
 
 import org.kevoree.brain.JavaPeriodCalculatorFFT;
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KConfig;
-import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KConfig;
+import org.kevoree.modeling.KObject;
 import org.kubi.Ecosystem;
 import org.kubi.Period;
 import org.kubi.StateParameter;
@@ -32,35 +32,35 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
         }
         System.out.println("Period computing...");
         long initialTime = KConfig.BEGINNING_OF_TIME;
-        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
                 ecosystem.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES)
                         .traverse(MetaTechnology.REF_DEVICES)
                         .traverse(MetaDevice.REF_STATEPARAMETERS)
-                        .done().then(new Callback<KObject[]>() {
-                    @Override
-                    public void on(KObject[] kObjects) {
-                        // TODO : check if the Period is null or not
-                        if(kObjects.length >0) {
+                        .then(new KCallback<KObject[]>() {
+                            @Override
+                            public void on(KObject[] kObjects) {
+                                // TODO : check if the Period is null or not
+                                if (kObjects.length > 0) {
 //                            for (int i =0;i<kObjects.length;i++){
-                            for (int i =0;i<1;i++){
-                                StateParameter parameter = (StateParameter) kObjects[i];
+                                    for (int i = 0; i < 1; i++) {
+                                        StateParameter parameter = (StateParameter) kObjects[i];
 //                                parameter.timeWalker().allTimes().then(new Callback<long[]>() {
 //                                    @Override
 //                                    public void on(long[] longs) {
-                                long timeMax = 1428997126000L;
+                                        long timeMax = 1428997126000L;
 //                                        timeMax = longs[0];
-                                getPreviousValues(parameter, 7600, timeMax, 50000);
+                                        getPreviousValues(parameter, 7600, timeMax, 50000);
 //                                    }
 //                                });
+                                    }
+                                } else {
+                                    System.err.println("ERROR PeriodAnalysisPlugin: no device detected");
+                                }
                             }
-                        }else {
-                            System.err.println("ERROR PeriodAnalysisPlugin: no device detected");
-                        }
-                    }
-                });
+                        });
             }
         });
     }
@@ -86,14 +86,14 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
     }
 
     private void getPreviousValues(List<Double> result, StateParameter parameter, int numberOfValues, long time, long periodOfGets) {
-        parameter.jump(time).then(new Callback<KObject>() {
+        parameter.jump(time, new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 StateParameter p = (StateParameter) kObject;
                 if (p != null && numberOfValues > 0 && p.getValue() != null) {
-                    try{
+                    try {
                         result.add(Double.parseDouble(p.getValue()));
-                    }catch (Exception e){
+                    } catch (Exception e) {
                     }
 
                     List<Double> list = new ArrayList<Double>(result);
@@ -119,14 +119,18 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
         int period = JavaPeriodCalculatorFFT.getOtherPeriod(observationsDouble, 150, 700);
-        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).done().then(new Callback<KObject[]>() {
+        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(new KCallback<KObject[]>() {
             @Override
             public void on(KObject[] kObjects) {
                 if (kObjects.length > 0) {
                     Period kPeriod = ((Period) kObjects[0]);
                     if (kPeriod.getPeriod() == null) {
                         kPeriod.setPeriod(((double) period) + "");
-                        kubiKernel.model().save();
+                        kubiKernel.model().save(new KCallback() {
+                            @Override
+                            public void on(Object o) {
+                            }
+                        });
                     } else
                         System.out.println(kPeriod.getPeriod());
                 }

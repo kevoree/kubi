@@ -45,6 +45,14 @@
         </dependency>
         -->
 
+        <!-- Infer StateMachine
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.infer.statemachine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
         <!--
                     MOCKS
         -->

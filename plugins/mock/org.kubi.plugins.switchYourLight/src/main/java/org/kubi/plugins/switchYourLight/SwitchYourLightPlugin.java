@@ -1,8 +1,8 @@
 package org.kubi.plugins.switchYourLight;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KConfig;
-import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KConfig;
+import org.kevoree.modeling.KObject;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -24,7 +24,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
     public void start(KubiKernel kernel) {
         this.kubiKernel = kernel;
         long initialTime = KConfig.BEGINNING_OF_TIME;
-        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
@@ -44,12 +44,16 @@ public class SwitchYourLightPlugin implements KubiPlugin{
                 SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("name");
                 device2.addStateParameters(lightState);
 
-                kubiKernel.model().metaModel().metaClass("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new SwitchYourLightExtrapolation());
+                kubiKernel.model().metaModel().metaClassByName("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new SwitchYourLightExtrapolation());
 
                 currentTechnology.addDevices(device);
                 currentTechnology.addDevices(device2);
 
-                kubiKernel.model().save();
+                kubiKernel.model().save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+                    }
+                });
 
                 long[] stateKeys = new long[2];
                 stateKeys[0] = switchState.uuid();
@@ -63,8 +67,16 @@ public class SwitchYourLightPlugin implements KubiPlugin{
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete();
-            kubiKernel.model().save();
+            currentTechnology.delete(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
+            kubiKernel.model().save(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
         }
         System.out.println("SmartFridgePlugin stops ...");
     }
@@ -80,7 +92,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
             int nbLoops = 10000;
             for (int i = 0; i < nbLoops; i++) {
                 final BufferedWriter finalWriter = writer;
-                universe.time(now + (i*jumingSteps)).lookupAll(keys).then(new Callback<KObject[]>() {
+                universe.time(now + (i*jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length>0){
@@ -128,7 +140,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 //                        System.out.println((kObjects[0].now()) % 60000 + "," + ((SimulatedParameter) kObjects[0]).getValue() + "," + ((SimulatedParameter) kObjects[1]).getValue());
                         }
                     }
-                });universe.time(1 + now + (i*jumingSteps)).lookupAll(keys).then(new Callback<KObject[]>() {
+                });universe.time(1 + now + (i*jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length>0){

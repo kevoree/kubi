@@ -33,9 +33,10 @@
                 // --------------
                 kubiModel2 = new org.kubi.KubiModel();
                 // --------------
-                var dataBaseConnection2 = new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn");
+                console.log("starting ... :D");
+                var dataBaseConnection2 = new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn");
                 kubiModel2.setContentDeliveryDriver(dataBaseConnection2);
-                kubiModel2.connect().then(function(err){
+                kubiModel2.connect(function(err){
                     if(err) {
                         console.error(err);
                     } else {

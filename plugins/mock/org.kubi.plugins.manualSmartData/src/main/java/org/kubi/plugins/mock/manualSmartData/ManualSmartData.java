@@ -1,7 +1,7 @@
 package org.kubi.plugins.mock.manualSmartData;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KObject;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -21,7 +21,7 @@ public class ManualSmartData implements KubiPlugin{
         this.kubiKernel = kernel;
         startTime = System.currentTimeMillis();
         long initialTime = 1428887547;
-        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 if (kObject != null) {
@@ -35,19 +35,27 @@ public class ManualSmartData implements KubiPlugin{
                     SimulatedParameter electricParameter = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("name");
                     device.addStateParameters(electricParameter);
                     currentTechnology.addDevices(device);
-                    kubiKernel.model().save();
+                    kubiKernel.model().save(new KCallback() {
+                        @Override
+                        public void on(Object o) {
+                        }
+                    });
 
-                    device.traversal().traverse(MetaDevice.REF_STATEPARAMETERS).done().then((params) ->{
-                        if(params.length>0){
-                            for (int i = 0; i <100; i++) {
+                    device.traversal().traverse(MetaDevice.REF_STATEPARAMETERS).then((params) -> {
+                        if (params.length > 0) {
+                            for (int i = 0; i < 100; i++) {
                                 int k = 300000;
-                                params[0].jump((1428887547000L + (i * k))).then((param) -> {
-                                    if(param!=null) {
-                                        double value = ((param.now() - 1428887547000L) / k) %10;
+                                params[0].jump((1428887547000L + (i * k)), (param) -> {
+                                    if (param != null) {
+                                        double value = ((param.now() - 1428887547000L) / k) % 10;
                                         System.out.println(value);
                                         ((StateParameter) param).setValue(value + "");
-                                        kubiKernel.model().save();
-                                    }else {
+                                        kubiKernel.model().save(new KCallback() {
+                                            @Override
+                                            public void on(Object o) {
+                                            }
+                                        });
+                                    } else {
                                         System.err.println("The parameter is null");
                                     }
                                 });
@@ -63,8 +71,16 @@ public class ManualSmartData implements KubiPlugin{
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete();
-            kubiKernel.model().save();
+            currentTechnology.delete(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
+            kubiKernel.model().save(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
         }
         System.out.println("ManualSmartData Stop ... ");
     }

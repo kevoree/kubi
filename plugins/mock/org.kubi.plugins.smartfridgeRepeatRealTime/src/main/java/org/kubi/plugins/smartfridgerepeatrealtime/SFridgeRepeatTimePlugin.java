@@ -1,8 +1,8 @@
 package org.kubi.plugins.smartfridgerepeatrealtime;
 
-import org.kevoree.modeling.api.Callback;
-import org.kevoree.modeling.api.KConfig;
-import org.kevoree.modeling.api.KObject;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KConfig;
+import org.kevoree.modeling.KObject;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -36,18 +36,18 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
         this.tempValueList = new ArrayList<>();
         kubiKernel = kernel;
         long initialTime = KConfig.BEGINNING_OF_TIME;
-        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot().then(new Callback<KObject>() {
+        kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
 
-                currentTechnology = kernel.model().createTechnology(ecosystem.universe(),ecosystem.now()).setName(SFridgeRepeatTimePlugin.class.getSimpleName());
+                currentTechnology = kernel.model().createTechnology(ecosystem.universe(), ecosystem.now()).setName(SFridgeRepeatTimePlugin.class.getSimpleName());
                 ecosystem.addTechnologies(currentTechnology);
 
-                Device device = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("plug");
+                Device device = kernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("plug");
 
-                StateParameter temperatureParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name").setUnit("kW");
-                temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
+                StateParameter temperatureParam = kernel.model().createStateParameter(ecosystem.universe(), ecosystem.now()).setName("name").setUnit("kW");
+                temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(), ecosystem.now()));
                 device.addStateParameters(temperatureParam);
 
                 currentTechnology.addDevices(device);
@@ -57,7 +57,11 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
 
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
                 initData(universe, stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad));
-                kernel.model().save();
+                kernel.model().save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+                    }
+                });
 
 
                 // TODO : reader
@@ -70,8 +74,17 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete();
-            kubiKernel.model().save();
+            currentTechnology.delete(new KCallback() {
+                @Override
+                public void on(Object o) {
+                }
+            });
+            kubiKernel.model().save(new KCallback() {
+                @Override
+                public void on(Object o) {
+
+                }
+            });
 //            currentTechnology.view().universe().model().save();
         }
         System.out.println("SmartFridgePlugin stops ...");
@@ -117,12 +130,16 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
         for (TemperatureSensorValue tempVal : this.tempValueList) {
             long recordTime = tempVal.getTime();
             Double temp = tempVal.getTemperature();
-            universe.time((it * this.dataRange) + recordTime).lookupAll(keys).then(new Callback<KObject[]>() {
+            universe.time((it * this.dataRange) + recordTime).lookupAll(keys, new KCallback<KObject[]>() {
                 @Override
                 public void on(KObject[] kObjects) {
                     if (kObjects[0] != null) {
                         ((StateParameter) kObjects[0]).setValue(temp + "");
-                        kubiKernel.model().save();
+                        kubiKernel.model().save(new KCallback() {
+                            @Override
+                            public void on(Object o) {
+                            }
+                        });
                     }
                 }
             });
@@ -138,21 +155,21 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
             e.printStackTrace();
         }
 
-        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot().then(new Callback<KObject>() {
+        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
 
-                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).done().then(new Callback<KObject[]>() {
+                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).then(new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
-                        for (KObject t : kObjects){
-                            System.out.println((Technology)t);
+                        for (KObject t : kObjects) {
+                            System.out.println((Technology) t);
                             t.traversal().traverse(MetaTechnology.REF_DEVICES)
-                                    .traverse(MetaDevice.REF_STATEPARAMETERS).done().then(new Callback<KObject[]>() {
+                                    .traverse(MetaDevice.REF_STATEPARAMETERS).then(new KCallback<KObject[]>() {
                                 @Override
                                 public void on(KObject[] a) {
-                                    for(KObject stateP : a){
-                                        stateP.timeWalker().allTimes().then(new Callback<long[]>() {
+                                    for (KObject stateP : a) {
+                                        stateP.timeWalker().allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
                                             }

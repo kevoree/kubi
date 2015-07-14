@@ -88,7 +88,7 @@
                                         <include name="kubiTemplate.js"/>
                                         <include name="kubiData.js"/>
                                         <include name="org.kubi.model-all.js"/>
-                                        <include name="org.kevoree.modeling.database.websocket.WebSocket.js"/>
+                                        <include name="org.kevoree.modeling.drivers.websocket.js"/>
                                     </fileset>
                                 </copy>
                             </target>

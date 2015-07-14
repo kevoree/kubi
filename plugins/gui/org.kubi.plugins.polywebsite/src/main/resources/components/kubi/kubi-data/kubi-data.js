@@ -34,8 +34,8 @@ var windowSize = 1000000;
 var universeNumber = 0;
 
 function init() {
-    kModeldata.setContentDeliveryDriver(new org.kevoree.modeling.database.websocket.WebSocketClient("ws://" + location.host + "/cdn"));
-    kModeldata.connect().then(function (e) {
+    kModeldata.setContentDeliveryDriver(new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn"));
+    kModeldata.connect(function (e) {
         if (e) {
             console.error(e);
         }
@@ -142,12 +142,12 @@ function initDataAndListener() {
     //var stepTime = 150000;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kModeldata.nextGroup();
-    currentView.getRoot().then(function (root) {
-        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (devices) {
+    currentView.getRoot(function (root) {
+        root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).then(function (devices) {
             for (var d = 0; d < devices.length; d++) {
                 var device = devices[d];
                 deviceNames[deviceNames.length] = device.getName();
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (params) {
+                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").then(function (params) {
                     if (params.length != 0) {
                         var param = params[0];
                         addListenerParam(param, groupListenerID);
@@ -210,7 +210,7 @@ function addDataWithPeriodInDataSeries(param, keyMap, hasToPrintPeriod) {
         y: parseFloat(param.getValue())
     });
     if(hasToPrintPeriod) {
-        param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
+        param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(function (periods) {
             if (periods.length > 0 && periods[0].getPeriod() != undefined) {
                 if (dataSeries[keyMap + "_Period"] == null) {
                     initDeviceInChartSeries(keyMap + "_Period");

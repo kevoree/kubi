@@ -879,7 +879,7 @@ var org;
                                 flatCollected[indexI[0]] = key;
                                 indexI[0]++;
                             });
-                            this._manager.lookupAllObjects(this._universe, this._time, flatCollected, function (resolved) {
+                            this._manager.lookupAllobjects(this._universe, this._time, flatCollected, function (resolved) {
                                 for (var i = 0; i < resolved.length; i++) {
                                     if (resolved[i] != null) {
                                         var linkedReferences = resolved[i].referencesWith(selfPointer);
@@ -986,7 +986,7 @@ var org;
                                         if (setOpposite) {
                                             if (previous != null) {
                                                 var self = this;
-                                                this._manager.lookupAllObjects(this._universe, this._time, previous, function (kObjects) {
+                                                this._manager.lookupAllobjects(this._universe, this._time, previous, function (kObjects) {
                                                     for (var i = 0; i < kObjects.length; i++) {
                                                         kObjects[i].internal_mutate(org.kevoree.modeling.KActionType.REMOVE, metaReference.opposite(), self, false);
                                                     }
@@ -1009,7 +1009,7 @@ var org;
                                         if (setOpposite) {
                                             if (previousKid != null) {
                                                 var self = this;
-                                                this._manager.lookupAllObjects(this._universe, this._time, previousKid, function (resolvedParams) {
+                                                this._manager.lookupAllobjects(this._universe, this._time, previousKid, function (resolvedParams) {
                                                     if (resolvedParams != null) {
                                                         for (var dd = 0; dd < resolvedParams.length; dd++) {
                                                             if (resolvedParams[dd] != null) {
@@ -1085,7 +1085,7 @@ var org;
                                     cb(new Array());
                                 }
                                 else {
-                                    this._manager.lookupAllObjects(this._universe, this._time, o, cb);
+                                    this._manager.lookupAllobjects(this._universe, this._time, o, cb);
                                 }
                             }
                         }
@@ -1153,7 +1153,7 @@ var org;
                                 trimmed[inserted[0]] = value;
                                 inserted[0]++;
                             });
-                            this._manager.lookupAllObjects(this._universe, this._time, trimmed, function (resolvedArr) {
+                            this._manager.lookupAllobjects(this._universe, this._time, trimmed, function (resolvedArr) {
                                 var nextDeep = new java.util.ArrayList();
                                 for (var i = 0; i < resolvedArr.length; i++) {
                                     var resolved = resolvedArr[i];
@@ -1656,7 +1656,7 @@ var org;
                         this._manager.lookup(this._universe, this._time, kid, cb);
                     };
                     AbstractKView.prototype.lookupAll = function (keys, cb) {
-                        this._manager.lookupAllObjects(this._universe, this._time, keys, cb);
+                        this._manager.lookupAllobjects(this._universe, this._time, keys, cb);
                     };
                     AbstractKView.prototype.create = function (clazz) {
                         return this._manager.model().create(clazz, this._universe, this._time);
@@ -3488,9 +3488,9 @@ var org;
                     impl.GaussianClassificationAlg = GaussianClassificationAlg;
                     var LinearRegressionAlg = (function () {
                         function LinearRegressionAlg() {
-                            this.alpha = 0.005;
-                            this.gamma = 0.000;
-                            this.iterations = 10;
+                            this.alpha = 0.001;
+                            this.gamma = 0.001;
+                            this.iterations = 100;
                         }
                         LinearRegressionAlg.prototype.train = function (trainingSet, expectedResultSet, origin) {
                             var ks = origin.manager().segment(origin.universe(), origin.now(), origin.uuid(), false, origin.metaClass(), null);
@@ -3508,7 +3508,7 @@ var org;
                                     var h = this.estimate(trainingSet[row], state);
                                     var error = -this.alpha * (h - expectedResultSet[row][0]);
                                     for (var feature = 0; feature < origin.metaClass().inputs().length; feature++) {
-                                        state.set(feature, state.get(feature) * (1 - this.alpha * this.gamma) + error * trainingSet[row][feature]);
+                                        state.set(feature, state.get(feature) * (1 - this.alpha * this.gamma) + error * trainingSet[i][feature]);
                                     }
                                     state.add(origin.metaClass().inputs().length, error);
                                 }
@@ -3772,7 +3772,8 @@ var org;
                                     for (var i = 0; i < _this._keys.length; i++) {
                                         for (var j = 0; j < _this._times.length; j++) {
                                             if (universeIndexes[i] != null) {
-                                                tempKeys2[(i * _this._times.length) + j] = org.kevoree.modeling.KContentKey.createTimeTree(org.kevoree.modeling.memory.manager.impl.ResolutionHelper.resolve_universe(_this._store.globalUniverseOrder(), universeIndexes[i], _this._times[j], _this._universe), _this._keys[i]);
+                                                var closestUniverse = org.kevoree.modeling.memory.manager.impl.ResolutionHelper.resolve_universe(_this._store.globalUniverseOrder(), universeIndexes[i], _this._times[j], _this._universe);
+                                                tempKeys2[(i * _this._times.length) + j] = org.kevoree.modeling.KContentKey.createTimeTree(closestUniverse, _this._keys[i]);
                                             }
                                         }
                                     }
@@ -3784,13 +3785,13 @@ var org;
                                                     var cachedIndexTree = timeIndexes[i];
                                                     var resolvedNode = cachedIndexTree.previousOrEqual(_this._times[j]);
                                                     if (resolvedNode != org.kevoree.modeling.KConfig.NULL_LONG) {
-                                                        resolvedContentKey = org.kevoree.modeling.KContentKey.createObject(tempKeys2[i].universe, resolvedNode, _this._keys[i]);
+                                                        resolvedContentKey = org.kevoree.modeling.KContentKey.createObject(tempKeys[i].universe, resolvedNode, _this._keys[i]);
                                                     }
                                                 }
                                                 tempKeys2[(i * _this._times.length) + j] = resolvedContentKey;
                                             }
                                         }
-                                        _this._store.bumpKeysToCache(tempKeys2, function (cachedObjects) {
+                                        _this._store.bumpKeysToCache(tempKeys, function (cachedObjects) {
                                             var proxies = new Array();
                                             for (var i = 0; i < _this._keys.length; i++) {
                                                 for (var j = 0; j < _this._times.length; j++) {
@@ -4198,7 +4199,7 @@ var org;
                             MemoryManager.prototype.lookup = function (universe, time, uuid, callback) {
                                 var keys = new Array();
                                 keys[0] = uuid;
-                                this.lookupAllObjects(universe, time, keys, function (kObjects) {
+                                this.lookupAllobjects(universe, time, keys, function (kObjects) {
                                     if (kObjects.length == 1) {
                                         if (callback != null) {
                                             callback(kObjects[0]);
@@ -4211,14 +4212,11 @@ var org;
                                     }
                                 });
                             };
-                            MemoryManager.prototype.lookupAllObjects = function (universe, time, uuids, callback) {
+                            MemoryManager.prototype.lookupAllobjects = function (universe, time, uuids, callback) {
                                 this._scheduler.dispatch(new org.kevoree.modeling.memory.manager.impl.LookupAllObjectsRunnable(universe, time, uuids, callback, this));
                             };
-                            MemoryManager.prototype.lookupAllTimes = function (universe, times, uuid, callback) {
+                            MemoryManager.prototype.lookupAlltimes = function (universe, times, uuid, callback) {
                                 this._scheduler.dispatch(new org.kevoree.modeling.memory.manager.impl.LookupAllTimesRunnable(universe, times, uuid, callback, this));
-                            };
-                            MemoryManager.prototype.lookupAllObjectsTimes = function (universe, times, uuid, callback) {
-                                this._scheduler.dispatch(new org.kevoree.modeling.memory.manager.impl.LookupAllObjectsTimesRunnable(universe, times, uuid, callback, this));
                             };
                             MemoryManager.prototype.cdn = function () {
                                 return this._db;
@@ -7452,7 +7450,7 @@ var org;
                                     trimmed[inserted[0]] = key;
                                     inserted[0]++;
                                 });
-                                currentObject._manager.lookupAllObjects(currentObject.universe(), currentObject.now(), trimmed, function (kObjects) {
+                                currentObject._manager.lookupAllobjects(currentObject.universe(), currentObject.now(), trimmed, function (kObjects) {
                                     private_callback(kObjects);
                                 });
                             };
@@ -8098,7 +8096,7 @@ var org;
                                         trimmed[inserted[0]] = key;
                                         inserted[0]++;
                                     });
-                                    currentObject._manager.lookupAllObjects(currentObject.universe(), currentObject.now(), trimmed, function (kObjects) {
+                                    currentObject._manager.lookupAllobjects(currentObject.universe(), currentObject.now(), trimmed, function (kObjects) {
                                         if (_this._next == null) {
                                             context.finalCallback()(kObjects);
                                         }
@@ -8255,7 +8253,7 @@ var org;
                                         trimmed[inserted[0]] = key;
                                         inserted[0]++;
                                     });
-                                    currentFirstObject._manager.lookupAllObjects(currentFirstObject.universe(), currentFirstObject.now(), trimmed, function (nextStepElement) {
+                                    currentFirstObject._manager.lookupAllobjects(currentFirstObject.universe(), currentFirstObject.now(), trimmed, function (nextStepElement) {
                                         if (_this._next == null) {
                                             context.finalCallback()(nextStepElement);
                                         }
@@ -8269,21 +8267,6 @@ var org;
                             return TraverseQueryAction;
                         })();
                         actions.TraverseQueryAction = TraverseQueryAction;
-                        var TraverseTimeAction = (function () {
-                            function TraverseTimeAction(p_timeOffset, p_steps, p_continueCondition) {
-                                this._timeOffset = p_timeOffset;
-                                this._steps = p_steps;
-                                this._continueContition = p_continueCondition;
-                            }
-                            TraverseTimeAction.prototype.chain = function (p_next) {
-                                this._next = p_next;
-                            };
-                            TraverseTimeAction.prototype.execute = function (context) {
-                                throw new java.lang.RuntimeException("Not implemented Yet!");
-                            };
-                            return TraverseTimeAction;
-                        })();
-                        actions.TraverseTimeAction = TraverseTimeAction;
                     })(actions = impl.actions || (impl.actions = {}));
                 })(impl = traversal_1.impl || (traversal_1.impl = {}));
                 var query;
@@ -8514,58 +8497,6 @@ var org;
                         return AdjLinearSolverQr;
                     })();
                     maths.AdjLinearSolverQr = AdjLinearSolverQr;
-                    var Base64 = (function () {
-                        function Base64() {
-                            if (!Base64.initiated) {
-                                Base64.init();
-                            }
-                        }
-                        Base64.init = function () {
-                            if (!Base64.initiated) {
-                                var i = 0;
-                                for (var c = 'A'.charCodeAt(0); c <= 'Z'.charCodeAt(0); c++) {
-                                    Base64.decodeArray[String.fromCharCode(c)] = i;
-                                    i++;
-                                }
-                                for (var c = 'a'.charCodeAt(0); c <= 'z'.charCodeAt(0); c++) {
-                                    Base64.decodeArray[String.fromCharCode(c)] = i;
-                                    i++;
-                                }
-                                for (var c = '0'.charCodeAt(0); c <= '9'.charCodeAt(0); c++) {
-                                    Base64.decodeArray[String.fromCharCode(c)] = i;
-                                    i++;
-                                }
-                                Base64.decodeArray['+'] = i;
-                                i++;
-                                Base64.decodeArray['/'] = i;
-                                Base64.initiated = true;
-                            }
-                        };
-                        Base64.encode = function (l) {
-                            var result = "";
-                            var tmp = (l < 0) ? (l * -1) + 0x0020000000000000 : l;
-                            for (var i = 48; i >= 0; i -= 6) {
-                                result += Base64.encodeArray[(tmp / (Math.pow(2, i))) & 0x3F];
-                            }
-                            return result;
-                        };
-                        Base64.decode = function (s) {
-                            var result = 0;
-                            result += (Base64.decodeArray[s.charAt(0)] & 0x1F) * Math.pow(2, 48);
-                            for (var i = 1; i < s.length; i++) {
-                                result += (Base64.decodeArray[s.charAt(i)] & 0xFF) * Math.pow(2, 48 - (6 * i));
-                            }
-                            if ((Base64.decodeArray[s.charAt(0)] & 0x0020) != 0) {
-                                result *= -1;
-                            }
-                            return result;
-                        };
-                        Base64.encodeArray = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'];
-                        Base64.decodeArray = [];
-                        Base64.initiated = false;
-                        return Base64;
-                    })();
-                    maths.Base64 = Base64;
                     var Correlations = (function () {
                         function Correlations() {
                         }

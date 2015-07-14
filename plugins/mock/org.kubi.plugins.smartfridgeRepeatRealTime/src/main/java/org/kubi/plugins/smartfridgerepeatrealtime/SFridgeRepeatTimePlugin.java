@@ -65,7 +65,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
 
 
                 // TODO : reader
-//                readData();
+                readData();
             }
         });
     }
@@ -134,6 +134,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                 @Override
                 public void on(KObject[] kObjects) {
                     if (kObjects[0] != null) {
+                        System.out.println(temp+"____"+kObjects[0].now());
                         ((StateParameter) kObjects[0]).setValue(temp + "");
                         kubiKernel.model().save(new KCallback() {
                             @Override
@@ -158,12 +159,10 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
         kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObject) {
-
                 kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).then(new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         for (KObject t : kObjects) {
-                            System.out.println((Technology) t);
                             t.traversal().traverse(MetaTechnology.REF_DEVICES)
                                     .traverse(MetaDevice.REF_STATEPARAMETERS).then(new KCallback<KObject[]>() {
                                 @Override
@@ -172,6 +171,15 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                                         stateP.timeWalker().allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
+                                                for (long l : longs){
+                                                    stateP.jump(l, new KCallback<KObject>() {
+                                                        @Override
+                                                        public void on(KObject kObject) {
+//                                                            System.out.println(((StateParameter) kObject).getValue() + "-----"+ kObject.now());
+
+                                                        }
+                                                    });
+                                                }
                                             }
                                         });
                                     }

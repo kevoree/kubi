@@ -19,7 +19,7 @@ function testPeriod(model){
  */
 function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
     var viewPeriod = kModelPeriod.universe(universeTemplate).time(timeTemplate);
-    viewPeriod.getRoot().then(function (rootNow) {
+    viewPeriod.getRoot(function (rootNow) {
         var env = nunjuckPeriod.configure('views');
         try {
             //env.addFilter("timestampToDate", function(timestamp){try{console.log("timestampToDate");return new Date(timestamp);}catch(er){console.error("++",er);}}, false);

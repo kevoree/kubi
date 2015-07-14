@@ -137,9 +137,6 @@ function initDataAndListener() {
     var deviceNames = [];
     var initialRange = 86400000;
     var initialTime = 1428797898;
-    //var endTime =   1428997126000;
-    //var startTime = 1428599097936;
-    //var stepTime = 150000;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kModeldata.nextGroup();
     currentView.getRoot(function (root) {
@@ -150,7 +147,7 @@ function initDataAndListener() {
                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").then(function (params) {
                     if (params.length != 0) {
                         var param = params[0];
-                        addListenerParam(param, groupListenerID);
+                        addListenerParam(param, groupListenerID, device.getName());
                     }
                 });
             }
@@ -165,9 +162,10 @@ function initDataAndListener() {
  * @param param
  * @param groupListenerID
  */
-function addListenerParam(param, groupListenerID) {
+function addListenerParam(param, groupListenerID, parent) {
     param.listen(groupListenerID, function (param2, metaTabl) {
-        param2.parent().then(function (parent) {
+        // TODO: remove getparents :s
+        //param2.parent().then(function (parent) {
             var valueHasChanged = false;
             var periodHasChanged = false;
             for (var m = 0; m < metaTabl.length; m++) {
@@ -186,12 +184,12 @@ function addListenerParam(param, groupListenerID) {
                 }, parent.getName());
             }
             if (periodHasChanged && dataSeries[parent.getName() + "_Period"].dataPoints.length >= 0) {
-                param2.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function (periods) {
-                    if (periods.length > 0 && periods[0].getPeriod() != undefined) {
-                    }
+                param2.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(function (periods) {
+                    //if (periods.length > 0 && periods[0].getPeriod() != undefined) {
+                    //}
                 });
             }
-        });
+        //});
     });
 }
 
@@ -209,6 +207,7 @@ function addDataWithPeriodInDataSeries(param, keyMap, hasToPrintPeriod) {
         x: new Date(param.now()),
         y: parseFloat(param.getValue())
     });
+    //console.log(param.now(), "++++++++", param.getValue());
     if(hasToPrintPeriod) {
         param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(function (periods) {
             if (periods.length > 0 && periods[0].getPeriod() != undefined) {
@@ -279,16 +278,16 @@ function cleanDataSet(){
 function getAndDrawData(deviceNames, start, end, step, wantPeriod) {
     var hasToPrintPeriod = wantPeriod==undefined ? false: wantPeriod;
     var currentView = kModeldata.universe(universeNumber).time(end);
-    currentView.getRoot().then(function (root) {
+    currentView.getRoot(function (root) {
         if (root != null) {
-            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (technos) {
+            root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).then(function (technos) {
                 if (technos.length != 0) {
                     for (var namesIndex = 0; namesIndex < deviceNames.length; namesIndex++) {
                         for (var technoIndex = 0; technoIndex<technos.length; technoIndex++) {
-                            technos[technoIndex].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).done().then(function (devices) {
+                            technos[technoIndex].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).then(function (devices) {
                                 if (devices.length > 0) {
                                     var device = devices[0];
-                                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").done().then(function (parameters) {
+                                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").then(function (parameters) {
                                         if (parameters.length > 0) {
                                             var param = parameters[0];
                                             // emptying the dataset of the device
@@ -311,7 +310,7 @@ function getAndDrawData(deviceNames, start, end, step, wantPeriod) {
 
 function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, step, hasToPrintPeriod) {
     if (start < end) {
-        param.jump(end).then(function (paramTimed) {
+        param.jump(end, function (paramTimed){
             if (paramTimed != null && paramTimed.getValue() != undefined) {
                 addDataWithPeriodInDataSeries(paramTimed, deviceName, hasToPrintPeriod);
                 setInGraphDeviceRangeValuesWithPeriod(deviceName, paramTimed, start, end - step, step, hasToPrintPeriod);
@@ -334,7 +333,6 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
             dataSeries[deviceName + "_Period"].dataPoints = sortedPeriodDataPoints;
             createOrReplaceValuesSetInChart(dataSeries[deviceName + "_Period"], deviceName + "_Period");
         }
-
         chart.render();
     }
 }

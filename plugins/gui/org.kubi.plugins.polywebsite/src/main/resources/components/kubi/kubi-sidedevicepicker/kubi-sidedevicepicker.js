@@ -19,8 +19,9 @@ function setModelForTemplate(modelForTemplate) {
  */
 function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate) {
     var viewTemplate = kModelTemplate.universe(universeTemplate).time(timeTemplate);
-    viewTemplate.getRoot().then(function (rootNow) {
-        nunjucks.configure({autoescape: true});
+    viewTemplate.getRoot(function (rootNow) {
+        console.log("/***    -------  ",rootNow, kModelTemplate);
+        //nunjucks.configure({autoescape: true});
         try {
             // init the graph
             nunjucks.renderString((document.getElementById(htmlIdSource)).innerHTML, {
@@ -31,13 +32,13 @@ function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate
                 autoNow: true
             }, function (err, res) {
                 if (err) {
-                    console.log(err);
+                    console.error("An error occurred in the renderString\n", err);
                 }
                 try {
                     (document.getElementById(htmlIdTarget)).innerHTML = res;
                 }
                 catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             });
         }

@@ -126,6 +126,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                     Period kPeriod = ((Period) kObjects[0]);
                     if (kPeriod.getPeriod() == null) {
                         kPeriod.setPeriod(((double) period) + "");
+                        System.out.println(kPeriod.getPeriod());
                         kubiKernel.model().save(new KCallback() {
                             @Override
                             public void on(Object o) {

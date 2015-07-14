@@ -11,12 +11,12 @@ function setModelSlider(model){
     kModelSlider = model;
 }
 function setMaxSlider(){
-    kModelSlider.universe(universeSlider).time(timeSlider).getRoot().then(function(root){
+    kModelSlider.universe(universeSlider).time(timeSlider).getRoot(function(root){
         try {
             root.traversal()
                 .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
                 .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
-                .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).done().then(function (stateParams) {
+                .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (stateParams) {
                     allTimes(stateParams, function (timestamps) {
                         try{
                             var max = getMax(timestamps);
@@ -47,7 +47,7 @@ function allTimes(kobjects, callback){
     var count = kobjects.length;
     var resTimesAppend = [];
     for(var index=0; index<kobjects.length; index++){
-        kobjects[index].timeWalker().allTimes().then(function (longs){
+        kobjects[index].timeWalker().allTimes(function (longs){
             // concat the longs table with the resTimeAppend table
             for(var j=0; j<longs.length;j++){
                 resTimesAppend[resTimesAppend.length] = longs[j];

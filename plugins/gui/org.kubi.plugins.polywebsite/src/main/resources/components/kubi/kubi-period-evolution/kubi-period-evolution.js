@@ -12,14 +12,15 @@ function initWithModelPeriod(model){
 function updatePeriodSettings(time, scale, devices){
     this.periodEvolution.time = time * 1000;
     var currentView = kModeldata.universe(this.periodEvolution.univers).time(this.periodEvolution.time);
-    console.log(devices);
-    currentView.getRoot().then(function (root) {
+    console.log(devices, currentView);
+    currentView.getRoot(function (root) {
+    console.log(",------",devices, root);
         root.traversal()
             .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
             .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME,devices[0])// TODO: generalize with the all table of devices
             .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS)
             .traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD)
-            .done().then(function (periodRes) {
+            .then(function (periodRes) {
                 var period = periodRes[0]; // TODO : generalize to the all set of devices
                 var value = period.getPeriod();
                 document.getElementById("periodValue").innerText =  toAnalogic(value*50/60);
@@ -34,7 +35,7 @@ function updatePeriodSettings(time, scale, devices){
 
                 }
                 document.getElementById("compareScale").innerText = "" + (scale/3600000);
-                period.jump(period.now()-scale).then(function (previousPeriod){
+                period.jump(period.now()-scale, function (previousPeriod){
                     var previousValue = previousPeriod.getPeriod();
                     document.getElementById("periodEvolutionValue").innerText = toAnalogic((value - previousValue) * 50 / 60);
                     document.getElementById("periodEvolutionValueNull").innerText = "no value for this time, Please go in the future";

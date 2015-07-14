@@ -60,15 +60,15 @@ function updateEpochChartSettings(time, scale, devices, wantPeriod){
 function getDataAndEpochDraw(deviceNames, start, end, step, wantPeriod) {
     var haveToShowPeriod = (wantPeriod == undefined ? false : wantPeriod);
     var view = KubiEpoch.kubiModel.universe(KubiEpoch.universe).time(end);
-    view.getRoot().then(function (rootEnd) {
+    view.getRoot(function (rootEnd) {
         if (rootEnd != undefined) {
-            rootEnd.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).done().then(function (technos) {
+            rootEnd.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).then(function (technos) {
                 for (var nameIndex = 0; nameIndex < deviceNames.length; nameIndex++) {
                     for(var technoIndex=0; technoIndex<technos.length; technoIndex++) {
-                        technos[technoIndex].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[nameIndex]).done().then(function (devices) {
+                        technos[technoIndex].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[nameIndex]).then(function (devices) {
                             if (devices.length > 0) {
                                 var device = devices[0];
-                                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).done().then(function(params){
+                                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function(params){
                                     if(params.length>0){
                                         addValueInEpochGraph(device.getName(),params[0], start, end, step, haveToShowPeriod);
                                     }
@@ -93,7 +93,7 @@ function getDataAndEpochDraw(deviceNames, start, end, step, wantPeriod) {
  */
 function addValueInEpochGraph(deviceName,parameter, start, end, step, haveToShowPeriod){
     if(start < end){
-        parameter.jump(end).then(function(paramTimed){
+        parameter.jump(end, function(paramTimed){
             if(paramTimed != undefined && paramTimed.getValue() !=undefined){
                 pushValueInEpoch(paramTimed, deviceName, haveToShowPeriod);
                 addValueInEpochGraph(deviceName, parameter, start, end-step, step, haveToShowPeriod);
@@ -106,6 +106,7 @@ function addValueInEpochGraph(deviceName,parameter, start, end, step, haveToShow
             lineChartData[deviceDataIndex].values.sort(function (a, b){return a.x - b.x;});
         }catch(ex){console.log(ex);}
         KubiEpoch.chart.update(lineChartData);
+        console.log("**** coucou=======",lineChartData);
         makeLegend();
     }
 }
@@ -128,7 +129,7 @@ function getDataIndexByLabelName(name){
 function pushValueInEpoch(param, deviceName, haveToShowPeriod){
     addEpochPointWithPeriod(param.now(),parseFloat(param.getValue()), deviceName);
     if(haveToShowPeriod){
-        param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).done().then(function(periods){
+        param.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(function(periods){
             if(periods.length>0){
                 addEpochPointWithPeriod(periods[0].now(), parseFloat(periods[0].getPeriod()), deviceName+"_Period");
             }
@@ -163,7 +164,7 @@ function makeLegend(){
     var legend = document.createElement("ul");
     try {
         document.getElementById("epochLegend").removeChild(document.getElementById("epochLegend").firstChild);
-    }catch (ex){console.log("epochLegend is empty.")}
+    }catch (ex){console.log("-- Epoch : epochLegend is empty.")}
     document.getElementById("epochLegend").appendChild(legend);
 
     for(var graph=0; graph<lineChartData.length; graph++){
@@ -179,9 +180,11 @@ function makeLegend(){
 
 
 function getAllDeviceNames(initialTime, initialScale){
-    KubiEpoch.kubiModel.universe(KubiEpoch.universe).time(1428997126000).getRoot().then(function(newRoot){
-        newRoot.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-            .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).done().then(function (alldevices){
+    KubiEpoch.kubiModel.universe(KubiEpoch.universe).time(1428997126000).getRoot(function(newRoot){
+        newRoot.traversal()
+            .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+            .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
+            .then(function (alldevices){
                 var deviceNames = [];
                 for(var deviceIndex=0; deviceIndex<alldevices.length; deviceIndex++){
                     deviceNames[deviceIndex] = alldevices[deviceIndex].getName();

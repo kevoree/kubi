@@ -13,10 +13,16 @@
 <link rel="import" href="../kubi-period-view/kubi-period-view.html"/>
 <link rel="import" href="../kubi-c3js/kubi-c3js.html"/>
 
+<link rel="import" href="../kubi-data-test/kubi-data-test.html"/>
+
+
 <dom-module id="kubi-graph">
     <template>
         <div id="kubigraph">
             <div id="settings">
+                <kubi-data-test id="dataTest" ></kubi-data-test>
+
+
                 <kubi-sidedevicepicker id="devicepicker" on-devicepicker-updated="devicepickerUpadated"></kubi-sidedevicepicker>
                 <kubi-scalepicker id="scalepicker" on-scalepicker-updated="scalepickerUpdated"></kubi-scalepicker>
                 <kubi-slider id="slider" value={{slider_time}} on-slider-updated="sliderUpdated"></kubi-slider>

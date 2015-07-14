@@ -1,0 +1,38 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<script src="./kubi-data-test.js"></script>
+
+<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
+
+<dom-module id="kubi-data-test">
+    <template>
+        <kubi-model id="modelHandlerDataTest" on-model-connected="modelConnected"></kubi-model>
+
+        <div>
+
+        </div>
+    </template>
+</dom-module>
+
+
+
+<script>
+    Polymer({
+        is: "kubi-data-test",
+        ready: function (){
+            try{
+                if (this.$.modelHandlerDataTest.modelAvailable()) {
+                    initDataTest(this.$.modelHandlerDataTest.model)
+                }
+            }catch (err){console.error(err);}
+        },
+        modelConnected: function(){
+            if (this.$.modelHandlerDataTest.modelAvailable()) {
+                initDataTest(this.$.modelHandlerDataTest.model)
+            }
+        }
+    });
+</script>

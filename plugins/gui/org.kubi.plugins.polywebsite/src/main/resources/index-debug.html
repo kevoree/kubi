@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    <title>Smarthome Polymer</title>
+
+    <script src="/js/js/org.kubi.model-all.js"></script>
+    <script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
+
+</head>
+<body>
+
+
+<script>
+
+    var kubiModel2 = new org.kubi.KubiModel();
+    // --------------
+    var dataBaseConnection2 = new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn");
+    kubiModel2.setContentDeliveryDriver(dataBaseConnection2);
+    kubiModel2.connect(function(err){
+        if(err) {
+            console.error(err);
+        } else {
+            modelConnected = true;
+            console.log("The model is initializing in the kubi-model component.")
+
+            kubiModel2.lookup(0,1428631828250, 4, function(obj){
+                console.log(obj,obj.toString(), obj.getValue());
+            })
+
+
+
+        }
+    });
+
+
+</script>
+
+</body>
+</html>

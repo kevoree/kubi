@@ -168,6 +168,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                                 @Override
                                 public void on(KObject[] a) {
                                     for (KObject stateP : a) {
+                                        System.out.println(stateP.uuid());
                                         stateP.timeWalker().allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {

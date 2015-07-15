@@ -45,6 +45,7 @@ var org;
                                     case org.kevoree.modeling.message.KMessageLoader.GET_RES_TYPE:
                                         {
                                             var getResult = msg;
+                                            //console.log("GetResult", msg);
                                             _this._getCallbacks.remove(getResult.id)(getResult.values, null);
                                         }
                                         break;
@@ -57,6 +58,7 @@ var org;
                                     case org.kevoree.modeling.message.KMessageLoader.ATOMIC_GET_INC_RESULT_TYPE:
                                         {
                                             var atomicGetResult = msg;
+                                            //console.log("AtomicGetResult", msg);
                                             _this._atomicGetCallbacks.remove(atomicGetResult.id)(atomicGetResult.value, null);
                                         }
                                         break;
@@ -127,6 +129,7 @@ var org;
                             this._clientConnection.send(putRequest.json());
                         };
                         WebSocketCDNClient.prototype.get = function (keys, callback) {
+                            //console.log("Get", keys);
                             var getRequest = new org.kevoree.modeling.message.impl.GetRequest();
                             getRequest.id = this.nextKey();
                             getRequest.keys = keys;
@@ -134,6 +137,7 @@ var org;
                             this._clientConnection.send(getRequest.json());
                         };
                         WebSocketCDNClient.prototype.atomicGetIncrement = function (key, callback) {
+                            //console.log("AtomicGet", key);
                             var atomicGetRequest = new org.kevoree.modeling.message.impl.AtomicGetIncrementRequest();
                             atomicGetRequest.id = this.nextKey();
                             atomicGetRequest.key = key;

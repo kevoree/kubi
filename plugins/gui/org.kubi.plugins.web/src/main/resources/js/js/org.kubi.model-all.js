@@ -8995,6 +8995,34 @@ var org;
                             }
                             return result;
                         };
+                        Base64.encodeDouble = function (d) {
+                            var result = "";
+                            for (var i = 60; i >= 0; i -= 6) {
+                                if (!(result.equals("") && ((d >> i) & 0x3F) == 0)) {
+                                    result += Base64.encodeArray[(d >> i) & 0x3F];
+                                }
+                            }
+                            return result;
+                        };
+                        Base64.encodeDoubleToBuffer = function (d, buffer) {
+                            var empty = true;
+                            for (var i = 60; i >= 0; i -= 6) {
+                                if (!(empty && ((d >> i) & 0x3F) == 0)) {
+                                    empty = false;
+                                    buffer.append(Base64.encodeArray[(d >> i) & 0x3F]);
+                                }
+                            }
+                        };
+                        Base64.decodeToDouble = function (s) {
+                            return Base64.decodeToDoubleWithBounds(s, 0, s.length);
+                        };
+                        Base64.decodeToDoubleWithBounds = function (s, offsetBegin, offsetEnd) {
+                            var result = 0;
+                            for (var i = 0; i < (offsetEnd - offsetBegin); i++) {
+                                result += (Base64.decodeArray[s.charAt((offsetEnd - 1) - i)] & 0xFF) * Math.pow(2, (6 * i));
+                            }
+                            return result;
+                        };
                         Base64.encodeArray = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'];
                         Base64.decodeArray = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6, "H": 7, "I": 8, "J": 9, "K": 10, "L": 11, "M": 12, "N": 13, "O": 14, "P": 15, "Q": 16, "R": 17, "S": 18, "T": 19, "U": 20, "V": 21, "W": 22, "X": 23, "Y": 24, "Z": 25, "a": 26, "b": 27, "c": 28, "d": 29, "e": 30, "f": 31, "g": 32, "h": 33, "i": 34, "j": 35, "k": 36, "l": 37, "m": 38, "n": 39, "o": 40, "p": 41, "q": 42, "r": 43, "s": 44, "t": 45, "u": 46, "v": 47, "w": 48, "x": 49, "y": 50, "z": 51, "0": 52, "1": 53, "2": 54, "3": 55, "4": 56, "5": 57, "6": 58, "7": 59, "8": 60, "9": 61, "+": 62, "/": 63 };
                         return Base64;

@@ -3,6 +3,7 @@ package org.kubi.plugins.smartfridgerepeatrealtime;
 import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.KObject;
+import org.kevoree.modeling.memory.KMemoryElement;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -73,7 +74,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
 
     @Override
     public void stop() {
-        if(currentTechnology != null){
+        if (currentTechnology != null) {
             currentTechnology.delete(new KCallback() {
                 @Override
                 public void on(Object o) {
@@ -103,14 +104,15 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                     long recordTime = Long.parseLong(data[0]);
                     final double temp = Double.parseDouble(data[2]);
                     if (("3").equals(data[1])) {
-                        if(firstValue == -1){ firstValue = recordTime;}
+                        if (firstValue == -1) {
+                            firstValue = recordTime;
+                        }
                         lastValue = recordTime;
                         this.tempValueList.add(new TemperatureSensorValue(temp, recordTime));
                     }
                 }
             }
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
         } finally {
             if (bufferedReader != null) {
@@ -122,19 +124,50 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                 }
             }
         }
-        this.dataRange =  lastValue - firstValue;
-        putDataInKubi(universe, keys, 0);
+        this.dataRange = lastValue - firstValue;
+/*
+        universe.model().lookup(universe.key(), KConfig.BEGINNING_OF_TIME, 4, new KCallback<KObject>() {
+            @Override
+            public void on(KObject kObject) {
+                putData(0, (StateParameter) kObject);
+                kObject.manager().model().save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+                    }
+                });
+            }
+        });
+*/
+       putDataInKubi(universe, keys, 0);
     }
 
+
+    private void putData(final int dataIndex, StateParameter param) {
+        param.jump(this.tempValueList.get(dataIndex).getTime(), new KCallback<KObject>() {
+            @Override
+            public void on(KObject kObject) {
+                StateParameter param2 = (StateParameter) kObject;
+                param2.setValue(tempValueList.get(dataIndex).getTemperature() + "");
+                System.out.println("Inserting:" + tempValueList.get(dataIndex).getTime() + " -> " + tempValueList.get(dataIndex).getTemperature());
+                if (dataIndex + 1 < 10) {
+                    putData(dataIndex + 1, (StateParameter) kObject);
+                }
+            }
+        });
+    }
+
+
     private void putDataInKubi(KubiUniverse universe, long[] keys, int it) {
+        System.out.println("Size:" +this.tempValueList.size());
         for (TemperatureSensorValue tempVal : this.tempValueList) {
             long recordTime = tempVal.getTime();
             Double temp = tempVal.getTemperature();
+            //System.out.println("Record time:" + recordTime);
             universe.time((it * this.dataRange) + recordTime).lookupAll(keys, new KCallback<KObject[]>() {
                 @Override
                 public void on(KObject[] kObjects) {
                     if (kObjects[0] != null) {
-                        System.out.println(temp+"____"+kObjects[0].now());
+                        System.out.println(temp + "____" + kObjects[0].now());
                         ((StateParameter) kObjects[0]).setValue(temp + "");
                         kubiKernel.model().save(new KCallback() {
                             @Override
@@ -151,7 +184,8 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
     private void readData() {
 
         try {
-            Thread.sleep(10000);
+            kubiKernel.model().manager().cache().clear(kubiKernel.model().metaModel());
+            Thread.sleep(4000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -172,12 +206,17 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                                         stateP.timeWalker().allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
-                                                for (long l : longs){
+                                                for (long l : longs) {
                                                     stateP.jump(l, new KCallback<KObject>() {
                                                         @Override
                                                         public void on(KObject kObject) {
-//                                                            System.out.println(((StateParameter) kObject).getValue() + "-----"+ kObject.now());
+                                                            if(kObject.now() == 22321860941l) {
+                                                                KMemoryElement g = kObject.manager().cache().get(0, KConfig.NULL_LONG, kObject.uuid());
+                                                                System.out.println("jkhg");
 
+                                                            }
+
+                                                            System.out.println(((StateParameter) kObject).getValue() + "-----"+ kObject.now());
                                                         }
                                                     });
                                                 }

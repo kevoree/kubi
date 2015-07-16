@@ -1849,6 +1849,7 @@ var org;
                             this.additionalInterceptors = null;
                         }
                         MemoryContentDeliveryDriver.prototype.atomicGetIncrement = function (key, cb) {
+                            console.error("AtomicGet", key);
                             var result = this.backend.get(key.toString());
                             var nextV;
                             var previousV;
@@ -1880,6 +1881,7 @@ var org;
                             cb(previousV);
                         };
                         MemoryContentDeliveryDriver.prototype.get = function (keys, callback) {
+                            console.error("GET", keys);
                             var values = new Array();
                             for (var i = 0; i < keys.length; i++) {
                                 if (keys[i] != null) {
@@ -8992,6 +8994,34 @@ var org;
                             }
                             if (((Base64.decodeArray[s.charAt((offsetEnd - 1))] & 0xFF) & 0x1) != 0) {
                                 result = -result;
+                            }
+                            return result;
+                        };
+                        Base64.encodeDouble = function (d) {
+                            var result = "";
+                            for (var i = 60; i >= 0; i -= 6) {
+                                if (!(result.equals("") && ((d >> i) & 0x3F) == 0)) {
+                                    result += Base64.encodeArray[(d >> i) & 0x3F];
+                                }
+                            }
+                            return result;
+                        };
+                        Base64.encodeDoubleToBuffer = function (d, buffer) {
+                            var empty = true;
+                            for (var i = 60; i >= 0; i -= 6) {
+                                if (!(empty && ((d >> i) & 0x3F) == 0)) {
+                                    empty = false;
+                                    buffer.append(Base64.encodeArray[(d >> i) & 0x3F]);
+                                }
+                            }
+                        };
+                        Base64.decodeToDouble = function (s) {
+                            return Base64.decodeToDoubleWithBounds(s, 0, s.length);
+                        };
+                        Base64.decodeToDoubleWithBounds = function (s, offsetBegin, offsetEnd) {
+                            var result = 0;
+                            for (var i = 0; i < (offsetEnd - offsetBegin); i++) {
+                                result += (Base64.decodeArray[s.charAt((offsetEnd - 1) - i)] & 0xFF) * Math.pow(2, (6 * i));
                             }
                             return result;
                         };

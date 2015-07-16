@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by jerome on 10/04/15.
@@ -62,7 +64,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                     public void on(Object o) {
                     }
                 });
-
+                System.err.println("-°-°-°-°-----"+checkValues());
 
                 // TODO : reader
                 readData();
@@ -172,7 +174,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                                         stateP.timeWalker().allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
-                                                for (long l : longs){
+                                                for (long l : longs) {
                                                     stateP.jump(l, new KCallback<KObject>() {
                                                         @Override
                                                         public void on(KObject kObject) {
@@ -192,5 +194,22 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                 });
             }
         });
+    }
+
+    private int checkValues(){
+        Map<Long, Double> map = new TreeMap<>();
+        for (TemperatureSensorValue sensor: this.tempValueList) {
+            map.put(sensor.getTime(), sensor.getTemperature());
+        }
+        Double previous = null;
+
+        int counter = 1;
+        for (Map.Entry<Long, Double> entry : map.entrySet()) {
+            Double value = entry.getValue();
+            if(previous==null || !value.equals(previous)){
+                counter++;
+            }
+        }
+        return counter;
     }
 }

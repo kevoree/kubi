@@ -69,6 +69,7 @@ class org.kubi.Technology {
 }
 
 class org.kubi.SimulatedParameter : org.kubi.StateParameter {
+    valueUnredundant : String
 }
 
 class org.kubi.SimulatedLightParameter : org.kubi.SimulatedParameter {

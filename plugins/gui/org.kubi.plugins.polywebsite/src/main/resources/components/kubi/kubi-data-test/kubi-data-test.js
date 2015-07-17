@@ -6,7 +6,7 @@ var dataTestVar = {
     universe: 0,
     end: 1428884298000,
     start: 1428711786000,
-    step: 80000000,
+    step: 800000,
     startJava: 1428599555443,
     endJava: 1428995607436,
     uuidParam: 4

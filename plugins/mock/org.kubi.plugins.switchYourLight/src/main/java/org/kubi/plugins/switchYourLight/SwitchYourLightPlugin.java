@@ -44,7 +44,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
                 SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("name");
                 device2.addStateParameters(lightState);
 
-                kubiKernel.model().metaModel().metaClassByName("org.kubi.SimulatedParameter").attribute("value").setExtrapolation(new SwitchYourLightExtrapolation());
+                kubiKernel.model().metaModel().metaClassByName("org.kubi.SimulatedParameter").attribute("valueUnredundant").setExtrapolation(new SwitchYourLightExtrapolation());
 
                 currentTechnology.addDevices(device);
                 currentTechnology.addDevices(device2);
@@ -55,13 +55,37 @@ public class SwitchYourLightPlugin implements KubiPlugin{
                     }
                 });
 
+
                 long[] stateKeys = new long[2];
                 stateKeys[0] = switchState.uuid();
                 stateKeys[1] = lightState.uuid();
 
-                readValues((KubiUniverse) kernel.model().universe(kernel.currentUniverse()), stateKeys);
+                KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
+
+                unredundantiseValues(universe, stateKeys);
+
+                readValues(universe , stateKeys);
             }
         });
+    }
+
+    private void unredundantiseValues(KubiUniverse universe, long[] keys) {
+
+        long now = System.currentTimeMillis();
+        int jumingSteps = 7000;
+        int nbLoops = 10000;
+        for (int i = 0; i < nbLoops; i++) {
+            universe.time(now + (i * jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
+                @Override
+                public void on(KObject[] kObjects) {
+                    if (kObjects.length > 0) {
+                        // kObjects[0] -> switchState
+                        // kObjects[1] -> lightState
+                        // TODO : set the values of [0] && [1]
+                    }
+                }
+            });
+        }
     }
 
     @Override

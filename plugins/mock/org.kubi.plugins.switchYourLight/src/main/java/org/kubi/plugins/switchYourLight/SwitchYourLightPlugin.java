@@ -63,7 +63,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
 
-                unredundantiseValues(universe, stateKeys);
+                unredundantiseValuesWithoutKDefer(universe, stateKeys);
 
                 //readValues(universe , stateKeys);
                 timeTreeReader(universe, stateKeys);
@@ -97,7 +97,6 @@ public class SwitchYourLightPlugin implements KubiPlugin{
                         }else{
                             System.out.println("kDeferRes == null");
                         }
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

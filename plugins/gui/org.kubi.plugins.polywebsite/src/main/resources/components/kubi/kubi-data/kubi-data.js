@@ -135,8 +135,10 @@ function initDeviceInChartSeries(deviceName) {
 
 function initDataAndListener() {
     var deviceNames = [];
-    var initialRange = 86400000;
-    var initialTime = 1428797898;
+    var initialRange = 490000;
+    var initialTime = ((new Date()).getTime()/1000)+490;
+    //var initialRange = 86400000;
+    //var initialTime = 1428797898;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
     var groupListenerID = kModeldata.nextGroup();
     currentView.getRoot(function (root) {
@@ -144,7 +146,7 @@ function initDataAndListener() {
             for (var d = 0; d < devices.length; d++) {
                 var device = devices[d];
                 deviceNames[deviceNames.length] = device.getName();
-                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").then(function (params) {
+                device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (params) {
                     if (params.length != 0) {
                         var param = params[0];
                         addListenerParam(param, groupListenerID, device.getName());
@@ -287,7 +289,7 @@ function getAndDrawData(deviceNames, start, end, step, wantPeriod) {
                             technos[technoIndex].traversal().traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[namesIndex]).then(function (devices) {
                                 if (devices.length > 0) {
                                     var device = devices[0];
-                                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).withAttribute(org.kubi.meta.MetaStateParameter.ATT_NAME, "name").then(function (parameters) {
+                                    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (parameters) {
                                         if (parameters.length > 0) {
                                             var param = parameters[0];
                                             // emptying the dataset of the device

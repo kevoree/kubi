@@ -13,9 +13,9 @@ public class SwitchYourLightExtrapolation implements Extrapolation {
     public Object extrapolate(KObject current, KMetaAttribute attribute) {
         double time = (double)(current.now()*Math.PI/(30000)); // 1 min periodic
         double phaseShift = 0;
-        if (((StateParameter) current).getName().equals("light")){
+        if (((StateParameter) current).getName().equals("switch")){
             //if it's the light we need to phase shift the signal (simulation of the latency)
-            phaseShift = 15000;
+            phaseShift = 1;
         }
         return (Math.sin(time + phaseShift)>0)+"";
     }

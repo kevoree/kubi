@@ -3,6 +3,7 @@ package org.kubi.plugins.switchYourLight;
 import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.KObject;
+import org.kevoree.modeling.defer.KDefer;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -34,14 +35,14 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
                 Device device = kubiKernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("switch");
 
-                SimulatedParameter switchState = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("name").setUnit("kW");
+                SimulatedParameter switchState = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("switch").setUnit("kW");
 //                switchState.setPeriod(switchState.view().createPeriod());
                 device.addStateParameters(switchState);
 
 
                 Device device2 = kubiKernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("light");
 
-                SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("name");
+                SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("light");
                 device2.addStateParameters(lightState);
 
                 kubiKernel.model().metaModel().metaClassByName("org.kubi.SimulatedParameter").attribute("valueUnredundant").setExtrapolation(new SwitchYourLightExtrapolation());
@@ -64,7 +65,8 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
                 unredundantiseValues(universe, stateKeys);
 
-                readValues(universe , stateKeys);
+                //readValues(universe , stateKeys);
+                timeTreeReader(universe, stateKeys);
             }
         });
     }
@@ -72,21 +74,82 @@ public class SwitchYourLightPlugin implements KubiPlugin{
     private void unredundantiseValues(KubiUniverse universe, long[] keys) {
 
         long now = System.currentTimeMillis();
-        int jumingSteps = 7000;
-        int nbLoops = 10000;
+        int jumingSteps = 500;
+        int nbLoops = 2000;
+        KDefer kDefer = universe.model().defer();
+        for (int i = 0; i < nbLoops; i++) {
+            universe.time(now + (i * jumingSteps)).lookupAll(keys,kDefer.wait("loop_"+i));
+        }
+        kDefer.then(new KCallback() {
+            @Override
+            public void on(Object o) {
+                for (int i = 0; i < nbLoops; i++) {
+                    try {
+                        KObject[] resLoop = (KObject[]) kDefer.getResult("loop_"+i);
+                        if (resLoop!=null) {
+                            if (resLoop.length > 0) {
+                                // kObjects[0] -> switchState
+                                // kObjects[1] -> lightState
+                                ((SimulatedParameter) resLoop[0]).setValue(((SimulatedParameter) resLoop[0]).getValueUnredundant());
+                                ((SimulatedParameter) resLoop[1]).setValue(((SimulatedParameter) resLoop[1]).getValueUnredundant());
+                                // set the values of [0] && [1]
+                            }
+                        }else{
+                            System.out.println("kDeferRes == null");
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                universe.model().save(new KCallback() {
+                    @Override
+                    public void on(Object o) {
+
+                    }
+                });
+            }
+        });
+    }
+
+
+    private void unredundantiseValuesWithoutKDefer(KubiUniverse universe, long[] keys) {
+
+        long now = System.currentTimeMillis();
+        int jumingSteps = 500;
+        int nbLoops = 2000;
         for (int i = 0; i < nbLoops; i++) {
             universe.time(now + (i * jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
                 @Override
-                public void on(KObject[] kObjects) {
-                    if (kObjects.length > 0) {
+                public void on(KObject[] resLoop) {
+                    if (resLoop.length > 0) {
                         // kObjects[0] -> switchState
                         // kObjects[1] -> lightState
-                        // TODO : set the values of [0] && [1]
+                        ((SimulatedParameter) resLoop[0]).setValue(stringBoolToStringInt(((SimulatedParameter) resLoop[0]).getValueUnredundant()));
+                        ((SimulatedParameter) resLoop[1]).setValue(stringBoolToStringInt(((SimulatedParameter) resLoop[1]).getValueUnredundant()));
+                        // set the values of [0] && [1]
+                        universe.model().save(new KCallback() {
+                            @Override
+                            public void on(Object o) {
+
+                            }
+                        });
                     }
                 }
             });
         }
+        universe.model().save(new KCallback() {
+            @Override
+            public void on(Object o) {
+
+            }
+        });
     }
+
+    private String stringBoolToStringInt(String StringBool) {
+        return ""+(StringBool.equals("true")?1:0);
+    }
+
 
     @Override
     public void stop() {
@@ -104,6 +167,44 @@ public class SwitchYourLightPlugin implements KubiPlugin{
         }
         System.out.println("SmartFridgePlugin stops ...");
     }
+
+
+
+    private void timeTreeReader(KubiUniverse universe, long[] keys){
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Long time = System.currentTimeMillis();
+        universe.time(time).lookupAll(keys, new KCallback<KObject[]>() {
+            @Override
+            public void on(KObject[] kObjects) {
+//                    System.out.println(kObjects.length);
+                if(kObjects.length > 0){
+                    for(int i = 0; i < 2; i++){
+                        KObject kobj = kObjects[i];
+                        kobj.timeWalker().allTimes(new KCallback<long[]>() {
+                            @Override
+                            public void on(long[] longs) {
+                                System.err.println("time tree size : "+ longs.length);
+                                for (long l : longs) {
+                                    kobj.jump(l, new KCallback<KObject>() {
+                                        @Override
+                                        public void on(KObject kObject) {
+//                                            System.out.println(kObject.now() + "____" + ((SimulatedParameter) kObject).getValue());
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+    }
+
 
     private int counter;
     public void readValues(KubiUniverse universe, long[] keys) {
@@ -164,7 +265,8 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 //                        System.out.println((kObjects[0].now()) % 60000 + "," + ((SimulatedParameter) kObjects[0]).getValue() + "," + ((SimulatedParameter) kObjects[1]).getValue());
                         }
                     }
-                });universe.time(1 + now + (i*jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
+                });
+                universe.time(1 + now + (i*jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length>0){

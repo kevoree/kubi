@@ -20,8 +20,9 @@ var lineChartData = [
 
 function initEpochChart(model){
     KubiEpoch.kubiModel = model;
-    var initialTime = 1428797898;
-    var initialScale = 86400000;
+    var initialTime = ((new Date()).getTime()/1000)+490;
+    //var initialTime = 1428797898;
+    var initialScale = 490000;
     console.log("initEpochChart");
 
     emptyChartData();

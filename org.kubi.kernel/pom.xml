@@ -64,12 +64,12 @@
             <version>${project.version}</version>
         </dependency>
         -->
+        <!-- SmartFridge Repeat Real time
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.smartfridgeRepeatRealTime</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- SmartFridge Repeat Real time
         -->
         <!--
         <dependency>
@@ -100,12 +100,12 @@
         </dependency>
         -->
         <!-- switch your light
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.switchYourLight</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
 
         <!-- Polynomial Reader
         <dependency>

@@ -5,7 +5,8 @@
 <script src="/js/js/org.kubi.model-all.js"></script>
 <script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
-<script src="/js/nunjucks.js"></script>
+<script type="text/javascript" src="/js/paperclip.js"></script>
+
 
 <script src="./kubi-sidedevicepicker.js"></script>
 
@@ -16,24 +17,6 @@
             <kubi-model id="modelHandlerSide" on-model-connected="modelConnected"></kubi-model>
 
             <form id="radioDevicePicker" action="#" on-change="devicepickerUpdatesGraph"></form>
-
-            <script id="radioDevicePicker-template" type="text/x-handlebars-template" >
-                <ul id="nav-mobile" class="side-nav fixed">
-                    {% asyncEach techno in ecosystem.technologies %}
-                    <li>
-                        <p class="filled-in" >{{techno.name}} :</p>
-                        <ul>
-                            {% asyncEach device in techno.devices %}
-                            <li>
-                                <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}"/>
-                                <label for="radio{{device.name}}">{{device.name}}</label>
-                            </li>
-                            {% endeach %}
-                        </ul>
-                    </li>
-                    {% endeach %}
-                </ul>
-            </script>
         </div>
     </template>
 </dom-module>
@@ -54,7 +37,7 @@
         },
         modelConnected : function(event, details){
             setModelForTemplate(details.value);
-            initTemplate("radioDevicePicker-template", "radioDevicePicker", 0, (new Date()).getTime());
+            initTemplate("radioDevicePicker", 0, (new Date()).getTime());
         },
         ready : function (){
 

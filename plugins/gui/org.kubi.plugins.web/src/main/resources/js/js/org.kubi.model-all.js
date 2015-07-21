@@ -1403,28 +1403,19 @@ var org;
                             }
                             var resolver = this.dependenciesResolver(p_dependencies[i]);
                             for (var j = 0; j < this._metaClass.inputs().length; j++) {
-                                this._metaClass.inputs()[j].extractor().exec(null, resolver, waiter.wait(i + "," + j));
+                                this._metaClass.inputs()[j].extractor().exec(null, resolver, waiter.waitResult());
                             }
                         }
-                        waiter.then(function (o) {
+                        waiter.then(function (results) {
                             var extractedInputs = new Array(new Array());
+                            var k = 0;
                             for (var i = 0; i < p_dependencies.length; i++) {
                                 for (var j = 0; j < _this._metaClass.inputs().length; j++) {
-                                    try {
-                                        var extracted = waiter.getResult(i + "," + j);
-                                        if (extracted != null && extracted.length > 0) {
-                                            extractedInputs[i][j] = extracted[0];
-                                        }
+                                    var extracted = results[k];
+                                    if (extracted != null && extracted.length > 0) {
+                                        extractedInputs[i][j] = extracted[0];
                                     }
-                                    catch ($ex$) {
-                                        if ($ex$ instanceof java.lang.Exception) {
-                                            var e = $ex$;
-                                            e.printStackTrace();
-                                        }
-                                        else {
-                                            throw $ex$;
-                                        }
-                                    }
+                                    k++;
                                 }
                             }
                             var extractedOutputs = new Array(new Array());
@@ -1469,29 +1460,20 @@ var org;
                             }
                             var resolver = this.dependenciesResolver(p_dependencies[i]);
                             for (var j = 0; j < this._metaClass.inputs().length; j++) {
-                                this._metaClass.inputs()[j].extractor().exec(null, resolver, waiter.wait(i + "," + j));
+                                this._metaClass.inputs()[j].extractor().exec(null, resolver, waiter.waitResult());
                             }
                         }
-                        waiter.then(function (o) {
+                        waiter.then(function (results) {
                             var extractedInputs = new Array(new Array());
+                            var k = 0;
                             for (var i = 0; i < p_dependencies.length; i++) {
                                 extractedInputs[i] = new Array();
                                 for (var j = 0; j < _this._metaClass.inputs().length; j++) {
-                                    try {
-                                        var extracted = waiter.getResult(i + "," + j);
-                                        if (extracted != null && extracted.length > 0) {
-                                            extractedInputs[i][j] = extracted[0];
-                                        }
+                                    var extracted = results[k];
+                                    if (extracted != null && extracted.length > 0) {
+                                        extractedInputs[i][j] = extracted[0];
                                     }
-                                    catch ($ex$) {
-                                        if ($ex$ instanceof java.lang.Exception) {
-                                            var e = $ex$;
-                                            e.printStackTrace();
-                                        }
-                                        else {
-                                            throw $ex$;
-                                        }
-                                    }
+                                    k++;
                                 }
                             }
                             var extractedOutputs = _this._metaClass.inferAlg().infer(extractedInputs, selfObject);
@@ -1963,86 +1945,63 @@ var org;
                 (function (impl) {
                     var Defer = (function () {
                         function Defer() {
-                            this._isDone = false;
-                            this._isReady = false;
-                            this._nbRecResult = 0;
                             this._nbExpectedResult = 0;
-                            this._nextTasks = null;
+                            this._nbRecResult = 0;
                             this._results = null;
-                            this._thenCB = null;
-                            this._results = new org.kevoree.modeling.memory.struct.map.impl.ArrayStringMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
+                            this._resultSize = 0;
                         }
-                        Defer.prototype.setDoneOrRegister = function (next) {
-                            if (next != null) {
-                                if (this._nextTasks == null) {
-                                    this._nextTasks = new java.util.ArrayList();
-                                }
-                                this._nextTasks.add(next);
-                                return this._isDone;
-                            }
-                            else {
-                                this._isDone = true;
-                                if (this._nextTasks != null) {
-                                    for (var i = 0; i < this._nextTasks.size(); i++) {
-                                        this._nextTasks.get(i).informParentEnd(this);
-                                    }
-                                }
-                                return this._isDone;
-                            }
-                        };
-                        Defer.prototype.equals = function (obj) {
-                            return obj == this;
-                        };
-                        Defer.prototype.informParentEnd = function (end) {
-                            if (end == null) {
-                                this._nbRecResult = this._nbRecResult + this._nbExpectedResult;
-                            }
-                            else {
-                                if (end != this) {
-                                    this._nbRecResult--;
-                                }
-                            }
-                            if (this._nbRecResult == 0 && this._isReady) {
-                                this.setDoneOrRegister(null);
-                                if (this._thenCB != null) {
-                                    this._thenCB(null);
-                                }
-                            }
-                        };
-                        Defer.prototype.waitDefer = function (p_previous) {
-                            if (p_previous != this) {
-                                if (!p_previous.setDoneOrRegister(this)) {
-                                    this._nbExpectedResult++;
-                                }
-                            }
-                            return this;
-                        };
-                        Defer.prototype.next = function () {
-                            var nextTask = new org.kevoree.modeling.defer.impl.Defer();
-                            nextTask.waitDefer(this);
-                            return nextTask;
-                        };
-                        Defer.prototype.wait = function (resultName) {
-                            var _this = this;
-                            return function (o) {
-                                _this._results.put(resultName, o);
-                            };
-                        };
-                        Defer.prototype.isDone = function () {
-                            return this._isDone;
-                        };
-                        Defer.prototype.getResult = function (resultName) {
-                            if (this._isDone) {
-                                return this._results.get(resultName);
-                            }
-                            else {
-                                throw new java.lang.Exception("Task is not executed yet !");
-                            }
+                        Defer.prototype.waitResult = function () {
+                            return this.informEndOrRegister(-1, null, null);
                         };
                         Defer.prototype.then = function (cb) {
-                            this._thenCB = cb;
-                            this._isReady = true;
-                            this.informParentEnd(null);
+                            this.informEndOrRegister(-1, null, cb);
+                        };
+                        Defer.prototype.informEndOrRegister = function (p_indexToInsert, p_result, p_end) {
+                            var _this = this;
+                            if (p_end == null) {
+                                if (p_indexToInsert == -1) {
+                                    var toInsert = this._nbExpectedResult;
+                                    this._nbExpectedResult++;
+                                    if (this._results == null || this._resultSize < this._nbExpectedResult) {
+                                        var newResultSize = (this._nbExpectedResult == 0 ? 1 : this._nbExpectedResult << 1);
+                                        var newResults = new Array();
+                                        if (this._results != null) {
+                                            System.arraycopy(this._results, 0, newResults, 0, this._resultSize);
+                                        }
+                                        this._resultSize = newResultSize;
+                                        this._results = newResults;
+                                    }
+                                    return function (o) {
+                                        _this.informEndOrRegister(toInsert, o, null);
+                                    };
+                                }
+                                else {
+                                    this._results[p_indexToInsert] = p_result;
+                                    this._nbRecResult++;
+                                    if (this._end != null && (this._nbExpectedResult == this._nbRecResult)) {
+                                        var finalResults = this._results;
+                                        if (this._resultSize != this._nbExpectedResult) {
+                                            var newResults = new Array();
+                                            System.arraycopy(this._results, 0, newResults, 0, this._nbExpectedResult);
+                                            finalResults = newResults;
+                                        }
+                                        this._end(finalResults);
+                                    }
+                                }
+                            }
+                            else {
+                                this._end = p_end;
+                                if (this._nbExpectedResult == this._nbRecResult) {
+                                    var finalResults = this._results;
+                                    if (this._resultSize != this._nbExpectedResult) {
+                                        var newResults = new Array();
+                                        System.arraycopy(this._results, 0, newResults, 0, this._nbExpectedResult);
+                                        finalResults = newResults;
+                                    }
+                                    this._end(finalResults);
+                                }
+                            }
+                            return null;
                         };
                         return Defer;
                     })();
@@ -4453,6 +4412,7 @@ var org;
                                     if (strings != null && strings.length > 0 && strings[0] != null) {
                                         var newObject = _this.internal_unserialize(toReloadKeys[0], strings[0]);
                                         var newCache = _this._factory.newCache();
+                                        newCache.getOrPut(org.kevoree.modeling.KConfig.NULL_LONG, org.kevoree.modeling.KConfig.NULL_LONG, org.kevoree.modeling.KConfig.NULL_LONG, newObject);
                                         var oldCache = _this._cache;
                                         _this._cache = newCache;
                                         oldCache.delete(_this._model.metaModel());
@@ -7505,7 +7465,7 @@ var org;
                             return this._literals[p_index];
                         };
                         MetaEnum.prototype.addLiteral = function (p_name) {
-                            var newLiteral = new org.kevoree.modeling.meta.impl.MetaLiteral(p_name, this._literals.length, this);
+                            var newLiteral = new org.kevoree.modeling.meta.impl.MetaLiteral(p_name, this._literals.length, this._name);
                             this.internal_add_meta(newLiteral);
                             return newLiteral;
                         };
@@ -7586,10 +7546,10 @@ var org;
                     })();
                     impl.MetaInferOutput = MetaInferOutput;
                     var MetaLiteral = (function () {
-                        function MetaLiteral(p_name, p_index, p_origin) {
+                        function MetaLiteral(p_name, p_index, p_className) {
                             this._name = p_name;
                             this._index = p_index;
-                            this._origin = p_origin;
+                            this._className = p_className;
                         }
                         MetaLiteral.prototype.index = function () {
                             return this._index;
@@ -7600,11 +7560,8 @@ var org;
                         MetaLiteral.prototype.metaType = function () {
                             return org.kevoree.modeling.meta.MetaType.LITERAL;
                         };
-                        MetaLiteral.prototype.origin = function () {
-                            return this._origin;
-                        };
                         MetaLiteral.prototype.toString = function () {
-                            return "KLiteral@" + this._origin.name() + "." + this._name;
+                            return "KLiteral@" + this._className + "." + this._name;
                         };
                         return MetaLiteral;
                     })();
@@ -9336,26 +9293,36 @@ var org;
                             result += Base64.encodeArray[(bytes[2] & 0x3) << 4 | bytes[1] >> 4];
                             result += Base64.encodeArray[(bytes[1] & 0x0F) << 2 | bytes[0] >> 6];
                             result += Base64.encodeArray[(bytes[0] & 0x3F)];
-                            return result;
+                            var i = result.length - 1;
+                            while (i >= 3 && result.charAt(i) == 'A') {
+                                i--;
+                            }
+                            return result.substr(0, i + 1);
                         };
                         Base64.encodeDoubleToBuffer = function (d, buffer) {
+                            var result = "";
                             var float = new Float64Array(1);
                             var bytes = new Uint8Array(float.buffer);
                             float[0] = d;
                             var exponent = ((bytes[7] & 0x7f) << 4 | bytes[6] >> 4) - 0x3ff;
                             var signAndExp = (((bytes[7] >> 7) & 0x1) << 11) + (exponent + 1023);
                             //encode sign + exp
-                            buffer.append(Base64.encodeArray[(signAndExp >> 6) & 0x3F]);
-                            buffer.append(Base64.encodeArray[signAndExp & 0x3F]);
-                            buffer.append(Base64.encodeArray[bytes[6] & 0x0F]);
-                            buffer.append(Base64.encodeArray[(bytes[5] >> 2) & 0x3F]);
-                            buffer.append(Base64.encodeArray[(bytes[5] & 0x3) << 4 | bytes[4] >> 4]);
-                            buffer.append(Base64.encodeArray[(bytes[4] & 0x0F) << 2 | bytes[3] >> 6]);
-                            buffer.append(Base64.encodeArray[(bytes[3] & 0x3F)]);
-                            buffer.append(Base64.encodeArray[(bytes[2] >> 2) & 0x3F]);
-                            buffer.append(Base64.encodeArray[(bytes[2] & 0x3) << 4 | bytes[1] >> 4]);
-                            buffer.append(Base64.encodeArray[(bytes[1] & 0x0F) << 2 | bytes[0] >> 6]);
-                            buffer.append(Base64.encodeArray[(bytes[0] & 0x3F)]);
+                            result += Base64.encodeArray[(signAndExp >> 6) & 0x3F];
+                            result += Base64.encodeArray[signAndExp & 0x3F];
+                            result += Base64.encodeArray[bytes[6] & 0x0F];
+                            result += Base64.encodeArray[(bytes[5] >> 2) & 0x3F];
+                            result += Base64.encodeArray[(bytes[5] & 0x3) << 4 | bytes[4] >> 4];
+                            result += Base64.encodeArray[(bytes[4] & 0x0F) << 2 | bytes[3] >> 6];
+                            result += Base64.encodeArray[(bytes[3] & 0x3F)];
+                            result += Base64.encodeArray[(bytes[2] >> 2) & 0x3F];
+                            result += Base64.encodeArray[(bytes[2] & 0x3) << 4 | bytes[1] >> 4];
+                            result += Base64.encodeArray[(bytes[1] & 0x0F) << 2 | bytes[0] >> 6];
+                            result += Base64.encodeArray[(bytes[0] & 0x3F)];
+                            var i = result.length - 1;
+                            while (i >= 3 && result.charAt(i) == 'A') {
+                                i--;
+                            }
+                            buffer.append(result);
                         };
                         Base64.decodeToDouble = function (s) {
                             return Base64.decodeToDoubleWithBounds(s, 0, s.length);
@@ -9366,8 +9333,8 @@ var org;
                             var exp = signAndExp & 0x7FF;
                             //Mantisse
                             var mantissaBits = 0;
-                            for (var i = 0; i < (offsetEnd - offsetBegin) - 2; i++) {
-                                mantissaBits += (Base64.decodeArray[s.charAt((offsetEnd - 1) - i)] & 0xFF) * Math.pow(2, 6 * i);
+                            for (var i = 2; i < (offsetEnd - offsetBegin); i++) {
+                                mantissaBits += (Base64.decodeArray[s.charAt(offsetBegin + i)] & 0xFF) * Math.pow(2, (48 - (6 * (i - 2))));
                             }
                             return (exp != 0) ? sign * Math.pow(2, exp - 1023) * (1 + (mantissaBits / Math.pow(2, 52))) : sign * Math.pow(2, -1022) * (0 + (mantissaBits / Math.pow(2, 52)));
                         };
@@ -10659,36 +10626,6 @@ var org;
             return KubiUniverse;
         })(org.kevoree.modeling.abs.AbstractKUniverse);
         kubi.KubiUniverse = KubiUniverse;
-        var ParameterType = (function () {
-            function ParameterType() {
-            }
-            ParameterType.prototype.equals = function (other) {
-                return this == other;
-            };
-            ParameterType.values = function () {
-                return ParameterType._ParameterTypeVALUES;
-            };
-            ParameterType.BOOL = new ParameterType();
-            ParameterType.BUTTON = new ParameterType();
-            ParameterType.BYTE = new ParameterType();
-            ParameterType.DECIMAL = new ParameterType();
-            ParameterType.INT = new ParameterType();
-            ParameterType.LIST = new ParameterType();
-            ParameterType.SHORT = new ParameterType();
-            ParameterType.STRING = new ParameterType();
-            ParameterType._ParameterTypeVALUES = [
-                ParameterType.BOOL,
-                ParameterType.BUTTON,
-                ParameterType.BYTE,
-                ParameterType.DECIMAL,
-                ParameterType.INT,
-                ParameterType.LIST,
-                ParameterType.SHORT,
-                ParameterType.STRING
-            ];
-            return ParameterType;
-        })();
-        kubi.ParameterType = ParameterType;
         var impl;
         (function (impl) {
             var ActionParameterImpl = (function (_super) {
@@ -11879,81 +11816,40 @@ var org;
                 return MetaManufacturer;
             })(org.kevoree.modeling.meta.impl.MetaClass);
             meta.MetaManufacturer = MetaManufacturer;
-            var MetaParameterType = (function (_super) {
-                __extends(MetaParameterType, _super);
-                function MetaParameterType(p_name, p_isEnum) {
-                    _super.call(this, p_name, p_isEnum);
+            var MetaParameterType = (function () {
+                function MetaParameterType() {
                 }
                 MetaParameterType.getInstance = function () {
                     if (MetaParameterType.INSTANCE == null) {
-                        MetaParameterType.INSTANCE = new org.kubi.meta.MetaParameterType("org.kubi.ParameterType", true);
+                        MetaParameterType.INSTANCE = new org.kubi.meta.MetaParameterType();
                     }
                     return MetaParameterType.INSTANCE;
                 };
-                MetaParameterType.prototype.load = function (s) {
-                    if (s.equals(MetaParameterType._BOOL)) {
-                        return org.kubi.ParameterType.BOOL;
-                    }
-                    if (s.equals(MetaParameterType._BUTTON)) {
-                        return org.kubi.ParameterType.BUTTON;
-                    }
-                    if (s.equals(MetaParameterType._BYTE)) {
-                        return org.kubi.ParameterType.BYTE;
-                    }
-                    if (s.equals(MetaParameterType._DECIMAL)) {
-                        return org.kubi.ParameterType.DECIMAL;
-                    }
-                    if (s.equals(MetaParameterType._INT)) {
-                        return org.kubi.ParameterType.INT;
-                    }
-                    if (s.equals(MetaParameterType._LIST)) {
-                        return org.kubi.ParameterType.LIST;
-                    }
-                    if (s.equals(MetaParameterType._SHORT)) {
-                        return org.kubi.ParameterType.SHORT;
-                    }
-                    if (s.equals(MetaParameterType._STRING)) {
-                        return org.kubi.ParameterType.STRING;
+                MetaParameterType.valueOf = function (s) {
+                    for (var i = 0; i < MetaParameterType.values.length; i++) {
+                        if (s.equals(MetaParameterType.values[i].metaName())) {
+                            return MetaParameterType.values[i];
+                        }
                     }
                     return null;
                 };
-                MetaParameterType.prototype.save = function (value) {
-                    if (value == org.kubi.ParameterType.BOOL) {
-                        return MetaParameterType._BOOL;
-                    }
-                    if (value == org.kubi.ParameterType.BUTTON) {
-                        return MetaParameterType._BUTTON;
-                    }
-                    if (value == org.kubi.ParameterType.BYTE) {
-                        return MetaParameterType._BYTE;
-                    }
-                    if (value == org.kubi.ParameterType.DECIMAL) {
-                        return MetaParameterType._DECIMAL;
-                    }
-                    if (value == org.kubi.ParameterType.INT) {
-                        return MetaParameterType._INT;
-                    }
-                    if (value == org.kubi.ParameterType.LIST) {
-                        return MetaParameterType._LIST;
-                    }
-                    if (value == org.kubi.ParameterType.SHORT) {
-                        return MetaParameterType._SHORT;
-                    }
-                    if (value == org.kubi.ParameterType.STRING) {
-                        return MetaParameterType._STRING;
-                    }
-                    return null;
+                MetaParameterType.prototype.name = function () {
+                    return "org.kubi.ParameterType";
                 };
-                MetaParameterType._BOOL = "BOOL";
-                MetaParameterType._BUTTON = "BUTTON";
-                MetaParameterType._BYTE = "BYTE";
-                MetaParameterType._DECIMAL = "DECIMAL";
-                MetaParameterType._INT = "INT";
-                MetaParameterType._LIST = "LIST";
-                MetaParameterType._SHORT = "SHORT";
-                MetaParameterType._STRING = "STRING";
+                MetaParameterType.prototype.isEnum = function () {
+                    return true;
+                };
+                MetaParameterType.BOOL = new org.kevoree.modeling.meta.impl.MetaLiteral("BOOL", 0, "org.kubi.ParameterType");
+                MetaParameterType.BUTTON = new org.kevoree.modeling.meta.impl.MetaLiteral("BUTTON", 1, "org.kubi.ParameterType");
+                MetaParameterType.BYTE = new org.kevoree.modeling.meta.impl.MetaLiteral("BYTE", 2, "org.kubi.ParameterType");
+                MetaParameterType.DECIMAL = new org.kevoree.modeling.meta.impl.MetaLiteral("DECIMAL", 3, "org.kubi.ParameterType");
+                MetaParameterType.INT = new org.kevoree.modeling.meta.impl.MetaLiteral("INT", 4, "org.kubi.ParameterType");
+                MetaParameterType.LIST = new org.kevoree.modeling.meta.impl.MetaLiteral("LIST", 5, "org.kubi.ParameterType");
+                MetaParameterType.SHORT = new org.kevoree.modeling.meta.impl.MetaLiteral("SHORT", 6, "org.kubi.ParameterType");
+                MetaParameterType.STRING = new org.kevoree.modeling.meta.impl.MetaLiteral("STRING", 7, "org.kubi.ParameterType");
+                MetaParameterType.values = [MetaParameterType.BOOL, MetaParameterType.BUTTON, MetaParameterType.BYTE, MetaParameterType.DECIMAL, MetaParameterType.INT, MetaParameterType.LIST, MetaParameterType.SHORT, MetaParameterType.STRING];
                 return MetaParameterType;
-            })(org.kevoree.modeling.abs.AbstractDataType);
+            })();
             meta.MetaParameterType = MetaParameterType;
             var MetaPeriod = (function (_super) {
                 __extends(MetaPeriod, _super);

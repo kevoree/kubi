@@ -63,7 +63,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
 
-                unredundantiseValuesWithoutKDefer(universe, stateKeys);
+                unredundantiseValues(universe, stateKeys);
 
                 //readValues(universe , stateKeys);
                 timeTreeReader(universe, stateKeys);
@@ -78,20 +78,20 @@ public class SwitchYourLightPlugin implements KubiPlugin{
         int nbLoops = 2000;
         KDefer kDefer = universe.model().defer();
         for (int i = 0; i < nbLoops; i++) {
-            universe.time(now + (i * jumingSteps)).lookupAll(keys,kDefer.wait("loop_"+i));
+            universe.time(now + (i * jumingSteps)).lookupAll(keys,kDefer.waitResult());
         }
-        kDefer.then(new KCallback() {
+        kDefer.then(new KCallback<Object[]>() {
             @Override
-            public void on(Object o) {
+            public void on(Object[] resDefer) {
                 for (int i = 0; i < nbLoops; i++) {
                     try {
-                        KObject[] resLoop = (KObject[]) kDefer.getResult("loop_"+i);
+                        KObject[] resLoop = (KObject[]) resDefer[i];
                         if (resLoop!=null) {
                             if (resLoop.length > 0) {
                                 // kObjects[0] -> switchState
                                 // kObjects[1] -> lightState
-                                ((SimulatedParameter) resLoop[0]).setValue(((SimulatedParameter) resLoop[0]).getValueUnredundant());
-                                ((SimulatedParameter) resLoop[1]).setValue(((SimulatedParameter) resLoop[1]).getValueUnredundant());
+                                ((SimulatedParameter) resLoop[0]).setValue(stringBoolToStringInt(((SimulatedParameter) resLoop[0]).getValueUnredundant()));
+                                ((SimulatedParameter) resLoop[1]).setValue(stringBoolToStringInt(((SimulatedParameter) resLoop[1]).getValueUnredundant()));
                                 // set the values of [0] && [1]
                             }
                         }else{

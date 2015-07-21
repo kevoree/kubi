@@ -48,7 +48,7 @@ class org.kubi.StateParameter {
     name : String
     value : String
     valueType : String
-    precision : Float
+    precision : Double
     unit : String
     range : String
 }

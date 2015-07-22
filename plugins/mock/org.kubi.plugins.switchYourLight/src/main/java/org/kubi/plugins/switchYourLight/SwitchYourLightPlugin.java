@@ -179,14 +179,13 @@ public class SwitchYourLightPlugin implements KubiPlugin{
         universe.time(time).lookupAll(keys, new KCallback<KObject[]>() {
             @Override
             public void on(KObject[] kObjects) {
-//                    System.out.println(kObjects.length);
                 if(kObjects.length > 0){
                     for(int i = 0; i < 2; i++){
                         KObject kobj = kObjects[i];
                         kobj.timeWalker().allTimes(new KCallback<long[]>() {
                             @Override
                             public void on(long[] longs) {
-                                System.err.println("time tree size : "+ longs.length);
+//                                System.err.println("time tree size : "+ longs.length);
                                 for (long l : longs) {
                                     kobj.jump(l, new KCallback<KObject>() {
                                         @Override

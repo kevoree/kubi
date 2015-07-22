@@ -17,6 +17,25 @@
             <kubi-model id="modelHandlerSide" on-model-connected="modelConnected"></kubi-model>
 
             <form id="radioDevicePicker" action="#" on-change="devicepickerUpdatesGraph"></form>
+
+            <script id="radioDevicePicker_template" type="text/x-handlebars-template">
+                <ul id="nav-mobile" class="side-nav fixed">
+                    <repeat each="{{ ecosystem.technologies }}" as="techno">
+                        <li>
+                            <p class="filled-in" >{{techno.name}} :</p>
+                            <ul>
+                                <repeat each="{{techno.devices}}" as="device">
+                                    <li>
+                                        <input name="radioDevicePicker-group" class="filled-in" value="<~>{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}"/>
+                                        <label for="radio{{device.name}}">{{device.name}}</label>
+                                    </li>
+                                </repeat>
+                            </ul>
+                        </li>
+                    </repeat>
+                </ul>
+
+            </script>
         </div>
     </template>
 </dom-module>
@@ -30,14 +49,15 @@
             var devicePickerForm = this.$.radioDevicePicker;
             for(var i= 0; i<devicePickerForm.length ; i++){
                 if (devicePickerForm[i].checked) {
-                    this.value[this.value.length] = devicePickerForm[i].value;
+                    var val = devicePickerForm[i].value;
+                    this.value[this.value.length] = val.substring(3, val.length);
                 }
             }
             this.fire("devicepicker-updated", {value : this.value});
         },
         modelConnected : function(event, details){
             setModelForTemplate(details.value);
-            initTemplate("radioDevicePicker", 0, (new Date()).getTime());
+            initTemplate("radioDevicePicker_template", "radioDevicePicker", 0, (new Date()).getTime());
         },
         ready : function (){
 

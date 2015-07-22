@@ -71,7 +71,7 @@ function getDataAndEpochDraw(deviceNames, start, end, step, wantPeriod) {
                                 var device = devices[0];
                                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function(params){
                                     if(params.length>0){
-                                        addValueInEpochGraph(device.getName(),params[0], start, end, step, haveToShowPeriod);
+                                        addValueInEpochGraphKDefer(device.getName(),params[0], start, end, step, haveToShowPeriod);
                                     }
                                 });
                             }
@@ -80,6 +80,52 @@ function getDataAndEpochDraw(deviceNames, start, end, step, wantPeriod) {
                 }
             });
         }
+    });
+}
+/**
+ * Visit the time from end to start step by step and push the values (and its period if needed) in the epoch graph
+ * @param deviceName
+ * @param parameter
+ * @param start
+ * @param end
+ * @param step
+ * @param haveToShowPeriod
+ */
+function addValueInEpochGraphKDefer(deviceName,parameter, start, end, step, haveToShowPeriod) {
+
+    var kDefer = KubiEpoch.kubiModel.defer();
+
+    while(start<end) {
+        parameter.jump(end, kDefer.waitResult());
+
+        //TODO in KDefer for the period
+        end = end - step;
+    }
+    kDefer.then(function(paramsTimed){
+        var kDeferPeriod = KubiEpoch.kubiModel.defer();
+        for(var i = 0;i<paramsTimed.length;i++) {
+            var paramTimed = paramsTimed[i];
+            if (paramTimed != undefined && paramTimed.getValue() != undefined) {
+                addEpochPointWithPeriod(paramTimed.now(),parseFloat(paramTimed.getValue()), deviceName);
+                if(haveToShowPeriod) {
+                    paramTimed.traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(kDeferPeriod.waitResult());
+                }
+                //pushValueInEpoch(paramTimed, deviceName, false);
+                //pushValueInEpoch(paramTimed, deviceName, haveToShowPeriod);
+            }
+        }
+        kDeferPeriod.then(function(periods){
+            for(var p in periods){
+                console.error("coucou_period");
+                addEpochPointWithPeriod(periods[p].now(), parseFloat(periods[p].getPeriod()), deviceName+"_Period");
+            }
+        });
+        var deviceDataIndex = getDataIndexByLabelName(deviceName);
+        try {
+            lineChartData[deviceDataIndex].values.sort(function (a, b){return a.x - b.x;});
+        }catch(ex){console.log(ex);}
+        KubiEpoch.chart.update(lineChartData);
+        makeLegend();
     });
 }
 
@@ -107,7 +153,6 @@ function addValueInEpochGraph(deviceName,parameter, start, end, step, haveToShow
             lineChartData[deviceDataIndex].values.sort(function (a, b){return a.x - b.x;});
         }catch(ex){console.log(ex);}
         KubiEpoch.chart.update(lineChartData);
-        console.log("**** coucou=======",lineChartData);
         makeLegend();
     }
 }
@@ -162,6 +207,7 @@ function addEpochPointWithPeriod(time, value, deviceName){
  * Make a legend according to th labels of the lineDataChart and the KubiEpoch.legendColors
  */
 function makeLegend(){
+    console.log("coucou_legend");
     var legend = document.createElement("ul");
     try {
         document.getElementById("epochLegend").removeChild(document.getElementById("epochLegend").firstChild);

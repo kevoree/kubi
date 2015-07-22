@@ -12,21 +12,20 @@ var org;
                         function WebSocketCDNClient(connectionUri) {
                             this._callbackId = 0;
                             this._reconnectionDelay = 3000;
-                            this._localEventListeners = new org.kevoree.modeling.event.impl.LocalEventListeners();
                             this._getCallbacks = new java.util.HashMap();
                             this._putCallbacks = new java.util.HashMap();
                             this._atomicGetCallbacks = new java.util.HashMap();
-                            this.interceptors = new Array();
+                            this.listeners = new Array();
                             this.shouldBeConnected = false;
                             this._connectionUri = connectionUri;
                         }
-                        WebSocketCDNClient.prototype.addMessageInterceptor = function (interceptor) {
-                            var i = interceptor.length;
-                            this.interceptors.push(interceptor);
+                        WebSocketCDNClient.prototype.addUpdateListener = function (listener) {
+                            var i = Math.random();
+                            this.listeners[i] = listener;
                             return i;
                         };
-                        WebSocketCDNClient.prototype.removeMessageInterceptor = function (id) {
-                            delete this.interceptors[id];
+                        WebSocketCDNClient.prototype.removeUpdateListener = function (id) {
+                            delete this.listeners[id];
                         };
                         WebSocketCDNClient.prototype.connect = function (callback) {
                             var _this = this;
@@ -63,20 +62,15 @@ var org;
                                     case org.kevoree.modeling.message.KMessageLoader.OPERATION_CALL_TYPE:
                                     case org.kevoree.modeling.message.KMessageLoader.OPERATION_RESULT_TYPE:
                                         {
-                                            _this._manager.operationManager().operationEventReceived(msg);
                                         }
                                         break;
                                     case org.kevoree.modeling.message.KMessageLoader.EVENTS_TYPE:
                                         {
                                             var eventsMsg = msg;
-                                            _this._manager.reload(eventsMsg.allKeys(), (function (error) {
-                                                if (error != null) {
-                                                    error.printStackTrace();
-                                                }
-                                                else {
-                                                    this._localEventListeners.dispatch(eventsMsg);
-                                                }
-                                            }).bind(_this));
+                                            for (var id in _this.listeners) {
+                                                var listener = _this.listeners[id];
+                                                listener(eventsMsg.allKeys());
+                                            }
                                         }
                                         break;
                                     default:
@@ -119,10 +113,11 @@ var org;
                             }
                             return this._callbackId;
                         };
-                        WebSocketCDNClient.prototype.put = function (request, error) {
+                        WebSocketCDNClient.prototype.put = function (keys, values, error, ignoreInterceptor) {
                             var putRequest = new org.kevoree.modeling.message.impl.PutRequest();
                             putRequest.id = this.nextKey();
-                            putRequest.request = request;
+                            putRequest.keys = keys;
+                            putRequest.values = values;
                             this._putCallbacks.put(putRequest.id, error);
                             this._clientConnection.send(putRequest.json());
                         };
@@ -142,24 +137,6 @@ var org;
                         };
                         WebSocketCDNClient.prototype.remove = function (keys, error) {
                             console.error("Not implemented yet");
-                        };
-                        WebSocketCDNClient.prototype.registerListener = function (groupId, origin, listener) {
-                            this._localEventListeners.registerListener(groupId, origin, listener);
-                        };
-                        WebSocketCDNClient.prototype.registerMultiListener = function (groupId, origin, objects, listener) {
-                            this._localEventListeners.registerListenerAll(groupId, origin.key(), objects, listener);
-                        };
-                        WebSocketCDNClient.prototype.unregisterGroup = function (groupId) {
-                            this._localEventListeners.unregister(groupId);
-                        };
-                        WebSocketCDNClient.prototype.setManager = function (manager) {
-                            this._manager = manager;
-                            this._localEventListeners.setManager(manager);
-                        };
-                        WebSocketCDNClient.prototype.send = function (msg) {
-                            //Send to remote
-                            this._localEventListeners.dispatch(msg);
-                            this._clientConnection.send(msg.json());
                         };
                         return WebSocketCDNClient;
                     })();

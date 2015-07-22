@@ -140,7 +140,7 @@ function initDataAndListener() {
     //var initialRange = 86400000;
     //var initialTime = 1428797898;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);
-    var groupListenerID = kModeldata.nextGroup();
+    // TODO : listener : var groupListenerID = kModeldata.nextGroup();
     currentView.getRoot(function (root) {
         root.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES).traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).then(function (devices) {
             for (var d = 0; d < devices.length; d++) {
@@ -149,7 +149,7 @@ function initDataAndListener() {
                 device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (params) {
                     if (params.length != 0) {
                         var param = params[0];
-                        addListenerParam(param, groupListenerID, device.getName());
+                        // TODO addListenerParam(param, groupListenerID, device.getName());
                     }
                 });
             }
@@ -166,8 +166,6 @@ function initDataAndListener() {
  */
 function addListenerParam(param, groupListenerID, parent) {
     param.listen(groupListenerID, function (param2, metaTabl) {
-        // TODO: remove getparents :s
-        //param2.parent().then(function (parent) {
             var valueHasChanged = false;
             var periodHasChanged = false;
             for (var m = 0; m < metaTabl.length; m++) {
@@ -191,7 +189,6 @@ function addListenerParam(param, groupListenerID, parent) {
                     //}
                 });
             }
-        //});
     });
 }
 

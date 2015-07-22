@@ -31,6 +31,7 @@ class org.kubi.Device {
     stateParameters : org.kubi.StateParameter[0,*]
     @contained
     actionParameters : org.kubi.ActionParameter[0,*]
+    productType : org.kubi.Product
 }
 
 enum org.kubi.ParameterType {
@@ -62,7 +63,7 @@ class org.kubi.Technology {
     name : String
     @contained
     devices : org.kubi.Device[0,*] oppositeOf technology
-    @contained
+
     catalog : org.kubi.Catalog
 }
 

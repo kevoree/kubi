@@ -34,3 +34,7 @@ function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTe
         }
     });
 }
+
+    paperclip.modifiers.timestampToDate = function (timestamp){
+        return (new Date(timestamp));
+    }

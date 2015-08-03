@@ -135,8 +135,8 @@ function initDeviceInChartSeries(deviceName) {
 
 function initDataAndListener() {
     var deviceNames = [];
-    var initialRange = 490000;
-    var initialTime = ((new Date()).getTime()/1000)+490;
+    var initialRange = 4900000;
+    var initialTime = ((new Date()).getTime()/1000)+4900;
     //var initialRange = 86400000;
     //var initialTime = 1428797898;
     var currentView = kModeldata.universe(universeNumber).time(last_timestamp);

@@ -3,14 +3,21 @@ package org.kubi.infer.statemachine;
 import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.KObject;
-import org.kevoree.modeling.event.KEventListener;
 import org.kevoree.modeling.meta.KMeta;
 import org.kevoree.modeling.operation.KOperation;
+import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.KubiUniverse;
 import org.kubi.KubiView;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
+import org.kubi.meta.MetaEcosystem;
+import org.synoptic.State;
+import org.synoptic.StateMachine;
+import org.synoptic.Transition;
+import org.synoptic.meta.MetaState;
+import org.synoptic.meta.MetaStateMachine;
+import org.synoptic.meta.MetaTransition;
 
 /**
  * Created by jerome on 10/07/15.
@@ -25,14 +32,15 @@ public class InferStateMachinePlugin  implements KubiPlugin {
         smView.getRoot(new KCallback<KObject>() {
             @Override
             public void on(KObject kObjects) {
-                if (kObjects == null) {
+                if (kObjects != null) {
 //                    Log.debug("Read the file");
-
+                    System.out.println("Read the file");
 
                     StateMachineBuilder stateMachineBuilder = new StateMachineBuilder();
                     stateMachineBuilder.readFile();
 
 //                    Log.debug("Initiate the operation");
+                    System.out.println("Initiate the operation");
 
                     statemachineModel.setOperation(MetaState.OP_CANGOTO, new KOperation() {
                         @Override
@@ -60,28 +68,27 @@ public class InferStateMachinePlugin  implements KubiPlugin {
 //                    Log.debug("Initiate the Root");
 
                     StateMachine stateMachine = smView.createStateMachine();
-                    smView.setRoot(stateMachine, new KCallback() {
-                        @Override
-                        public void on(Object o) {
-                        }
-                    });
                     stateMachine.setName("StateMachine");
+                    ((Ecosystem) kObjects).setStateMachine(stateMachine);
 
-                    long smGroup = statemachineModel.nextGroup();
-                    stateMachine.listen(smGroup, new KEventListener() {
-                        @Override
-                        public void on(KObject src, KMeta[] modifications) {
-                            for (int m = 0; m < modifications.length; m++) {
-                                if (modifications[m] == MetaStateMachine.REF_CURRENTSTATE) {
-                                    currentStateListener(src, modifications[m], statemachineModel);
-                                }
-                            }
-                        }
-                    });
+//                    KListener kListener = statemachineModel.createListener(smUniverse.key());
+//                    kListener.listen(stateMachine);
+//                    kListener.then(new KCallback<KObject>() {
+//                        @Override
+//                        public void on(KObject kObject) {
+//                            for (int m = 0; m < modifications.length; m++) {
+//                                if (modifications[m] == MetaStateMachine.REF_CURRENTSTATE) {
+//                                    currentStateListener(kObject, modifications[m], statemachineModel);
+//                                }
+//                            }
+//                        }
+//                    });
+
 
                     System.out.println("Process the data collected from the file");
 //                    Log.debug("Process the data collected from the file");
                     stateMachineBuilder.processData(statemachineModel, stateMachine);
+                    System.out.println("Processed the data collected from the file");
 
                     statemachineModel.save(new KCallback() {
                         @Override
@@ -95,12 +102,12 @@ public class InferStateMachinePlugin  implements KubiPlugin {
                         System.out.println("Wait ...");
 //                        Log.debug("Wait ...");
                         Thread.sleep(3000);
-                        System.out.println("Read the data");
-//                        Log.debug("Read the data");
-                        read(statemachineModel);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    System.out.println("Read the data");
+//                        Log.debug("Read the data");
+                    read(statemachineModel);
                 }
             }
         });
@@ -203,22 +210,28 @@ public class InferStateMachinePlugin  implements KubiPlugin {
             @Override
             public void on(KObject kObject) {
                 if (kObject != null) {
-                    System.out.println(((StateMachine) kObject).getName());
-                    kObject.traversal().traverse(MetaStateMachine.REF_STATES).then(new KCallback<KObject[]>() {
+                    kObject.traversal().traverse(MetaEcosystem.REF_STATEMACHINE).then(new KCallback<KObject[]>() {
                         @Override
-                        public void on(KObject[] statesObj) {
-                            for(KObject stateObj: statesObj){
-                                String name = ((State) stateObj).getName();
-                                stateObj.traversal().traverse(MetaState.REF_TOTRANSITION).then(new KCallback<KObject[]>() {
-                                    @Override
-                                    public void on(KObject[] toTransObjs) {
-                                        System.out.println(" - " + name + "(" + ((State) stateObj).getOutCounter() + ")");
-                                        for(KObject toTransObj : toTransObjs){
-                                            System.out.println("\t --> " + toTransObj);
-                                        }
+                        public void on(KObject[] kObjects) {
+                            System.out.println(((StateMachine) kObjects[0]).getName());
+                            kObjects[0].traversal().traverse(MetaStateMachine.REF_STATES).then(new KCallback<KObject[]>() {
+                                @Override
+                                public void on(KObject[] statesObj) {
+                                    for(KObject stateObj: statesObj){
+                                        String name = ((State) stateObj).getName();
+                                        stateObj.traversal().traverse(MetaState.REF_TOTRANSITION).then(new KCallback<KObject[]>() {
+                                            @Override
+                                            public void on(KObject[] toTransObjs) {
+                                                System.out.println(" - " + name + "(" + ((State) stateObj).getOutCounter() + ")");
+                                                for(KObject toTransObj : toTransObjs){
+                                                    System.out.println("\t --> " + toTransObj);
+                                                }
+                                            }
+                                        });
                                     }
-                                });
-                            }
+                                }
+                            });
+
                         }
                     });
                 }

@@ -79,9 +79,9 @@
         <module>plugins/mock/org.kubi.plugins.smartfridgeRepeatRealTime</module>
 
         <!-- Infer State Machine
-        <module>plugins/infer/org.kubi.infer.statemachine</module>
         <module>org.kubi.statemachine.model</module>
          -->
+        <module>plugins/infer/org.kubi.infer.statemachine</module>
 
 
         <!-- End Plugins -->

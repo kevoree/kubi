@@ -13,6 +13,8 @@
 <link rel="import" href="../kubi-period-view/kubi-period-view.html"/>
 <link rel="import" href="../kubi-c3js/kubi-c3js.html"/>
 
+<link rel="import" href="../kubi-stateMachine-basic-view/kubi-stateMachine-basic-view.html"/>
+
 <link rel="import" href="../kubi-data-test/kubi-data-test.html"/>
 
 
@@ -34,6 +36,7 @@
             <kubi-chart-epoch id="epochChart" time="[[slider_time]]" scale="[[graph_scale]]" devices="[[graph_devices]]" wantperiod="[[graph_wantperiod]]"></kubi-chart-epoch>
             <kubi-c3js></kubi-c3js>
 
+            <kubi-stateMachine-basic-view id="fsmBasic"></kubi-stateMachine-basic-view>
             <kubi-period-view id="periodView"></kubi-period-view>
         </div>
     </template>

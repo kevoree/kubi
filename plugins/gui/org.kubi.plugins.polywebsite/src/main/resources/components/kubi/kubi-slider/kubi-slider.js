@@ -32,6 +32,7 @@ function setMaxSlider(){
 }
 
 function setupSlider(min, max){
+    console.log("slider___", min , "___", max);
     document.getElementById("slider1").max = max/1000;
     document.getElementById("slider1").min = min/1000;
     document.getElementById("slider1").value = (min + (max - min)/(2))/1000;

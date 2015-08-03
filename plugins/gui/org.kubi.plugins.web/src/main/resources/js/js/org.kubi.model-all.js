@@ -642,7 +642,7 @@ var org;
                     return new org.kevoree.modeling.KContentKey(org.kevoree.modeling.KConfig.END_OF_TIME, org.kevoree.modeling.KConfig.NULL_LONG, prefix);
                 };
                 KContentKey.createLastUniverseIndexFromPrefix = function (prefix) {
-                    return new org.kevoree.modeling.KContentKey(org.kevoree.modeling.KConfig.END_OF_TIME, org.kevoree.modeling.KConfig.NULL_LONG, prefix);
+                    return new org.kevoree.modeling.KContentKey(org.kevoree.modeling.KConfig.BEGINNING_OF_TIME, org.kevoree.modeling.KConfig.NULL_LONG, prefix);
                 };
                 KContentKey.create = function (payload) {
                     if (payload == null || payload.length == 0) {
@@ -751,15 +751,19 @@ var org;
             var abs;
             (function (abs) {
                 var AbstractDataType = (function () {
-                    function AbstractDataType(p_name, p_isEnum) {
+                    function AbstractDataType(p_name, p_isEnum, p_id) {
                         this._name = p_name;
                         this._isEnum = p_isEnum;
+                        this._id = p_id;
                     }
                     AbstractDataType.prototype.name = function () {
                         return this._name;
                     };
                     AbstractDataType.prototype.isEnum = function () {
                         return this._isEnum;
+                    };
+                    AbstractDataType.prototype.id = function () {
+                        return this._id;
                     };
                     return AbstractDataType;
                 })();
@@ -802,7 +806,7 @@ var org;
                         return newDimension;
                     };
                     AbstractKModel.prototype.save = function (cb) {
-                        this._manager.save(cb);
+                        this._manager.save(null, cb);
                     };
                     AbstractKModel.prototype.discard = function (cb) {
                         this._manager.discard(null, cb);
@@ -843,6 +847,9 @@ var org;
                     AbstractKModel.prototype.lookup = function (p_universe, p_time, p_uuid, cb) {
                         this._manager.lookup(p_universe, p_time, p_uuid, cb);
                     };
+                    AbstractKModel.prototype.createListener = function (universe) {
+                        return this._manager.createListener(universe);
+                    };
                     return AbstractKModel;
                 })();
                 abs.AbstractKModel = AbstractKModel;
@@ -882,7 +889,7 @@ var org;
                             var collector = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongLongMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
                             var metaElements = this._metaClass.metaElements();
                             for (var i = 0; i < metaElements.length; i++) {
-                                if (metaElements[i] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                if (metaElements[i] != null && metaElements[i].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                     var inboundsKeys = rawPayload.getRef(metaElements[i].index(), this._metaClass);
                                     for (var j = 0; j < inboundsKeys.length; j++) {
                                         collector.put(inboundsKeys[j], inboundsKeys[j]);
@@ -1132,7 +1139,7 @@ var org;
                         }
                         var metaElements = this.metaClass().metaElements();
                         for (var i = 0; i < metaElements.length; i++) {
-                            if (metaElements[i] instanceof org.kevoree.modeling.meta.impl.MetaAttribute) {
+                            if (metaElements[i] != null && metaElements[i].metaType() == org.kevoree.modeling.meta.MetaType.ATTRIBUTE) {
                                 var metaAttribute = metaElements[i];
                                 visitor(metaAttribute, this.get(metaAttribute));
                             }
@@ -1151,7 +1158,7 @@ var org;
                         var toResolveIds = new org.kevoree.modeling.memory.struct.map.impl.ArrayLongLongMap(org.kevoree.modeling.KConfig.CACHE_INIT_SIZE, org.kevoree.modeling.KConfig.CACHE_LOAD_FACTOR);
                         var metaElements = this.metaClass().metaElements();
                         for (var i = 0; i < metaElements.length; i++) {
-                            if (metaElements[i] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                            if (metaElements[i] != null && metaElements[i].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                 var reference = metaElements[i];
                                 var raw = this._manager.segment(this._universe, this._time, this._uuid, true, this._metaClass, null);
                                 if (raw != null) {
@@ -1342,7 +1349,7 @@ var org;
                                 var metaElements = this.metaClass().metaElements();
                                 var selected = new java.util.ArrayList();
                                 for (var i = 0; i < metaElements.length; i++) {
-                                    if (metaElements[i] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                    if (metaElements[i] != null && metaElements[i].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                         var rawI = raw.getRef((metaElements[i].index()), this._metaClass);
                                         if (rawI != null) {
                                             var oUUID = o.uuid();
@@ -1370,6 +1377,9 @@ var org;
                     };
                     AbstractKObject.prototype.manager = function () {
                         return this._manager;
+                    };
+                    AbstractKObject.prototype.save = function (cb) {
+                        this._manager.save(this, cb);
                     };
                     AbstractKObject.OUT_OF_CACHE_MSG = "Out of cache Error";
                     return AbstractKObject;
@@ -1511,73 +1521,69 @@ var org;
                         if (output == null) {
                             return 0;
                         }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
-                            if (output.equals(true)) {
-                                return 1.0;
-                            }
-                            else {
-                                return 0.0;
-                            }
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
-                            return output;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
-                            return output;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
-                            return output;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
-                            return output;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.STRING) {
-                            throw new java.lang.RuntimeException("String are not managed yet");
-                        }
-                        if (metaOutput.type().isEnum()) {
-                            var metaEnum = metaOutput.type();
-                            if (output instanceof org.kevoree.modeling.meta.impl.MetaLiteral) {
-                                return output.index();
-                            }
-                            else {
-                                var literal = metaEnum.literalByName(output.toString());
-                                if (literal != null) {
-                                    return literal.index();
+                        var typeId = metaOutput.type().id();
+                        switch (typeId) {
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.BOOL_ID:
+                                if (output.equals(true)) {
+                                    return 1.0;
                                 }
-                            }
+                                else {
+                                    return 0.0;
+                                }
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE_ID:
+                                return output;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.INT_ID:
+                                return output;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID:
+                                return output;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.LONG_ID:
+                                return output;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.STRING_ID:
+                                throw new java.lang.RuntimeException("String are not managed yet");
+                            default:
+                                if (metaOutput.type().isEnum()) {
+                                    var metaEnum = metaOutput.type();
+                                    if (output instanceof org.kevoree.modeling.meta.impl.MetaLiteral) {
+                                        return output.index();
+                                    }
+                                    else {
+                                        var literal = metaEnum.literalByName(output.toString());
+                                        if (literal != null) {
+                                            return literal.index();
+                                        }
+                                    }
+                                }
+                                return 0;
                         }
-                        return 0;
                     };
                     AbstractKObjectInfer.prototype.internalReverseOutput = function (inferred, metaOutput) {
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
-                            if (inferred >= 0.5) {
-                                return true;
-                            }
-                            else {
-                                return false;
-                            }
+                        var typeId = metaOutput.type().id();
+                        switch (typeId) {
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.BOOL_ID:
+                                if (inferred >= 0.5) {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE_ID:
+                                return inferred;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.INT_ID:
+                                return inferred;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID:
+                                return inferred;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.LONG_ID:
+                                return inferred;
+                            case org.kevoree.modeling.meta.KPrimitiveTypes.STRING_ID:
+                                throw new java.lang.RuntimeException("String are not managed yet");
+                            default:
+                                if (metaOutput.type().isEnum()) {
+                                    var ceiledInferred = this.math_ceil(inferred);
+                                    var metaEnum = metaOutput.type();
+                                    return metaEnum.literal(ceiledInferred);
+                                }
+                                return null;
                         }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
-                            return inferred;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
-                            return inferred;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
-                            return inferred;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
-                            return inferred;
-                        }
-                        if (metaOutput.type() == org.kevoree.modeling.meta.KPrimitiveTypes.STRING) {
-                            throw new java.lang.RuntimeException("String are not managed yet");
-                        }
-                        if (metaOutput.type().isEnum()) {
-                            var ceiledInferred = this.math_ceil(inferred);
-                            var metaEnum = metaOutput.type();
-                            return metaEnum.literal(ceiledInferred);
-                        }
-                        return null;
                     };
                     AbstractKObjectInfer.prototype.math_ceil = function (toCeilValue) {
                         return Math.round(toCeilValue);
@@ -1640,8 +1646,8 @@ var org;
                     AbstractKUniverse.prototype.lookupAllTimes = function (uuid, times, cb) {
                         throw new java.lang.RuntimeException("Not implemented Yet !");
                     };
-                    AbstractKUniverse.prototype.newListener = function () {
-                        return this._manager.newListener(this._universe);
+                    AbstractKUniverse.prototype.createListener = function () {
+                        return this._manager.createListener(this._universe);
                     };
                     return AbstractKUniverse;
                 })();
@@ -2028,21 +2034,18 @@ var org;
                             var raw = current._manager.segment(current.universe(), current.now(), current.uuid(), true, current.metaClass(), trace);
                             if (raw != null) {
                                 var extrapolatedValue = this.extrapolateValue(raw, current.metaClass(), attribute.index(), current.now(), trace.getTime());
-                                if (attribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS || attribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
-                                    return extrapolatedValue;
-                                }
-                                else {
-                                    if (attribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
+                                var attTypeId = attribute.attributeType().id();
+                                switch (attTypeId) {
+                                    case org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID:
+                                        return extrapolatedValue;
+                                    case org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE_ID:
+                                        return extrapolatedValue;
+                                    case org.kevoree.modeling.meta.KPrimitiveTypes.LONG_ID:
                                         return extrapolatedValue.longValue();
-                                    }
-                                    else {
-                                        if (attribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
-                                            return extrapolatedValue.intValue();
-                                        }
-                                        else {
-                                            return null;
-                                        }
-                                    }
+                                    case org.kevoree.modeling.meta.KPrimitiveTypes.INT_ID:
+                                        return extrapolatedValue.intValue();
+                                    default:
+                                        return null;
                                 }
                             }
                             else {
@@ -2283,56 +2286,59 @@ var org;
                                     if (payload_content != null) {
                                         if (metaElement != null && metaElement.metaType().equals(org.kevoree.modeling.meta.MetaType.ATTRIBUTE)) {
                                             var metaAttribute = metaElement;
-                                            if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
-                                                var plainRawSet = p_param.get(metaAttribute.metaName());
-                                                var convertedRaw = new Array();
-                                                for (var l = 0; l < plainRawSet.length; l++) {
-                                                    try {
-                                                        convertedRaw[l] = java.lang.Double.parseDouble(plainRawSet[l]);
-                                                    }
-                                                    catch ($ex$) {
-                                                        if ($ex$ instanceof java.lang.Exception) {
-                                                            var e = $ex$;
-                                                            e.printStackTrace();
+                                            var metaAttId = metaAttribute.attributeType().id();
+                                            switch (metaAttId) {
+                                                case org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID:
+                                                    var plainRawSet = p_param.get(metaAttribute.metaName());
+                                                    var convertedRaw = new Array();
+                                                    for (var l = 0; l < plainRawSet.length; l++) {
+                                                        try {
+                                                            convertedRaw[l] = java.lang.Double.parseDouble(plainRawSet[l]);
                                                         }
-                                                        else {
-                                                            throw $ex$;
-                                                        }
-                                                    }
-                                                }
-                                                raw.set(metaElement.index(), convertedRaw, current.metaClass());
-                                            }
-                                            else {
-                                                var converted = null;
-                                                var rawPayload = p_param.get(metaElement.metaName()).toString();
-                                                if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.STRING) {
-                                                    converted = org.kevoree.modeling.format.json.JsonString.unescape(rawPayload);
-                                                }
-                                                else {
-                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
-                                                        converted = java.lang.Long.parseLong(rawPayload);
-                                                    }
-                                                    else {
-                                                        if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
-                                                            converted = java.lang.Integer.parseInt(rawPayload);
-                                                        }
-                                                        else {
-                                                            if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
-                                                                converted = java.lang.Boolean.parseBoolean(rawPayload);
+                                                        catch ($ex$) {
+                                                            if ($ex$ instanceof java.lang.Exception) {
+                                                                var e = $ex$;
+                                                                e.printStackTrace();
                                                             }
                                                             else {
-                                                                if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
-                                                                    converted = java.lang.Double.parseDouble(rawPayload);
+                                                                throw $ex$;
+                                                            }
+                                                        }
+                                                    }
+                                                    raw.set(metaElement.index(), convertedRaw, current.metaClass());
+                                                    break;
+                                                default:
+                                                    var converted = null;
+                                                    var rawPayload = p_param.get(metaElement.metaName()).toString();
+                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.STRING) {
+                                                        converted = org.kevoree.modeling.format.json.JsonString.unescape(rawPayload);
+                                                    }
+                                                    else {
+                                                        if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
+                                                            converted = java.lang.Long.parseLong(rawPayload);
+                                                        }
+                                                        else {
+                                                            if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
+                                                                converted = java.lang.Integer.parseInt(rawPayload);
+                                                            }
+                                                            else {
+                                                                if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
+                                                                    converted = java.lang.Boolean.parseBoolean(rawPayload);
+                                                                }
+                                                                else {
+                                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
+                                                                        converted = java.lang.Double.parseDouble(rawPayload);
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                }
-                                                raw.set(metaElement.index(), converted, current.metaClass());
+                                                    raw.set(metaElement.index(), converted, current.metaClass());
+                                                    break;
                                             }
                                         }
                                         else {
-                                            if (metaElement != null && metaElement instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                            if (metaElement != null && metaElement.metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                                 try {
                                                     raw.set(metaElement.index(), org.kevoree.modeling.format.json.JsonModelLoader.transposeArr(payload_content, p_mappedKeys), current.metaClass());
                                                 }
@@ -2808,7 +2814,7 @@ var org;
                                             modelElem.set(metaElement, org.kevoree.modeling.format.xmi.XMIModelLoader.unescapeXml(valueAtt));
                                         }
                                         else {
-                                            if (metaElement != null && metaElement instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                            if (metaElement != null && metaElement.metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                                 var referenceArray = valueAtt.split(" ");
                                                 for (var j = 0; j < referenceArray.length; j++) {
                                                     var xmiRef = referenceArray[j];
@@ -3857,14 +3863,14 @@ var org;
                                     if (!this._obj2Listener.contains(origin.uuid())) {
                                         var newRec = new Array();
                                         newRec[0] = listenerID;
-                                        this._listener2Objects.put(origin.uuid(), newRec);
+                                        this._obj2Listener.put(origin.uuid(), newRec);
                                     }
                                     else {
                                         var previous = this._obj2Listener.get(origin.uuid());
                                         var newArrayRec = new Array();
                                         System.arraycopy(previous, 0, newArrayRec, 0, previous.length);
                                         newArrayRec[previous.length] = listenerID;
-                                        this._listener2Objects.put(origin.uuid(), newArrayRec);
+                                        this._obj2Listener.put(origin.uuid(), newArrayRec);
                                     }
                                 }
                                 else {
@@ -4205,27 +4211,81 @@ var org;
                             };
                             MemoryManager.prototype.reload = function (keys, callback) {
                             };
-                            MemoryManager.prototype.save = function (callback) {
-                                var dirtyKeys = this._cache.dirtyKeys();
-                                var dirtyKeysSize = dirtyKeys.length;
-                                var savedKeys = new Array();
-                                System.arraycopy(dirtyKeys, 0, savedKeys, 0, dirtyKeysSize);
-                                var values = new Array();
-                                for (var i = 0; i < dirtyKeysSize; i++) {
-                                    var cachedObject = this._cache.get(dirtyKeys[i].universe, dirtyKeys[i].time, dirtyKeys[i].obj);
-                                    if (cachedObject != null) {
-                                        values[i] = cachedObject.serialize(this._model.metaModel());
-                                        cachedObject.setClean(this._model.metaModel());
+                            MemoryManager.prototype.save = function (src, callback) {
+                                if (src == null) {
+                                    var dirtyKeys = this._cache.dirtyKeys();
+                                    var dirtyKeysSize = dirtyKeys.length;
+                                    var savedKeys = new Array();
+                                    System.arraycopy(dirtyKeys, 0, savedKeys, 0, dirtyKeysSize);
+                                    var values = new Array();
+                                    for (var i = 0; i < dirtyKeysSize; i++) {
+                                        var cachedObject = this._cache.get(dirtyKeys[i].universe, dirtyKeys[i].time, dirtyKeys[i].obj);
+                                        if (cachedObject != null) {
+                                            values[i] = cachedObject.serialize(this._model.metaModel());
+                                            cachedObject.setClean(this._model.metaModel());
+                                        }
+                                        else {
+                                            values[i] = null;
+                                        }
+                                    }
+                                    savedKeys[dirtyKeysSize] = org.kevoree.modeling.KContentKey.createLastObjectIndexFromPrefix(this._objectKeyCalculator.prefix());
+                                    values[dirtyKeysSize] = "" + this._objectKeyCalculator.lastComputedIndex();
+                                    savedKeys[dirtyKeysSize + 1] = org.kevoree.modeling.KContentKey.createLastUniverseIndexFromPrefix(this._universeKeyCalculator.prefix());
+                                    values[dirtyKeysSize + 1] = "" + this._universeKeyCalculator.lastComputedIndex();
+                                    this._db.put(savedKeys, values, callback, this.currentCdnListener);
+                                }
+                                else {
+                                    var cachedObject = this._cache.get(src.universe(), src.now(), src.uuid());
+                                    if (cachedObject == null || !cachedObject.isDirty()) {
+                                        callback(null);
                                     }
                                     else {
-                                        values[i] = null;
+                                        var cachedObjectTimeTree = this._cache.get(src.universe(), org.kevoree.modeling.KConfig.NULL_LONG, src.uuid());
+                                        var cachedObjectUniverseTree = this._cache.get(org.kevoree.modeling.KConfig.NULL_LONG, org.kevoree.modeling.KConfig.NULL_LONG, src.uuid());
+                                        var cachedObjectGlobalUniverseTree = this._cache.get(org.kevoree.modeling.KConfig.NULL_LONG, org.kevoree.modeling.KConfig.NULL_LONG, org.kevoree.modeling.KConfig.NULL_LONG);
+                                        var nbElemToSave = 1;
+                                        if (cachedObjectTimeTree != null && cachedObjectTimeTree.isDirty()) {
+                                            nbElemToSave++;
+                                        }
+                                        if (cachedObjectUniverseTree != null && cachedObjectUniverseTree.isDirty()) {
+                                            nbElemToSave++;
+                                        }
+                                        if (cachedObjectGlobalUniverseTree != null && cachedObjectGlobalUniverseTree.isDirty()) {
+                                            nbElemToSave++;
+                                        }
+                                        var savedKeys = new Array();
+                                        var values = new Array();
+                                        var mm = this._model.metaModel();
+                                        savedKeys[0] = org.kevoree.modeling.KContentKey.createObject(src.universe(), src.now(), src.uuid());
+                                        values[0] = cachedObject.serialize(mm);
+                                        cachedObject.setClean(mm);
+                                        var indexToInsert = 1;
+                                        if (cachedObjectTimeTree != null && cachedObjectTimeTree.isDirty()) {
+                                            savedKeys[indexToInsert] = org.kevoree.modeling.KContentKey.createTimeTree(src.universe(), src.uuid());
+                                            values[indexToInsert] = cachedObjectTimeTree.serialize(mm);
+                                            cachedObjectTimeTree.setClean(mm);
+                                            indexToInsert++;
+                                        }
+                                        if (cachedObjectUniverseTree != null && cachedObjectUniverseTree.isDirty()) {
+                                            savedKeys[indexToInsert] = org.kevoree.modeling.KContentKey.createUniverseTree(src.universe());
+                                            values[indexToInsert] = cachedObjectUniverseTree.serialize(this._model.metaModel());
+                                            cachedObjectUniverseTree.setClean(mm);
+                                            indexToInsert++;
+                                        }
+                                        if (cachedObjectGlobalUniverseTree != null && cachedObjectGlobalUniverseTree.isDirty()) {
+                                            savedKeys[indexToInsert] = org.kevoree.modeling.KContentKey.createGlobalUniverseTree();
+                                            values[indexToInsert] = cachedObjectGlobalUniverseTree.serialize(this._model.metaModel());
+                                            cachedObjectGlobalUniverseTree.setClean(mm);
+                                            indexToInsert++;
+                                        }
+                                        savedKeys[indexToInsert] = org.kevoree.modeling.KContentKey.createLastObjectIndexFromPrefix(this._objectKeyCalculator.prefix());
+                                        values[indexToInsert] = "" + this._objectKeyCalculator.lastComputedIndex();
+                                        indexToInsert++;
+                                        savedKeys[indexToInsert] = org.kevoree.modeling.KContentKey.createLastUniverseIndexFromPrefix(this._universeKeyCalculator.prefix());
+                                        values[indexToInsert] = "" + this._universeKeyCalculator.lastComputedIndex();
+                                        this._db.put(savedKeys, values, callback, this.currentCdnListener);
                                     }
                                 }
-                                savedKeys[dirtyKeysSize] = org.kevoree.modeling.KContentKey.createLastObjectIndexFromPrefix(this._objectKeyCalculator.prefix());
-                                values[dirtyKeysSize] = "" + this._objectKeyCalculator.lastComputedIndex();
-                                savedKeys[dirtyKeysSize + 1] = org.kevoree.modeling.KContentKey.createLastUniverseIndexFromPrefix(this._universeKeyCalculator.prefix());
-                                values[dirtyKeysSize + 1] = "" + this._universeKeyCalculator.lastComputedIndex();
-                                this._db.put(savedKeys, values, callback, this.currentCdnListener);
                             };
                             MemoryManager.prototype.initKObject = function (obj) {
                                 var cacheEntry = this._factory.newCacheSegment();
@@ -4623,7 +4683,7 @@ var org;
                                 this._factory = p_factory;
                                 this._cache = this._factory.newCache();
                             };
-                            MemoryManager.prototype.newListener = function (p_universe) {
+                            MemoryManager.prototype.createListener = function (p_universe) {
                                 return this._listenerManager.createListener(p_universe);
                             };
                             MemoryManager.prototype.bumpKeyToCache = function (contentKey, callback) {
@@ -5371,61 +5431,54 @@ var org;
                                                 builder.append("\":");
                                                 if (metaElements[i].metaType() == org.kevoree.modeling.meta.MetaType.ATTRIBUTE) {
                                                     var metaAttribute = metaElements[i];
-                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.STRING) {
-                                                        builder.append("\"");
-                                                        builder.append(org.kevoree.modeling.format.json.JsonString.encode(o));
-                                                        builder.append("\"");
-                                                    }
-                                                    else {
-                                                        if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
+                                                    var metaAttId = metaAttribute.attributeType().id();
+                                                    switch (metaAttId) {
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.STRING_ID:
+                                                            builder.append("\"");
+                                                            builder.append(org.kevoree.modeling.format.json.JsonString.encode(o));
+                                                            builder.append("\"");
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.LONG_ID:
                                                             builder.append("\"");
                                                             org.kevoree.modeling.util.maths.Base64.encodeLongToBuffer(o, builder);
                                                             builder.append("\"");
-                                                        }
-                                                        else {
-                                                            if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
-                                                                builder.append("[");
-                                                                var castedArr = o;
-                                                                for (var j = 0; j < castedArr.length; j++) {
-                                                                    if (j != 0) {
-                                                                        builder.append(",");
-                                                                    }
-                                                                    builder.append("\"");
-                                                                    org.kevoree.modeling.util.maths.Base64.encodeDoubleToBuffer(castedArr[j], builder);
-                                                                    builder.append("\"");
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID:
+                                                            builder.append("[");
+                                                            var castedArr = o;
+                                                            for (var j = 0; j < castedArr.length; j++) {
+                                                                if (j != 0) {
+                                                                    builder.append(",");
                                                                 }
-                                                                builder.append("]");
+                                                                builder.append("\"");
+                                                                org.kevoree.modeling.util.maths.Base64.encodeDoubleToBuffer(castedArr[j], builder);
+                                                                builder.append("\"");
+                                                            }
+                                                            builder.append("]");
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.BOOL_ID:
+                                                            if (o) {
+                                                                builder.append("1");
                                                             }
                                                             else {
-                                                                if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
-                                                                    if (o) {
-                                                                        builder.append("1");
-                                                                    }
-                                                                    else {
-                                                                        builder.append("0");
-                                                                    }
-                                                                }
-                                                                else {
-                                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
-                                                                        builder.append("\"");
-                                                                        org.kevoree.modeling.util.maths.Base64.encodeDoubleToBuffer(o, builder);
-                                                                        builder.append("\"");
-                                                                    }
-                                                                    else {
-                                                                        if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
-                                                                            builder.append("\"");
-                                                                            org.kevoree.modeling.util.maths.Base64.encodeIntToBuffer(o, builder);
-                                                                            builder.append("\"");
-                                                                        }
-                                                                        else {
-                                                                            if (metaAttribute.attributeType().isEnum()) {
-                                                                                org.kevoree.modeling.util.maths.Base64.encodeIntToBuffer(o, builder);
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
+                                                                builder.append("0");
                                                             }
-                                                        }
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE_ID:
+                                                            builder.append("\"");
+                                                            org.kevoree.modeling.util.maths.Base64.encodeDoubleToBuffer(o, builder);
+                                                            builder.append("\"");
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.INT_ID:
+                                                            builder.append("\"");
+                                                            org.kevoree.modeling.util.maths.Base64.encodeIntToBuffer(o, builder);
+                                                            builder.append("\"");
+                                                            break;
+                                                        default:
+                                                            if (metaAttribute.attributeType().isEnum()) {
+                                                                org.kevoree.modeling.util.maths.Base64.encodeIntToBuffer(o, builder);
+                                                            }
+                                                            break;
                                                     }
                                                 }
                                                 else {
@@ -5506,54 +5559,47 @@ var org;
                                                 if (metaElement != null && metaElement.metaType().equals(org.kevoree.modeling.meta.MetaType.ATTRIBUTE)) {
                                                     var metaAttribute = metaElement;
                                                     var converted = null;
-                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.STRING) {
-                                                        converted = org.kevoree.modeling.format.json.JsonString.unescape(insideContent);
-                                                    }
-                                                    else {
-                                                        if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.LONG) {
+                                                    var metaAttId = metaAttribute.attributeType().id();
+                                                    switch (metaAttId) {
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.STRING_ID:
+                                                            converted = org.kevoree.modeling.format.json.JsonString.unescape(insideContent);
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.LONG_ID:
                                                             converted = org.kevoree.modeling.util.maths.Base64.decodeToLong(insideContent);
-                                                        }
-                                                        else {
-                                                            if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.INT) {
-                                                                converted = org.kevoree.modeling.util.maths.Base64.decodeToInt(insideContent);
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.INT_ID:
+                                                            converted = org.kevoree.modeling.util.maths.Base64.decodeToInt(insideContent);
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.BOOL_ID:
+                                                            if (insideContent.equals("1")) {
+                                                                converted = true;
                                                             }
                                                             else {
-                                                                if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.BOOL) {
-                                                                    if (insideContent.equals("1")) {
-                                                                        converted = true;
-                                                                    }
-                                                                    else {
-                                                                        converted = false;
-                                                                    }
+                                                                converted = false;
+                                                            }
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE_ID:
+                                                            converted = org.kevoree.modeling.util.maths.Base64.decodeToDouble(insideContent);
+                                                            break;
+                                                        case org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID:
+                                                            var plainRawSet = objectReader.getAsStringArray(metaKeys[i]);
+                                                            var convertedRaw = new Array();
+                                                            for (var l = 0; l < plainRawSet.length; l++) {
+                                                                try {
+                                                                    convertedRaw[l] = org.kevoree.modeling.util.maths.Base64.decodeToDouble(plainRawSet[l]);
                                                                 }
-                                                                else {
-                                                                    if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE) {
-                                                                        converted = org.kevoree.modeling.util.maths.Base64.decodeToDouble(insideContent);
+                                                                catch ($ex$) {
+                                                                    if ($ex$ instanceof java.lang.Exception) {
+                                                                        var e = $ex$;
+                                                                        e.printStackTrace();
                                                                     }
                                                                     else {
-                                                                        if (metaAttribute.attributeType() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
-                                                                            var plainRawSet = objectReader.getAsStringArray(metaKeys[i]);
-                                                                            var convertedRaw = new Array();
-                                                                            for (var l = 0; l < plainRawSet.length; l++) {
-                                                                                try {
-                                                                                    convertedRaw[l] = org.kevoree.modeling.util.maths.Base64.decodeToDouble(plainRawSet[l]);
-                                                                                }
-                                                                                catch ($ex$) {
-                                                                                    if ($ex$ instanceof java.lang.Exception) {
-                                                                                        var e = $ex$;
-                                                                                        e.printStackTrace();
-                                                                                    }
-                                                                                    else {
-                                                                                        throw $ex$;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                            converted = convertedRaw;
-                                                                        }
+                                                                        throw $ex$;
                                                                     }
                                                                 }
                                                             }
-                                                        }
+                                                            converted = convertedRaw;
+                                                            break;
                                                     }
                                                     this.raw[metaAttribute.index()] = converted;
                                                 }
@@ -6965,12 +7011,18 @@ var org;
                 var KPrimitiveTypes = (function () {
                     function KPrimitiveTypes() {
                     }
-                    KPrimitiveTypes.BOOL = new org.kevoree.modeling.abs.AbstractDataType("BOOL", false);
-                    KPrimitiveTypes.STRING = new org.kevoree.modeling.abs.AbstractDataType("STRING", false);
-                    KPrimitiveTypes.LONG = new org.kevoree.modeling.abs.AbstractDataType("LONG", false);
-                    KPrimitiveTypes.INT = new org.kevoree.modeling.abs.AbstractDataType("INT", false);
-                    KPrimitiveTypes.DOUBLE = new org.kevoree.modeling.abs.AbstractDataType("DOUBLE", false);
-                    KPrimitiveTypes.CONTINUOUS = new org.kevoree.modeling.abs.AbstractDataType("CONTINUOUS", false);
+                    KPrimitiveTypes.BOOL_ID = -1;
+                    KPrimitiveTypes.STRING_ID = -2;
+                    KPrimitiveTypes.LONG_ID = -3;
+                    KPrimitiveTypes.INT_ID = -4;
+                    KPrimitiveTypes.DOUBLE_ID = -5;
+                    KPrimitiveTypes.CONTINUOUS_ID = -6;
+                    KPrimitiveTypes.BOOL = new org.kevoree.modeling.abs.AbstractDataType("BOOL", false, KPrimitiveTypes.BOOL_ID);
+                    KPrimitiveTypes.STRING = new org.kevoree.modeling.abs.AbstractDataType("STRING", false, KPrimitiveTypes.STRING_ID);
+                    KPrimitiveTypes.LONG = new org.kevoree.modeling.abs.AbstractDataType("LONG", false, KPrimitiveTypes.LONG_ID);
+                    KPrimitiveTypes.INT = new org.kevoree.modeling.abs.AbstractDataType("INT", false, KPrimitiveTypes.INT_ID);
+                    KPrimitiveTypes.DOUBLE = new org.kevoree.modeling.abs.AbstractDataType("DOUBLE", false, KPrimitiveTypes.DOUBLE_ID);
+                    KPrimitiveTypes.CONTINUOUS = new org.kevoree.modeling.abs.AbstractDataType("CONTINUOUS", false, KPrimitiveTypes.CONTINUOUS_ID);
                     return KPrimitiveTypes;
                 })();
                 meta.KPrimitiveTypes = KPrimitiveTypes;
@@ -7146,21 +7198,21 @@ var org;
                         };
                         MetaClass.prototype.attribute = function (name) {
                             var resolved = this.metaByName(name);
-                            if (resolved != null && resolved instanceof org.kevoree.modeling.meta.impl.MetaAttribute) {
+                            if (resolved != null && resolved.metaType() == org.kevoree.modeling.meta.MetaType.ATTRIBUTE) {
                                 return resolved;
                             }
                             return null;
                         };
                         MetaClass.prototype.reference = function (name) {
                             var resolved = this.metaByName(name);
-                            if (resolved != null && resolved instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                            if (resolved != null && resolved.metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                 return resolved;
                             }
                             return null;
                         };
                         MetaClass.prototype.operation = function (name) {
                             var resolved = this.metaByName(name);
-                            if (resolved != null && resolved instanceof org.kevoree.modeling.meta.impl.MetaOperation) {
+                            if (resolved != null && resolved.metaType() == org.kevoree.modeling.meta.MetaType.OUTPUT) {
                                 return resolved;
                             }
                             return null;
@@ -7191,7 +7243,7 @@ var org;
                         MetaClass.prototype.internal_addatt = function (attributeName, p_type) {
                             var precisionCleaned = -1;
                             var extrapolation;
-                            if (p_type == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS) {
+                            if (p_type.id() == org.kevoree.modeling.meta.KPrimitiveTypes.CONTINUOUS_ID) {
                                 extrapolation = org.kevoree.modeling.extrapolation.impl.PolynomialExtrapolation.instance();
                                 precisionCleaned = 0.1;
                             }
@@ -7453,6 +7505,9 @@ var org;
                         };
                         MetaEnum.prototype.isEnum = function () {
                             return true;
+                        };
+                        MetaEnum.prototype.id = function () {
+                            return this._index;
                         };
                         MetaEnum.prototype.index = function () {
                             return this._index;
@@ -8045,7 +8100,7 @@ var org;
                                                 if (this._reference == null) {
                                                     var metaElements = loopObj.metaClass().metaElements();
                                                     for (var j = 0; j < metaElements.length; j++) {
-                                                        if (metaElements[j] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                                        if (metaElements[j] != null && metaElements[j].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                                             var resolved = raw.getRef(metaElements[j].index(), loopObj.metaClass());
                                                             if (resolved != null) {
                                                                 for (var k = 0; k < resolved.length; k++) {
@@ -8707,7 +8762,7 @@ var org;
                                                 if (this._reference == null) {
                                                     var metaElements = loopObj.metaClass().metaElements();
                                                     for (var j = 0; j < metaElements.length; j++) {
-                                                        if (metaElements[j] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                                        if (metaElements[j] != null && metaElements[j].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                                             var ref = metaElements[j];
                                                             var resolved = raw.getRef(ref.index(), currentObject.metaClass());
                                                             if (resolved != null) {
@@ -8841,7 +8896,7 @@ var org;
                                             if (raw != null) {
                                                 if (this._referenceQuery == null) {
                                                     for (var j = 0; j < metaElements.length; j++) {
-                                                        if (metaElements[j] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                                        if (metaElements[j] != null && metaElements[j].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                                             var resolved = raw.getRef(metaElements[j].index(), loopObj.metaClass());
                                                             if (resolved != null) {
                                                                 for (var k = 0; k < resolved.length; k++) {
@@ -8858,7 +8913,7 @@ var org;
                                                         queries[k] = queries[k].replace("*", ".*");
                                                     }
                                                     for (var h = 0; h < metaElements.length; h++) {
-                                                        if (metaElements[h] instanceof org.kevoree.modeling.meta.impl.MetaReference) {
+                                                        if (metaElements[h] != null && metaElements[h].metaType() == org.kevoree.modeling.meta.MetaType.REFERENCE) {
                                                             var metaReference = metaElements[h];
                                                             var selected = false;
                                                             for (var k = 0; k < queries.length; k++) {
@@ -10535,23 +10590,26 @@ var org;
                 var tempMetaClasses = new Array();
                 tempMetaClasses[1] = org.kubi.meta.MetaGroup.getInstance();
                 tempMetaClasses[0] = org.kubi.meta.MetaEcosystem.getInstance();
-                tempMetaClasses[15] = org.kubi.zwave.meta.MetaParameter.getInstance();
-                tempMetaClasses[16] = org.kubi.zwave.meta.MetaAssociation.getInstance();
-                tempMetaClasses[18] = org.kubi.zwave.meta.MetaAssociationGroup.getInstance();
-                tempMetaClasses[10] = org.kubi.meta.MetaSimulatedSwitchParameter.getInstance();
-                tempMetaClasses[3] = org.kubi.meta.MetaDevice.getInstance();
-                tempMetaClasses[5] = org.kubi.meta.MetaActionParameter.getInstance();
-                tempMetaClasses[8] = org.kubi.meta.MetaSimulatedParameter.getInstance();
-                tempMetaClasses[14] = org.kubi.zwave.meta.MetaCommandClass.getInstance();
-                tempMetaClasses[4] = org.kubi.meta.MetaStateParameter.getInstance();
-                tempMetaClasses[12] = org.kubi.meta.MetaProduct.getInstance();
+                tempMetaClasses[16] = org.kubi.zwave.meta.MetaParameter.getInstance();
+                tempMetaClasses[17] = org.kubi.zwave.meta.MetaAssociation.getInstance();
+                tempMetaClasses[19] = org.kubi.zwave.meta.MetaAssociationGroup.getInstance();
+                tempMetaClasses[3] = org.synoptic.meta.MetaStateMachine.getInstance();
+                tempMetaClasses[11] = org.kubi.meta.MetaSimulatedSwitchParameter.getInstance();
+                tempMetaClasses[4] = org.kubi.meta.MetaDevice.getInstance();
+                tempMetaClasses[21] = org.synoptic.meta.MetaTransition.getInstance();
+                tempMetaClasses[6] = org.kubi.meta.MetaActionParameter.getInstance();
+                tempMetaClasses[9] = org.kubi.meta.MetaSimulatedParameter.getInstance();
+                tempMetaClasses[15] = org.kubi.zwave.meta.MetaCommandClass.getInstance();
+                tempMetaClasses[5] = org.kubi.meta.MetaStateParameter.getInstance();
+                tempMetaClasses[13] = org.kubi.meta.MetaProduct.getInstance();
                 tempMetaClasses[2] = org.kubi.meta.MetaTechnology.getInstance();
-                tempMetaClasses[6] = org.kubi.meta.MetaPeriod.getInstance();
-                tempMetaClasses[13] = org.kubi.meta.MetaZWaveProduct.getInstance();
-                tempMetaClasses[9] = org.kubi.meta.MetaSimulatedLightParameter.getInstance();
-                tempMetaClasses[7] = org.kubi.meta.MetaCatalog.getInstance();
-                tempMetaClasses[11] = org.kubi.meta.MetaManufacturer.getInstance();
-                tempMetaClasses[17] = org.kubi.zwave.meta.MetaParameterItem.getInstance();
+                tempMetaClasses[7] = org.kubi.meta.MetaPeriod.getInstance();
+                tempMetaClasses[20] = org.synoptic.meta.MetaState.getInstance();
+                tempMetaClasses[14] = org.kubi.meta.MetaZWaveProduct.getInstance();
+                tempMetaClasses[10] = org.kubi.meta.MetaSimulatedLightParameter.getInstance();
+                tempMetaClasses[8] = org.kubi.meta.MetaCatalog.getInstance();
+                tempMetaClasses[12] = org.kubi.meta.MetaManufacturer.getInstance();
+                tempMetaClasses[18] = org.kubi.zwave.meta.MetaParameterItem.getInstance();
                 this._metaModel.init(tempMetaClasses);
             }
             KubiModel.prototype.internalCreateUniverse = function (key) {
@@ -10569,39 +10627,45 @@ var org;
                         return new org.kubi.impl.GroupImpl(universe, time, uuid, p_clazz, this._manager);
                     case 0:
                         return new org.kubi.impl.EcosystemImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 15:
-                        return new org.kubi.zwave.impl.ParameterImpl(universe, time, uuid, p_clazz, this._manager);
                     case 16:
+                        return new org.kubi.zwave.impl.ParameterImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 17:
                         return new org.kubi.zwave.impl.AssociationImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 18:
+                    case 19:
                         return new org.kubi.zwave.impl.AssociationGroupImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 10:
-                        return new org.kubi.impl.SimulatedSwitchParameterImpl(universe, time, uuid, p_clazz, this._manager);
                     case 3:
-                        return new org.kubi.impl.DeviceImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 5:
-                        return new org.kubi.impl.ActionParameterImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 8:
-                        return new org.kubi.impl.SimulatedParameterImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 14:
-                        return new org.kubi.zwave.impl.CommandClassImpl(universe, time, uuid, p_clazz, this._manager);
+                        return new org.synoptic.impl.StateMachineImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 11:
+                        return new org.kubi.impl.SimulatedSwitchParameterImpl(universe, time, uuid, p_clazz, this._manager);
                     case 4:
+                        return new org.kubi.impl.DeviceImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 21:
+                        return new org.synoptic.impl.TransitionImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 6:
+                        return new org.kubi.impl.ActionParameterImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 9:
+                        return new org.kubi.impl.SimulatedParameterImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 15:
+                        return new org.kubi.zwave.impl.CommandClassImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 5:
                         return new org.kubi.impl.StateParameterImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 12:
+                    case 13:
                         return new org.kubi.impl.ProductImpl(universe, time, uuid, p_clazz, this._manager);
                     case 2:
                         return new org.kubi.impl.TechnologyImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 6:
-                        return new org.kubi.impl.PeriodImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 13:
-                        return new org.kubi.impl.ZWaveProductImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 9:
-                        return new org.kubi.impl.SimulatedLightParameterImpl(universe, time, uuid, p_clazz, this._manager);
                     case 7:
+                        return new org.kubi.impl.PeriodImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 20:
+                        return new org.synoptic.impl.StateImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 14:
+                        return new org.kubi.impl.ZWaveProductImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 10:
+                        return new org.kubi.impl.SimulatedLightParameterImpl(universe, time, uuid, p_clazz, this._manager);
+                    case 8:
                         return new org.kubi.impl.CatalogImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 11:
+                    case 12:
                         return new org.kubi.impl.ManufacturerImpl(universe, time, uuid, p_clazz, this._manager);
-                    case 17:
+                    case 18:
                         return new org.kubi.zwave.impl.ParameterItemImpl(universe, time, uuid, p_clazz, this._manager);
                     default:
                         return new org.kevoree.modeling.meta.impl.GenericObject(universe, time, uuid, p_clazz, this._manager);
@@ -10622,11 +10686,17 @@ var org;
             KubiModel.prototype.createAssociationGroup = function (universe, time) {
                 return this.create(org.kubi.zwave.meta.MetaAssociationGroup.getInstance(), universe, time);
             };
+            KubiModel.prototype.createStateMachine = function (universe, time) {
+                return this.create(org.synoptic.meta.MetaStateMachine.getInstance(), universe, time);
+            };
             KubiModel.prototype.createSimulatedSwitchParameter = function (universe, time) {
                 return this.create(org.kubi.meta.MetaSimulatedSwitchParameter.getInstance(), universe, time);
             };
             KubiModel.prototype.createDevice = function (universe, time) {
                 return this.create(org.kubi.meta.MetaDevice.getInstance(), universe, time);
+            };
+            KubiModel.prototype.createTransition = function (universe, time) {
+                return this.create(org.synoptic.meta.MetaTransition.getInstance(), universe, time);
             };
             KubiModel.prototype.createActionParameter = function (universe, time) {
                 return this.create(org.kubi.meta.MetaActionParameter.getInstance(), universe, time);
@@ -10648,6 +10718,9 @@ var org;
             };
             KubiModel.prototype.createPeriod = function (universe, time) {
                 return this.create(org.kubi.meta.MetaPeriod.getInstance(), universe, time);
+            };
+            KubiModel.prototype.createState = function (universe, time) {
+                return this.create(org.synoptic.meta.MetaState.getInstance(), universe, time);
             };
             KubiModel.prototype.createZWaveProduct = function (universe, time) {
                 return this.create(org.kubi.meta.MetaZWaveProduct.getInstance(), universe, time);
@@ -10699,6 +10772,13 @@ var org;
                     this.set(org.kubi.meta.MetaActionParameter.ATT_DESIRED, p_obj);
                     return this;
                 };
+                ActionParameterImpl.prototype.getPredictedPeriodMax = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_PREDICTEDPERIODMAX);
+                };
+                ActionParameterImpl.prototype.setPredictedPeriodMax = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_PREDICTEDPERIODMAX, p_obj);
+                    return this;
+                };
                 ActionParameterImpl.prototype.getValueType = function () {
                     return this.get(org.kubi.meta.MetaActionParameter.ATT_VALUETYPE);
                 };
@@ -10711,6 +10791,13 @@ var org;
                 };
                 ActionParameterImpl.prototype.setPrecision = function (p_obj) {
                     this.set(org.kubi.meta.MetaActionParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getPredictedPeriodMin = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_PREDICTEDPERIODMIN);
+                };
+                ActionParameterImpl.prototype.setPredictedPeriodMin = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_PREDICTEDPERIODMIN, p_obj);
                     return this;
                 };
                 ActionParameterImpl.prototype.getName = function () {
@@ -10732,6 +10819,13 @@ var org;
                 };
                 ActionParameterImpl.prototype.setValue = function (p_obj) {
                     this.set(org.kubi.meta.MetaActionParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                ActionParameterImpl.prototype.getFrequencyOfCalculation = function () {
+                    return this.get(org.kubi.meta.MetaActionParameter.ATT_FREQUENCYOFCALCULATION);
+                };
+                ActionParameterImpl.prototype.setFrequencyOfCalculation = function (p_obj) {
+                    this.set(org.kubi.meta.MetaActionParameter.ATT_FREQUENCYOFCALCULATION, p_obj);
                     return this;
                 };
                 ActionParameterImpl.prototype.setPeriod = function (p_obj) {
@@ -11002,6 +11096,23 @@ var org;
                 EcosystemImpl.prototype.sizeOfTechnologies = function () {
                     return this.size(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES);
                 };
+                EcosystemImpl.prototype.setStateMachine = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.SET, org.kubi.meta.MetaEcosystem.REF_STATEMACHINE, p_obj);
+                    return this;
+                };
+                EcosystemImpl.prototype.getStateMachine = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.kubi.meta.MetaEcosystem.REF_STATEMACHINE, function (kObjects) {
+                        if (kObjects.length > 0) {
+                            cb(kObjects[0]);
+                        }
+                        else {
+                            cb(null);
+                        }
+                    });
+                };
                 return EcosystemImpl;
             })(org.kevoree.modeling.abs.AbstractKObject);
             impl.EcosystemImpl = EcosystemImpl;
@@ -11086,11 +11197,17 @@ var org;
                 KubiViewImpl.prototype.createAssociationGroup = function () {
                     return this.create(org.kubi.zwave.meta.MetaAssociationGroup.getInstance());
                 };
+                KubiViewImpl.prototype.createStateMachine = function () {
+                    return this.create(org.synoptic.meta.MetaStateMachine.getInstance());
+                };
                 KubiViewImpl.prototype.createSimulatedSwitchParameter = function () {
                     return this.create(org.kubi.meta.MetaSimulatedSwitchParameter.getInstance());
                 };
                 KubiViewImpl.prototype.createDevice = function () {
                     return this.create(org.kubi.meta.MetaDevice.getInstance());
+                };
+                KubiViewImpl.prototype.createTransition = function () {
+                    return this.create(org.synoptic.meta.MetaTransition.getInstance());
                 };
                 KubiViewImpl.prototype.createActionParameter = function () {
                     return this.create(org.kubi.meta.MetaActionParameter.getInstance());
@@ -11112,6 +11229,9 @@ var org;
                 };
                 KubiViewImpl.prototype.createPeriod = function () {
                     return this.create(org.kubi.meta.MetaPeriod.getInstance());
+                };
+                KubiViewImpl.prototype.createState = function () {
+                    return this.create(org.synoptic.meta.MetaState.getInstance());
                 };
                 KubiViewImpl.prototype.createZWaveProduct = function () {
                     return this.create(org.kubi.meta.MetaZWaveProduct.getInstance());
@@ -11225,6 +11345,13 @@ var org;
                     this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_UNIT, p_obj);
                     return this;
                 };
+                SimulatedLightParameterImpl.prototype.getPredictedPeriodMax = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMAX);
+                };
+                SimulatedLightParameterImpl.prototype.setPredictedPeriodMax = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMAX, p_obj);
+                    return this;
+                };
                 SimulatedLightParameterImpl.prototype.getValueType = function () {
                     return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_VALUETYPE);
                 };
@@ -11237,6 +11364,13 @@ var org;
                 };
                 SimulatedLightParameterImpl.prototype.setPrecision = function (p_obj) {
                     this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getPredictedPeriodMin = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMIN);
+                };
+                SimulatedLightParameterImpl.prototype.setPredictedPeriodMin = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMIN, p_obj);
                     return this;
                 };
                 SimulatedLightParameterImpl.prototype.getName = function () {
@@ -11265,6 +11399,13 @@ var org;
                 };
                 SimulatedLightParameterImpl.prototype.setValue = function (p_obj) {
                     this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                SimulatedLightParameterImpl.prototype.getFrequencyOfCalculation = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedLightParameter.ATT_FREQUENCYOFCALCULATION);
+                };
+                SimulatedLightParameterImpl.prototype.setFrequencyOfCalculation = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedLightParameter.ATT_FREQUENCYOFCALCULATION, p_obj);
                     return this;
                 };
                 SimulatedLightParameterImpl.prototype.setPeriod = function (p_obj) {
@@ -11299,6 +11440,13 @@ var org;
                     this.set(org.kubi.meta.MetaSimulatedParameter.ATT_UNIT, p_obj);
                     return this;
                 };
+                SimulatedParameterImpl.prototype.getPredictedPeriodMax = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedParameter.ATT_PREDICTEDPERIODMAX);
+                };
+                SimulatedParameterImpl.prototype.setPredictedPeriodMax = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedParameter.ATT_PREDICTEDPERIODMAX, p_obj);
+                    return this;
+                };
                 SimulatedParameterImpl.prototype.getValueType = function () {
                     return this.get(org.kubi.meta.MetaSimulatedParameter.ATT_VALUETYPE);
                 };
@@ -11311,6 +11459,13 @@ var org;
                 };
                 SimulatedParameterImpl.prototype.setPrecision = function (p_obj) {
                     this.set(org.kubi.meta.MetaSimulatedParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                SimulatedParameterImpl.prototype.getPredictedPeriodMin = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedParameter.ATT_PREDICTEDPERIODMIN);
+                };
+                SimulatedParameterImpl.prototype.setPredictedPeriodMin = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedParameter.ATT_PREDICTEDPERIODMIN, p_obj);
                     return this;
                 };
                 SimulatedParameterImpl.prototype.getName = function () {
@@ -11339,6 +11494,13 @@ var org;
                 };
                 SimulatedParameterImpl.prototype.setValue = function (p_obj) {
                     this.set(org.kubi.meta.MetaSimulatedParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                SimulatedParameterImpl.prototype.getFrequencyOfCalculation = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedParameter.ATT_FREQUENCYOFCALCULATION);
+                };
+                SimulatedParameterImpl.prototype.setFrequencyOfCalculation = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedParameter.ATT_FREQUENCYOFCALCULATION, p_obj);
                     return this;
                 };
                 SimulatedParameterImpl.prototype.setPeriod = function (p_obj) {
@@ -11373,6 +11535,13 @@ var org;
                     this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_UNIT, p_obj);
                     return this;
                 };
+                SimulatedSwitchParameterImpl.prototype.getPredictedPeriodMax = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMAX);
+                };
+                SimulatedSwitchParameterImpl.prototype.setPredictedPeriodMax = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMAX, p_obj);
+                    return this;
+                };
                 SimulatedSwitchParameterImpl.prototype.getValueType = function () {
                     return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_VALUETYPE);
                 };
@@ -11385,6 +11554,13 @@ var org;
                 };
                 SimulatedSwitchParameterImpl.prototype.setPrecision = function (p_obj) {
                     this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getPredictedPeriodMin = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMIN);
+                };
+                SimulatedSwitchParameterImpl.prototype.setPredictedPeriodMin = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMIN, p_obj);
                     return this;
                 };
                 SimulatedSwitchParameterImpl.prototype.getName = function () {
@@ -11413,6 +11589,13 @@ var org;
                 };
                 SimulatedSwitchParameterImpl.prototype.setValue = function (p_obj) {
                     this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                SimulatedSwitchParameterImpl.prototype.getFrequencyOfCalculation = function () {
+                    return this.get(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_FREQUENCYOFCALCULATION);
+                };
+                SimulatedSwitchParameterImpl.prototype.setFrequencyOfCalculation = function (p_obj) {
+                    this.set(org.kubi.meta.MetaSimulatedSwitchParameter.ATT_FREQUENCYOFCALCULATION, p_obj);
                     return this;
                 };
                 SimulatedSwitchParameterImpl.prototype.setPeriod = function (p_obj) {
@@ -11447,6 +11630,13 @@ var org;
                     this.set(org.kubi.meta.MetaStateParameter.ATT_UNIT, p_obj);
                     return this;
                 };
+                StateParameterImpl.prototype.getPredictedPeriodMax = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_PREDICTEDPERIODMAX);
+                };
+                StateParameterImpl.prototype.setPredictedPeriodMax = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_PREDICTEDPERIODMAX, p_obj);
+                    return this;
+                };
                 StateParameterImpl.prototype.getValueType = function () {
                     return this.get(org.kubi.meta.MetaStateParameter.ATT_VALUETYPE);
                 };
@@ -11459,6 +11649,13 @@ var org;
                 };
                 StateParameterImpl.prototype.setPrecision = function (p_obj) {
                     this.set(org.kubi.meta.MetaStateParameter.ATT_PRECISION, p_obj);
+                    return this;
+                };
+                StateParameterImpl.prototype.getPredictedPeriodMin = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_PREDICTEDPERIODMIN);
+                };
+                StateParameterImpl.prototype.setPredictedPeriodMin = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_PREDICTEDPERIODMIN, p_obj);
                     return this;
                 };
                 StateParameterImpl.prototype.getName = function () {
@@ -11480,6 +11677,13 @@ var org;
                 };
                 StateParameterImpl.prototype.setValue = function (p_obj) {
                     this.set(org.kubi.meta.MetaStateParameter.ATT_VALUE, p_obj);
+                    return this;
+                };
+                StateParameterImpl.prototype.getFrequencyOfCalculation = function () {
+                    return this.get(org.kubi.meta.MetaStateParameter.ATT_FREQUENCYOFCALCULATION);
+                };
+                StateParameterImpl.prototype.setFrequencyOfCalculation = function (p_obj) {
+                    this.set(org.kubi.meta.MetaStateParameter.ATT_FREQUENCYOFCALCULATION, p_obj);
                     return this;
                 };
                 StateParameterImpl.prototype.setPeriod = function (p_obj) {
@@ -11615,19 +11819,22 @@ var org;
             var MetaActionParameter = (function (_super) {
                 __extends(MetaActionParameter, _super);
                 function MetaActionParameter() {
-                    _super.call(this, "org.kubi.ActionParameter", 5, null);
+                    _super.call(this, "org.kubi.ActionParameter", 6, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaActionParameter.ATT_UNIT;
                     temp_all[1] = MetaActionParameter.ATT_DESIRED;
-                    temp_all[2] = MetaActionParameter.ATT_VALUETYPE;
-                    temp_all[3] = MetaActionParameter.ATT_PRECISION;
-                    temp_all[4] = MetaActionParameter.ATT_NAME;
-                    temp_all[5] = MetaActionParameter.ATT_RANGE;
-                    temp_all[6] = MetaActionParameter.ATT_VALUE;
+                    temp_all[2] = MetaActionParameter.ATT_PREDICTEDPERIODMAX;
+                    temp_all[3] = MetaActionParameter.ATT_VALUETYPE;
+                    temp_all[4] = MetaActionParameter.ATT_PRECISION;
+                    temp_all[5] = MetaActionParameter.ATT_PREDICTEDPERIODMIN;
+                    temp_all[6] = MetaActionParameter.ATT_NAME;
+                    temp_all[7] = MetaActionParameter.ATT_RANGE;
+                    temp_all[8] = MetaActionParameter.ATT_VALUE;
+                    temp_all[9] = MetaActionParameter.ATT_FREQUENCYOFCALCULATION;
                     var temp_references = new Array();
-                    temp_all[7] = MetaActionParameter.REF_OP_ACTIONPARAMETERS;
-                    temp_all[8] = MetaActionParameter.REF_OP_STATEPARAMETERS;
-                    temp_all[9] = MetaActionParameter.REF_PERIOD;
+                    temp_all[10] = MetaActionParameter.REF_OP_ACTIONPARAMETERS;
+                    temp_all[11] = MetaActionParameter.REF_OP_STATEPARAMETERS;
+                    temp_all[12] = MetaActionParameter.REF_PERIOD;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -11640,22 +11847,25 @@ var org;
                 MetaActionParameter.INSTANCE = null;
                 MetaActionParameter.ATT_UNIT = new org.kevoree.modeling.meta.impl.MetaAttribute("unit", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
                 MetaActionParameter.ATT_DESIRED = new org.kevoree.modeling.meta.impl.MetaAttribute("desired", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaActionParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaActionParameter.REF_OP_ACTIONPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_actionParameters", 7, false, false, function () {
+                MetaActionParameter.ATT_PREDICTEDPERIODMAX = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMax", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_PREDICTEDPERIODMIN = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMin", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 7, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 8, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.ATT_FREQUENCYOFCALCULATION = new org.kevoree.modeling.meta.impl.MetaAttribute("frequencyOfCalculation", 9, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaActionParameter.REF_OP_ACTIONPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_actionParameters", 10, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, "actionParameters", function () {
                     return org.kubi.meta.MetaActionParameter.getInstance();
                 });
-                MetaActionParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 8, false, false, function () {
+                MetaActionParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 11, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, "stateParameters", function () {
                     return org.kubi.meta.MetaActionParameter.getInstance();
                 });
-                MetaActionParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 9, true, true, function () {
+                MetaActionParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 12, true, true, function () {
                     return org.kubi.meta.MetaPeriod.getInstance();
                 }, "op_period", function () {
                     return org.kubi.meta.MetaActionParameter.getInstance();
@@ -11666,7 +11876,7 @@ var org;
             var MetaCatalog = (function (_super) {
                 __extends(MetaCatalog, _super);
                 function MetaCatalog() {
-                    _super.call(this, "org.kubi.Catalog", 7, null);
+                    _super.call(this, "org.kubi.Catalog", 8, null);
                     var temp_all = new Array();
                     var temp_references = new Array();
                     temp_all[0] = MetaCatalog.REF_MANUFACTURERS;
@@ -11697,7 +11907,7 @@ var org;
             var MetaDevice = (function (_super) {
                 __extends(MetaDevice, _super);
                 function MetaDevice() {
-                    _super.call(this, "org.kubi.Device", 3, null);
+                    _super.call(this, "org.kubi.Device", 4, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaDevice.ATT_NAME;
                     temp_all[1] = MetaDevice.ATT_ID;
@@ -11770,6 +11980,7 @@ var org;
                     var temp_references = new Array();
                     temp_all[1] = MetaEcosystem.REF_GROUPES;
                     temp_all[2] = MetaEcosystem.REF_TECHNOLOGIES;
+                    temp_all[3] = MetaEcosystem.REF_STATEMACHINE;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -11789,6 +12000,11 @@ var org;
                 MetaEcosystem.REF_TECHNOLOGIES = new org.kevoree.modeling.meta.impl.MetaReference("technologies", 2, true, false, function () {
                     return org.kubi.meta.MetaTechnology.getInstance();
                 }, "op_technologies", function () {
+                    return org.kubi.meta.MetaEcosystem.getInstance();
+                });
+                MetaEcosystem.REF_STATEMACHINE = new org.kevoree.modeling.meta.impl.MetaReference("stateMachine", 3, true, true, function () {
+                    return org.synoptic.meta.MetaStateMachine.getInstance();
+                }, "op_stateMachine", function () {
                     return org.kubi.meta.MetaEcosystem.getInstance();
                 });
                 return MetaEcosystem;
@@ -11836,7 +12052,7 @@ var org;
             var MetaManufacturer = (function (_super) {
                 __extends(MetaManufacturer, _super);
                 function MetaManufacturer() {
-                    _super.call(this, "org.kubi.Manufacturer", 11, null);
+                    _super.call(this, "org.kubi.Manufacturer", 12, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaManufacturer.ATT_NAME;
                     temp_all[1] = MetaManufacturer.ATT_ID;
@@ -11891,6 +12107,9 @@ var org;
                 MetaParameterType.prototype.isEnum = function () {
                     return true;
                 };
+                MetaParameterType.prototype.id = function () {
+                    return 0;
+                };
                 MetaParameterType.BOOL = new org.kevoree.modeling.meta.impl.MetaLiteral("BOOL", 0, "org.kubi.ParameterType");
                 MetaParameterType.BUTTON = new org.kevoree.modeling.meta.impl.MetaLiteral("BUTTON", 1, "org.kubi.ParameterType");
                 MetaParameterType.BYTE = new org.kevoree.modeling.meta.impl.MetaLiteral("BYTE", 2, "org.kubi.ParameterType");
@@ -11906,7 +12125,7 @@ var org;
             var MetaPeriod = (function (_super) {
                 __extends(MetaPeriod, _super);
                 function MetaPeriod() {
-                    _super.call(this, "org.kubi.Period", 6, null);
+                    _super.call(this, "org.kubi.Period", 7, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaPeriod.ATT_PERIOD;
                     var temp_references = new Array();
@@ -11933,7 +12152,7 @@ var org;
             var MetaProduct = (function (_super) {
                 __extends(MetaProduct, _super);
                 function MetaProduct() {
-                    _super.call(this, "org.kubi.Product", 12, null);
+                    _super.call(this, "org.kubi.Product", 13, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaProduct.ATT_NAME;
                     temp_all[1] = MetaProduct.ATT_ID;
@@ -11962,18 +12181,21 @@ var org;
             var MetaSimulatedLightParameter = (function (_super) {
                 __extends(MetaSimulatedLightParameter, _super);
                 function MetaSimulatedLightParameter() {
-                    _super.call(this, "org.kubi.SimulatedLightParameter", 9, null);
+                    _super.call(this, "org.kubi.SimulatedLightParameter", 10, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaSimulatedLightParameter.ATT_UNIT;
-                    temp_all[1] = MetaSimulatedLightParameter.ATT_VALUETYPE;
-                    temp_all[2] = MetaSimulatedLightParameter.ATT_PRECISION;
-                    temp_all[3] = MetaSimulatedLightParameter.ATT_NAME;
-                    temp_all[4] = MetaSimulatedLightParameter.ATT_VALUEUNREDUNDANT;
-                    temp_all[5] = MetaSimulatedLightParameter.ATT_RANGE;
-                    temp_all[6] = MetaSimulatedLightParameter.ATT_VALUE;
+                    temp_all[1] = MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMAX;
+                    temp_all[2] = MetaSimulatedLightParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaSimulatedLightParameter.ATT_PRECISION;
+                    temp_all[4] = MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMIN;
+                    temp_all[5] = MetaSimulatedLightParameter.ATT_NAME;
+                    temp_all[6] = MetaSimulatedLightParameter.ATT_VALUEUNREDUNDANT;
+                    temp_all[7] = MetaSimulatedLightParameter.ATT_RANGE;
+                    temp_all[8] = MetaSimulatedLightParameter.ATT_VALUE;
+                    temp_all[9] = MetaSimulatedLightParameter.ATT_FREQUENCYOFCALCULATION;
                     var temp_references = new Array();
-                    temp_all[7] = MetaSimulatedLightParameter.REF_OP_STATEPARAMETERS;
-                    temp_all[8] = MetaSimulatedLightParameter.REF_PERIOD;
+                    temp_all[10] = MetaSimulatedLightParameter.REF_OP_STATEPARAMETERS;
+                    temp_all[11] = MetaSimulatedLightParameter.REF_PERIOD;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -11985,18 +12207,21 @@ var org;
                 };
                 MetaSimulatedLightParameter.INSTANCE = null;
                 MetaSimulatedLightParameter.ATT_UNIT = new org.kevoree.modeling.meta.impl.MetaAttribute("unit", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.ATT_VALUEUNREDUNDANT = new org.kevoree.modeling.meta.impl.MetaAttribute("valueUnredundant", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedLightParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 7, false, false, function () {
+                MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMAX = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMax", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_PREDICTEDPERIODMIN = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMin", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_VALUEUNREDUNDANT = new org.kevoree.modeling.meta.impl.MetaAttribute("valueUnredundant", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 7, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 8, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.ATT_FREQUENCYOFCALCULATION = new org.kevoree.modeling.meta.impl.MetaAttribute("frequencyOfCalculation", 9, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedLightParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 10, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, "stateParameters", function () {
                     return org.kubi.meta.MetaSimulatedLightParameter.getInstance();
                 });
-                MetaSimulatedLightParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 8, true, true, function () {
+                MetaSimulatedLightParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 11, true, true, function () {
                     return org.kubi.meta.MetaPeriod.getInstance();
                 }, "op_period", function () {
                     return org.kubi.meta.MetaSimulatedLightParameter.getInstance();
@@ -12007,18 +12232,21 @@ var org;
             var MetaSimulatedParameter = (function (_super) {
                 __extends(MetaSimulatedParameter, _super);
                 function MetaSimulatedParameter() {
-                    _super.call(this, "org.kubi.SimulatedParameter", 8, null);
+                    _super.call(this, "org.kubi.SimulatedParameter", 9, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaSimulatedParameter.ATT_UNIT;
-                    temp_all[1] = MetaSimulatedParameter.ATT_VALUETYPE;
-                    temp_all[2] = MetaSimulatedParameter.ATT_PRECISION;
-                    temp_all[3] = MetaSimulatedParameter.ATT_NAME;
-                    temp_all[4] = MetaSimulatedParameter.ATT_VALUEUNREDUNDANT;
-                    temp_all[5] = MetaSimulatedParameter.ATT_RANGE;
-                    temp_all[6] = MetaSimulatedParameter.ATT_VALUE;
+                    temp_all[1] = MetaSimulatedParameter.ATT_PREDICTEDPERIODMAX;
+                    temp_all[2] = MetaSimulatedParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaSimulatedParameter.ATT_PRECISION;
+                    temp_all[4] = MetaSimulatedParameter.ATT_PREDICTEDPERIODMIN;
+                    temp_all[5] = MetaSimulatedParameter.ATT_NAME;
+                    temp_all[6] = MetaSimulatedParameter.ATT_VALUEUNREDUNDANT;
+                    temp_all[7] = MetaSimulatedParameter.ATT_RANGE;
+                    temp_all[8] = MetaSimulatedParameter.ATT_VALUE;
+                    temp_all[9] = MetaSimulatedParameter.ATT_FREQUENCYOFCALCULATION;
                     var temp_references = new Array();
-                    temp_all[7] = MetaSimulatedParameter.REF_OP_STATEPARAMETERS;
-                    temp_all[8] = MetaSimulatedParameter.REF_PERIOD;
+                    temp_all[10] = MetaSimulatedParameter.REF_OP_STATEPARAMETERS;
+                    temp_all[11] = MetaSimulatedParameter.REF_PERIOD;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -12030,18 +12258,21 @@ var org;
                 };
                 MetaSimulatedParameter.INSTANCE = null;
                 MetaSimulatedParameter.ATT_UNIT = new org.kevoree.modeling.meta.impl.MetaAttribute("unit", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.ATT_VALUEUNREDUNDANT = new org.kevoree.modeling.meta.impl.MetaAttribute("valueUnredundant", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 7, false, false, function () {
+                MetaSimulatedParameter.ATT_PREDICTEDPERIODMAX = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMax", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_PREDICTEDPERIODMIN = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMin", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_VALUEUNREDUNDANT = new org.kevoree.modeling.meta.impl.MetaAttribute("valueUnredundant", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 7, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 8, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.ATT_FREQUENCYOFCALCULATION = new org.kevoree.modeling.meta.impl.MetaAttribute("frequencyOfCalculation", 9, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 10, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, "stateParameters", function () {
                     return org.kubi.meta.MetaSimulatedParameter.getInstance();
                 });
-                MetaSimulatedParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 8, true, true, function () {
+                MetaSimulatedParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 11, true, true, function () {
                     return org.kubi.meta.MetaPeriod.getInstance();
                 }, "op_period", function () {
                     return org.kubi.meta.MetaSimulatedParameter.getInstance();
@@ -12052,18 +12283,21 @@ var org;
             var MetaSimulatedSwitchParameter = (function (_super) {
                 __extends(MetaSimulatedSwitchParameter, _super);
                 function MetaSimulatedSwitchParameter() {
-                    _super.call(this, "org.kubi.SimulatedSwitchParameter", 10, null);
+                    _super.call(this, "org.kubi.SimulatedSwitchParameter", 11, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaSimulatedSwitchParameter.ATT_UNIT;
-                    temp_all[1] = MetaSimulatedSwitchParameter.ATT_VALUETYPE;
-                    temp_all[2] = MetaSimulatedSwitchParameter.ATT_PRECISION;
-                    temp_all[3] = MetaSimulatedSwitchParameter.ATT_NAME;
-                    temp_all[4] = MetaSimulatedSwitchParameter.ATT_VALUEUNREDUNDANT;
-                    temp_all[5] = MetaSimulatedSwitchParameter.ATT_RANGE;
-                    temp_all[6] = MetaSimulatedSwitchParameter.ATT_VALUE;
+                    temp_all[1] = MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMAX;
+                    temp_all[2] = MetaSimulatedSwitchParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaSimulatedSwitchParameter.ATT_PRECISION;
+                    temp_all[4] = MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMIN;
+                    temp_all[5] = MetaSimulatedSwitchParameter.ATT_NAME;
+                    temp_all[6] = MetaSimulatedSwitchParameter.ATT_VALUEUNREDUNDANT;
+                    temp_all[7] = MetaSimulatedSwitchParameter.ATT_RANGE;
+                    temp_all[8] = MetaSimulatedSwitchParameter.ATT_VALUE;
+                    temp_all[9] = MetaSimulatedSwitchParameter.ATT_FREQUENCYOFCALCULATION;
                     var temp_references = new Array();
-                    temp_all[7] = MetaSimulatedSwitchParameter.REF_OP_STATEPARAMETERS;
-                    temp_all[8] = MetaSimulatedSwitchParameter.REF_PERIOD;
+                    temp_all[10] = MetaSimulatedSwitchParameter.REF_OP_STATEPARAMETERS;
+                    temp_all[11] = MetaSimulatedSwitchParameter.REF_PERIOD;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -12075,18 +12309,21 @@ var org;
                 };
                 MetaSimulatedSwitchParameter.INSTANCE = null;
                 MetaSimulatedSwitchParameter.ATT_UNIT = new org.kevoree.modeling.meta.impl.MetaAttribute("unit", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.ATT_VALUEUNREDUNDANT = new org.kevoree.modeling.meta.impl.MetaAttribute("valueUnredundant", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaSimulatedSwitchParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 7, false, false, function () {
+                MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMAX = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMax", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_PREDICTEDPERIODMIN = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMin", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_VALUEUNREDUNDANT = new org.kevoree.modeling.meta.impl.MetaAttribute("valueUnredundant", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 7, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 8, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.ATT_FREQUENCYOFCALCULATION = new org.kevoree.modeling.meta.impl.MetaAttribute("frequencyOfCalculation", 9, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaSimulatedSwitchParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 10, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, "stateParameters", function () {
                     return org.kubi.meta.MetaSimulatedSwitchParameter.getInstance();
                 });
-                MetaSimulatedSwitchParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 8, true, true, function () {
+                MetaSimulatedSwitchParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 11, true, true, function () {
                     return org.kubi.meta.MetaPeriod.getInstance();
                 }, "op_period", function () {
                     return org.kubi.meta.MetaSimulatedSwitchParameter.getInstance();
@@ -12097,17 +12334,20 @@ var org;
             var MetaStateParameter = (function (_super) {
                 __extends(MetaStateParameter, _super);
                 function MetaStateParameter() {
-                    _super.call(this, "org.kubi.StateParameter", 4, null);
+                    _super.call(this, "org.kubi.StateParameter", 5, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaStateParameter.ATT_UNIT;
-                    temp_all[1] = MetaStateParameter.ATT_VALUETYPE;
-                    temp_all[2] = MetaStateParameter.ATT_PRECISION;
-                    temp_all[3] = MetaStateParameter.ATT_NAME;
-                    temp_all[4] = MetaStateParameter.ATT_RANGE;
-                    temp_all[5] = MetaStateParameter.ATT_VALUE;
+                    temp_all[1] = MetaStateParameter.ATT_PREDICTEDPERIODMAX;
+                    temp_all[2] = MetaStateParameter.ATT_VALUETYPE;
+                    temp_all[3] = MetaStateParameter.ATT_PRECISION;
+                    temp_all[4] = MetaStateParameter.ATT_PREDICTEDPERIODMIN;
+                    temp_all[5] = MetaStateParameter.ATT_NAME;
+                    temp_all[6] = MetaStateParameter.ATT_RANGE;
+                    temp_all[7] = MetaStateParameter.ATT_VALUE;
+                    temp_all[8] = MetaStateParameter.ATT_FREQUENCYOFCALCULATION;
                     var temp_references = new Array();
-                    temp_all[6] = MetaStateParameter.REF_OP_STATEPARAMETERS;
-                    temp_all[7] = MetaStateParameter.REF_PERIOD;
+                    temp_all[9] = MetaStateParameter.REF_OP_STATEPARAMETERS;
+                    temp_all[10] = MetaStateParameter.REF_PERIOD;
                     var temp_operations = new Array();
                     this.init(temp_all);
                 }
@@ -12119,17 +12359,20 @@ var org;
                 };
                 MetaStateParameter.INSTANCE = null;
                 MetaStateParameter.ATT_UNIT = new org.kevoree.modeling.meta.impl.MetaAttribute("unit", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaStateParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaStateParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaStateParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaStateParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaStateParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
-                MetaStateParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 6, false, false, function () {
+                MetaStateParameter.ATT_PREDICTEDPERIODMAX = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMax", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_VALUETYPE = new org.kevoree.modeling.meta.impl.MetaAttribute("valueType", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_PRECISION = new org.kevoree.modeling.meta.impl.MetaAttribute("precision", 3, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_PREDICTEDPERIODMIN = new org.kevoree.modeling.meta.impl.MetaAttribute("predictedPeriodMin", 4, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 5, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_RANGE = new org.kevoree.modeling.meta.impl.MetaAttribute("range", 6, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_VALUE = new org.kevoree.modeling.meta.impl.MetaAttribute("value", 7, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.ATT_FREQUENCYOFCALCULATION = new org.kevoree.modeling.meta.impl.MetaAttribute("frequencyOfCalculation", 8, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateParameter.REF_OP_STATEPARAMETERS = new org.kevoree.modeling.meta.impl.MetaReference("op_stateParameters", 9, false, false, function () {
                     return org.kubi.meta.MetaDevice.getInstance();
                 }, "stateParameters", function () {
                     return org.kubi.meta.MetaStateParameter.getInstance();
                 });
-                MetaStateParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 7, true, true, function () {
+                MetaStateParameter.REF_PERIOD = new org.kevoree.modeling.meta.impl.MetaReference("period", 10, true, true, function () {
                     return org.kubi.meta.MetaPeriod.getInstance();
                 }, "op_period", function () {
                     return org.kubi.meta.MetaStateParameter.getInstance();
@@ -12179,7 +12422,7 @@ var org;
             var MetaZWaveProduct = (function (_super) {
                 __extends(MetaZWaveProduct, _super);
                 function MetaZWaveProduct() {
-                    _super.call(this, "org.kubi.ZWaveProduct", 13, null);
+                    _super.call(this, "org.kubi.ZWaveProduct", 14, null);
                     var temp_all = new Array();
                     temp_all[0] = MetaZWaveProduct.ATT_NAME;
                     temp_all[1] = MetaZWaveProduct.ATT_ID;
@@ -12489,7 +12732,7 @@ var org;
                 var MetaAssociation = (function (_super) {
                     __extends(MetaAssociation, _super);
                     function MetaAssociation() {
-                        _super.call(this, "org.kubi.zwave.Association", 16, null);
+                        _super.call(this, "org.kubi.zwave.Association", 17, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaAssociation.ATT_NUMGROUPS;
                         var temp_references = new Array();
@@ -12522,7 +12765,7 @@ var org;
                 var MetaAssociationGroup = (function (_super) {
                     __extends(MetaAssociationGroup, _super);
                     function MetaAssociationGroup() {
-                        _super.call(this, "org.kubi.zwave.AssociationGroup", 18, null);
+                        _super.call(this, "org.kubi.zwave.AssociationGroup", 19, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaAssociationGroup.ATT_AUTO;
                         temp_all[1] = MetaAssociationGroup.ATT_MAXASSOCIATIONS;
@@ -12555,7 +12798,7 @@ var org;
                 var MetaCommandClass = (function (_super) {
                     __extends(MetaCommandClass, _super);
                     function MetaCommandClass() {
-                        _super.call(this, "org.kubi.zwave.CommandClass", 14, null);
+                        _super.call(this, "org.kubi.zwave.CommandClass", 15, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaCommandClass.ATT_ID;
                         var temp_references = new Array();
@@ -12594,7 +12837,7 @@ var org;
                 var MetaParameter = (function (_super) {
                     __extends(MetaParameter, _super);
                     function MetaParameter() {
-                        _super.call(this, "org.kubi.zwave.Parameter", 15, null);
+                        _super.call(this, "org.kubi.zwave.Parameter", 16, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaParameter.ATT_HELP;
                         temp_all[1] = MetaParameter.ATT_INSTANCE;
@@ -12647,7 +12890,7 @@ var org;
                 var MetaParameterItem = (function (_super) {
                     __extends(MetaParameterItem, _super);
                     function MetaParameterItem() {
-                        _super.call(this, "org.kubi.zwave.ParameterItem", 17, null);
+                        _super.call(this, "org.kubi.zwave.ParameterItem", 18, null);
                         var temp_all = new Array();
                         temp_all[0] = MetaParameterItem.ATT_LABEL;
                         temp_all[1] = MetaParameterItem.ATT_VALUE;
@@ -12676,4 +12919,357 @@ var org;
             })(meta = zwave.meta || (zwave.meta = {}));
         })(zwave = kubi.zwave || (kubi.zwave = {}));
     })(kubi = org.kubi || (org.kubi = {}));
+    var synoptic;
+    (function (synoptic) {
+        var impl;
+        (function (impl) {
+            var StateImpl = (function (_super) {
+                __extends(StateImpl, _super);
+                function StateImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                    _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                }
+                StateImpl.prototype.getName = function () {
+                    return this.get(org.synoptic.meta.MetaState.ATT_NAME);
+                };
+                StateImpl.prototype.setName = function (p_obj) {
+                    this.set(org.synoptic.meta.MetaState.ATT_NAME, p_obj);
+                    return this;
+                };
+                StateImpl.prototype.getOutCounter = function () {
+                    return this.get(org.synoptic.meta.MetaState.ATT_OUTCOUNTER);
+                };
+                StateImpl.prototype.setOutCounter = function (p_obj) {
+                    this.set(org.synoptic.meta.MetaState.ATT_OUTCOUNTER, p_obj);
+                    return this;
+                };
+                StateImpl.prototype.addFromTransition = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.ADD, org.synoptic.meta.MetaState.REF_FROMTRANSITION, p_obj);
+                    return this;
+                };
+                StateImpl.prototype.removeFromTransition = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.REMOVE, org.synoptic.meta.MetaState.REF_FROMTRANSITION, p_obj);
+                    return this;
+                };
+                StateImpl.prototype.getFromTransition = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.synoptic.meta.MetaState.REF_FROMTRANSITION, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        cb(casted);
+                    });
+                };
+                StateImpl.prototype.sizeOfFromTransition = function () {
+                    return this.size(org.synoptic.meta.MetaState.REF_FROMTRANSITION);
+                };
+                StateImpl.prototype.addToTransition = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.ADD, org.synoptic.meta.MetaState.REF_TOTRANSITION, p_obj);
+                    return this;
+                };
+                StateImpl.prototype.removeToTransition = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.REMOVE, org.synoptic.meta.MetaState.REF_TOTRANSITION, p_obj);
+                    return this;
+                };
+                StateImpl.prototype.getToTransition = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.synoptic.meta.MetaState.REF_TOTRANSITION, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        cb(casted);
+                    });
+                };
+                StateImpl.prototype.sizeOfToTransition = function () {
+                    return this.size(org.synoptic.meta.MetaState.REF_TOTRANSITION);
+                };
+                StateImpl.prototype.canGoTo = function (p_stateName, p_result) {
+                    var canGoTo_params = new Array();
+                    canGoTo_params[0] = p_stateName;
+                    this._manager.operationManager().call(this, org.synoptic.meta.MetaState.OP_CANGOTO, canGoTo_params, function (o) {
+                        p_result(o);
+                    });
+                };
+                return StateImpl;
+            })(org.kevoree.modeling.abs.AbstractKObject);
+            impl.StateImpl = StateImpl;
+            var StateMachineImpl = (function (_super) {
+                __extends(StateMachineImpl, _super);
+                function StateMachineImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                    _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                }
+                StateMachineImpl.prototype.getName = function () {
+                    return this.get(org.synoptic.meta.MetaStateMachine.ATT_NAME);
+                };
+                StateMachineImpl.prototype.setName = function (p_obj) {
+                    this.set(org.synoptic.meta.MetaStateMachine.ATT_NAME, p_obj);
+                    return this;
+                };
+                StateMachineImpl.prototype.setCurrentState = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.SET, org.synoptic.meta.MetaStateMachine.REF_CURRENTSTATE, p_obj);
+                    return this;
+                };
+                StateMachineImpl.prototype.getCurrentState = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.synoptic.meta.MetaStateMachine.REF_CURRENTSTATE, function (kObjects) {
+                        if (kObjects.length > 0) {
+                            cb(kObjects[0]);
+                        }
+                        else {
+                            cb(null);
+                        }
+                    });
+                };
+                StateMachineImpl.prototype.addStates = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.ADD, org.synoptic.meta.MetaStateMachine.REF_STATES, p_obj);
+                    return this;
+                };
+                StateMachineImpl.prototype.removeStates = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.REMOVE, org.synoptic.meta.MetaStateMachine.REF_STATES, p_obj);
+                    return this;
+                };
+                StateMachineImpl.prototype.getStates = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.synoptic.meta.MetaStateMachine.REF_STATES, function (kObjects) {
+                        var casted = new Array();
+                        for (var i = 0; i < kObjects.length; i++) {
+                            casted[i] = kObjects[i];
+                        }
+                        cb(casted);
+                    });
+                };
+                StateMachineImpl.prototype.sizeOfStates = function () {
+                    return this.size(org.synoptic.meta.MetaStateMachine.REF_STATES);
+                };
+                return StateMachineImpl;
+            })(org.kevoree.modeling.abs.AbstractKObject);
+            impl.StateMachineImpl = StateMachineImpl;
+            var TransitionImpl = (function (_super) {
+                __extends(TransitionImpl, _super);
+                function TransitionImpl(p_universe, p_time, p_uuid, p_metaClass, p_manager) {
+                    _super.call(this, p_universe, p_time, p_uuid, p_metaClass, p_manager);
+                }
+                TransitionImpl.prototype.getProbability = function () {
+                    return this.get(org.synoptic.meta.MetaTransition.ATT_PROBABILITY);
+                };
+                TransitionImpl.prototype.setProbability = function (p_obj) {
+                    this.set(org.synoptic.meta.MetaTransition.ATT_PROBABILITY, p_obj);
+                    return this;
+                };
+                TransitionImpl.prototype.getDeltaMax = function () {
+                    return this.get(org.synoptic.meta.MetaTransition.ATT_DELTAMAX);
+                };
+                TransitionImpl.prototype.setDeltaMax = function (p_obj) {
+                    this.set(org.synoptic.meta.MetaTransition.ATT_DELTAMAX, p_obj);
+                    return this;
+                };
+                TransitionImpl.prototype.getDeltaMin = function () {
+                    return this.get(org.synoptic.meta.MetaTransition.ATT_DELTAMIN);
+                };
+                TransitionImpl.prototype.setDeltaMin = function (p_obj) {
+                    this.set(org.synoptic.meta.MetaTransition.ATT_DELTAMIN, p_obj);
+                    return this;
+                };
+                TransitionImpl.prototype.setFromState = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.SET, org.synoptic.meta.MetaTransition.REF_FROMSTATE, p_obj);
+                    return this;
+                };
+                TransitionImpl.prototype.getFromState = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.synoptic.meta.MetaTransition.REF_FROMSTATE, function (kObjects) {
+                        if (kObjects.length > 0) {
+                            cb(kObjects[0]);
+                        }
+                        else {
+                            cb(null);
+                        }
+                    });
+                };
+                TransitionImpl.prototype.setToState = function (p_obj) {
+                    this.mutate(org.kevoree.modeling.KActionType.SET, org.synoptic.meta.MetaTransition.REF_TOSTATE, p_obj);
+                    return this;
+                };
+                TransitionImpl.prototype.getToState = function (cb) {
+                    if (cb == null) {
+                        return;
+                    }
+                    this.ref(org.synoptic.meta.MetaTransition.REF_TOSTATE, function (kObjects) {
+                        if (kObjects.length > 0) {
+                            cb(kObjects[0]);
+                        }
+                        else {
+                            cb(null);
+                        }
+                    });
+                };
+                return TransitionImpl;
+            })(org.kevoree.modeling.abs.AbstractKObject);
+            impl.TransitionImpl = TransitionImpl;
+        })(impl = synoptic.impl || (synoptic.impl = {}));
+        var meta;
+        (function (meta) {
+            var MetaState = (function (_super) {
+                __extends(MetaState, _super);
+                function MetaState() {
+                    _super.call(this, "org.synoptic.State", 20, null);
+                    var temp_all = new Array();
+                    temp_all[0] = MetaState.ATT_NAME;
+                    temp_all[1] = MetaState.ATT_OUTCOUNTER;
+                    var temp_references = new Array();
+                    temp_all[2] = MetaState.REF_OP_FROMSTATE;
+                    temp_all[3] = MetaState.REF_FROMTRANSITION;
+                    temp_all[4] = MetaState.REF_OP_TOSTATE;
+                    temp_all[5] = MetaState.REF_TOTRANSITION;
+                    temp_all[6] = MetaState.REF_OP_CURRENTSTATE;
+                    temp_all[7] = MetaState.REF_OP_STATES;
+                    var temp_operations = new Array();
+                    temp_all[8] = MetaState.OP_CANGOTO;
+                    this.init(temp_all);
+                }
+                MetaState.getInstance = function () {
+                    if (MetaState.INSTANCE == null) {
+                        MetaState.INSTANCE = new org.synoptic.meta.MetaState();
+                    }
+                    return MetaState.INSTANCE;
+                };
+                MetaState.INSTANCE = null;
+                MetaState.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaState.ATT_OUTCOUNTER = new org.kevoree.modeling.meta.impl.MetaAttribute("outCounter", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.INT, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaState.REF_OP_FROMSTATE = new org.kevoree.modeling.meta.impl.MetaReference("op_fromState", 2, false, false, function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                }, "fromState", function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                MetaState.REF_FROMTRANSITION = new org.kevoree.modeling.meta.impl.MetaReference("fromTransition", 3, true, false, function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                }, "op_fromTransition", function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                MetaState.REF_OP_TOSTATE = new org.kevoree.modeling.meta.impl.MetaReference("op_toState", 4, false, false, function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                }, "toState", function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                MetaState.REF_TOTRANSITION = new org.kevoree.modeling.meta.impl.MetaReference("toTransition", 5, true, false, function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                }, "op_toTransition", function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                MetaState.REF_OP_CURRENTSTATE = new org.kevoree.modeling.meta.impl.MetaReference("op_currentState", 6, false, false, function () {
+                    return org.synoptic.meta.MetaStateMachine.getInstance();
+                }, "currentState", function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                MetaState.REF_OP_STATES = new org.kevoree.modeling.meta.impl.MetaReference("op_states", 7, false, false, function () {
+                    return org.synoptic.meta.MetaStateMachine.getInstance();
+                }, "states", function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                MetaState.OP_CANGOTO = new org.kevoree.modeling.meta.impl.MetaOperation("canGoTo", 8, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                });
+                return MetaState;
+            })(org.kevoree.modeling.meta.impl.MetaClass);
+            meta.MetaState = MetaState;
+            var MetaStateMachine = (function (_super) {
+                __extends(MetaStateMachine, _super);
+                function MetaStateMachine() {
+                    _super.call(this, "org.synoptic.StateMachine", 3, null);
+                    var temp_all = new Array();
+                    temp_all[0] = MetaStateMachine.ATT_NAME;
+                    var temp_references = new Array();
+                    temp_all[1] = MetaStateMachine.REF_OP_STATEMACHINE;
+                    temp_all[2] = MetaStateMachine.REF_CURRENTSTATE;
+                    temp_all[3] = MetaStateMachine.REF_STATES;
+                    var temp_operations = new Array();
+                    this.init(temp_all);
+                }
+                MetaStateMachine.getInstance = function () {
+                    if (MetaStateMachine.INSTANCE == null) {
+                        MetaStateMachine.INSTANCE = new org.synoptic.meta.MetaStateMachine();
+                    }
+                    return MetaStateMachine.INSTANCE;
+                };
+                MetaStateMachine.INSTANCE = null;
+                MetaStateMachine.ATT_NAME = new org.kevoree.modeling.meta.impl.MetaAttribute("name", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.STRING, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaStateMachine.REF_OP_STATEMACHINE = new org.kevoree.modeling.meta.impl.MetaReference("op_stateMachine", 1, false, false, function () {
+                    return org.kubi.meta.MetaEcosystem.getInstance();
+                }, "stateMachine", function () {
+                    return org.synoptic.meta.MetaStateMachine.getInstance();
+                });
+                MetaStateMachine.REF_CURRENTSTATE = new org.kevoree.modeling.meta.impl.MetaReference("currentState", 2, true, true, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                }, "op_currentState", function () {
+                    return org.synoptic.meta.MetaStateMachine.getInstance();
+                });
+                MetaStateMachine.REF_STATES = new org.kevoree.modeling.meta.impl.MetaReference("states", 3, true, false, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                }, "op_states", function () {
+                    return org.synoptic.meta.MetaStateMachine.getInstance();
+                });
+                return MetaStateMachine;
+            })(org.kevoree.modeling.meta.impl.MetaClass);
+            meta.MetaStateMachine = MetaStateMachine;
+            var MetaTransition = (function (_super) {
+                __extends(MetaTransition, _super);
+                function MetaTransition() {
+                    _super.call(this, "org.synoptic.Transition", 21, null);
+                    var temp_all = new Array();
+                    temp_all[0] = MetaTransition.ATT_PROBABILITY;
+                    temp_all[1] = MetaTransition.ATT_DELTAMAX;
+                    temp_all[2] = MetaTransition.ATT_DELTAMIN;
+                    var temp_references = new Array();
+                    temp_all[3] = MetaTransition.REF_FROMSTATE;
+                    temp_all[4] = MetaTransition.REF_TOSTATE;
+                    temp_all[5] = MetaTransition.REF_OP_FROMTRANSITION;
+                    temp_all[6] = MetaTransition.REF_OP_TOTRANSITION;
+                    var temp_operations = new Array();
+                    this.init(temp_all);
+                }
+                MetaTransition.getInstance = function () {
+                    if (MetaTransition.INSTANCE == null) {
+                        MetaTransition.INSTANCE = new org.synoptic.meta.MetaTransition();
+                    }
+                    return MetaTransition.INSTANCE;
+                };
+                MetaTransition.INSTANCE = null;
+                MetaTransition.ATT_PROBABILITY = new org.kevoree.modeling.meta.impl.MetaAttribute("probability", 0, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.DOUBLE, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaTransition.ATT_DELTAMAX = new org.kevoree.modeling.meta.impl.MetaAttribute("deltaMax", 1, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.LONG, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaTransition.ATT_DELTAMIN = new org.kevoree.modeling.meta.impl.MetaAttribute("deltaMin", 2, 0, false, org.kevoree.modeling.meta.KPrimitiveTypes.LONG, org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation.instance());
+                MetaTransition.REF_FROMSTATE = new org.kevoree.modeling.meta.impl.MetaReference("fromState", 3, true, true, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                }, "op_fromState", function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                });
+                MetaTransition.REF_TOSTATE = new org.kevoree.modeling.meta.impl.MetaReference("toState", 4, true, true, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                }, "op_toState", function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                });
+                MetaTransition.REF_OP_FROMTRANSITION = new org.kevoree.modeling.meta.impl.MetaReference("op_fromTransition", 5, false, false, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                }, "fromTransition", function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                });
+                MetaTransition.REF_OP_TOTRANSITION = new org.kevoree.modeling.meta.impl.MetaReference("op_toTransition", 6, false, false, function () {
+                    return org.synoptic.meta.MetaState.getInstance();
+                }, "toTransition", function () {
+                    return org.synoptic.meta.MetaTransition.getInstance();
+                });
+                return MetaTransition;
+            })(org.kevoree.modeling.meta.impl.MetaClass);
+            meta.MetaTransition = MetaTransition;
+        })(meta = synoptic.meta || (synoptic.meta = {}));
+    })(synoptic = org.synoptic || (org.synoptic = {}));
 })(org || (org = {}));

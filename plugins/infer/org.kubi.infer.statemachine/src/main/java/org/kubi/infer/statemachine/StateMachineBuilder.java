@@ -154,7 +154,7 @@ public class StateMachineBuilder {
                             for (KObject stateFromCurrentObj : stateFromCurrentObjs){
                                 Double newProba;
                                 Double probability = transition.getProbability()==null?0:transition.getProbability();
-                                // for all the states S where currentState --> S
+                                // for all the states S where (currentState --> S)
                                 if(((State) stateFromCurrentObj).getName().equals(existingState.getName())){
                                     // The transition currentState --> existingState  <==> destination state
                                     currentState.timeWalker().timesBefore(existingState.now(), new KCallback<long[]>() {

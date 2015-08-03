@@ -20,7 +20,7 @@
             <script id="periodView_template" type="text/x-handlebars-template">
                 <ul repeat.each="{{ecosystem.technologies}}" repeat.as="techno">
                     <li>
-                        <h4>{{techno.name}} ({{techno.now()}}) :</h4> <!--{{techno.now()|timestampToDate}}-->
+                        <h4>{{techno.name}} ({{ techno.now | timestampToDate }}) :</h4> <!--{{techno.now()|timestampToDate}}-->
                         <ul>
                             <repeat each="{{techno.devices}}" as="device">
                                 <li>

@@ -1,0 +1,33 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+
+<!-- kubi model -->
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<link rel="stylesheet" type="text/css" href="kubi-stateMachine-basic-view.css"/>
+<script src="./kubi-stateMachine-basic-view.js"></script>
+
+<dom-module id="kubi-stateMachine-basic-view">
+    <link rel="stylesheet" type="text/css" href="/materialize/css/materialize.css">
+    <template>
+        <kubi-model id="modelHandlerSlider" on-model-connected="modelConnected"></kubi-model>
+
+        <div id="kubistatemachineBasic">
+
+        </div>
+
+
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-stateMachine-basic-view",
+        modelConnected : function(event, details){
+            setFSMModel(details.value);
+            showBasicStateMachine("kubistatemachineBasic");
+        },
+        ready: function (){
+        }
+    });
+</script>

@@ -5,6 +5,8 @@ class org.kubi.Ecosystem {
     groupes : org.kubi.Group[0,*]
     @contained
     technologies : org.kubi.Technology[0,*]
+    @contained
+    stateMachine : org.synoptic.StateMachine
 }
 
 class org.kubi.Group {
@@ -53,6 +55,11 @@ class org.kubi.StateParameter {
     range : String
     @contained
     period : org.kubi.Period
+
+    // information for the process of the period
+    frequencyOfCalculation : Int
+    predictedPeriodMin : Int
+    predictedPeriodMax : Int
 }
 
 class org.kubi.ActionParameter : org.kubi.StateParameter {
@@ -68,6 +75,8 @@ class org.kubi.Technology {
     catalog : org.kubi.Catalog
 }
 
+///------ Simulation
+
 class org.kubi.SimulatedParameter : org.kubi.StateParameter {
     valueUnredundant : String
 }
@@ -82,6 +91,10 @@ class org.kubi.Period{
 // The value of the period at a time T is the period calculated between T and T+x (at the beginning of the segment).
     period : String
 }
+
+
+
+///------ Catalog and the list of products (ZWave and other)
 
 class org.kubi.Catalog {
 
@@ -148,4 +161,33 @@ class org.kubi.zwave.AssociationGroup {
 class org.kubi.zwave.ParameterItem {
     label : String
     value : Int
+}
+
+
+
+// ----------------------------------------------------------------------------------------------------------------
+// ----------------------------                 State machine model                    ----------------------------
+// ----------------------------------------------------------------------------------------------------------------
+
+
+class org.synoptic.StateMachine {
+    name : String
+    currentState : org.synoptic.State
+    states : org.synoptic.State[0,*]
+}
+
+class org.synoptic.State {
+    outCounter : Int
+    name : String
+    fromTransition : org.synoptic.Transition[0,*]
+    toTransition : org.synoptic.Transition[0,*]
+    func canGoTo (stateName : String) : Bool
+}
+
+class org.synoptic.Transition {
+    probability :  Double
+    deltaMin: Long
+    deltaMax: Long
+    fromState : org.synoptic.State
+    toState : org.synoptic.State
 }

@@ -42,7 +42,6 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                         .then(new KCallback<KObject[]>() {
                             @Override
                             public void on(KObject[] kObjects) {
-                                // TODO : check if the Period is null or not
                                 if (kObjects.length > 0) {
 //                            for (int i =0;i<kObjects.length;i++){
                                     for (int i = 0; i < 1; i++) {

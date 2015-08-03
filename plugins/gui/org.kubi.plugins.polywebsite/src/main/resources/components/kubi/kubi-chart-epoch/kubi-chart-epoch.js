@@ -22,7 +22,7 @@ function initEpochChart(model){
     KubiEpoch.kubiModel = model;
     var initialTime = ((new Date()).getTime()/1000)+490;
     //var initialTime = 1428797898;
-    var initialScale = 490000;
+    var initialScale = 4900000;
     console.log("initEpochChart");
 
     emptyChartData();
@@ -97,8 +97,6 @@ function addValueInEpochGraphKDefer(deviceName,parameter, start, end, step, have
 
     while(start<end) {
         parameter.jump(end, kDefer.waitResult());
-
-        //TODO in KDefer for the period
         end = end - step;
     }
     kDefer.then(function(paramsTimed){
@@ -116,8 +114,10 @@ function addValueInEpochGraphKDefer(deviceName,parameter, start, end, step, have
         }
         kDeferPeriod.then(function(periods){
             for(var p in periods){
-                console.error("coucou_period");
-                addEpochPointWithPeriod(periods[p].now(), parseFloat(periods[p].getPeriod()), deviceName+"_Period");
+                if(periods[p][0] != undefined) {
+                    console.log("_________)(_______",periods[p], periods[p][0].now(), parseFloat(periods[p][0].getPeriod()));
+                    addEpochPointWithPeriod(periods[p][0].now(), parseFloat(periods[p][0].getPeriod()), deviceName + "_Period");
+                }
             }
         });
         var deviceDataIndex = getDataIndexByLabelName(deviceName);
@@ -222,12 +222,13 @@ function makeLegend(){
 }
 
 
-
-
-
-
+/**
+ * Get the list of devices existing now
+ * @param initialTime
+ * @param initialScale
+ */
 function getAllDeviceNames(initialTime, initialScale){
-    KubiEpoch.kubiModel.universe(KubiEpoch.universe).time(1428997126000).getRoot(function(newRoot){
+    KubiEpoch.kubiModel.universe(KubiEpoch.universe).time((new Date()).getTime()).getRoot(function(newRoot){
         newRoot.traversal()
             .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
             .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)

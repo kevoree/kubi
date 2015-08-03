@@ -14,7 +14,6 @@ function updatePeriodSettings(time, scale, devices){
     var currentView = kModeldata.universe(this.periodEvolution.univers).time(this.periodEvolution.time);
     console.log(devices, currentView);
     currentView.getRoot(function (root) {
-    console.log(",------",devices, root);
         root.traversal()
             .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
             .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME,devices[0])// TODO: generalize with the all table of devices
@@ -23,6 +22,7 @@ function updatePeriodSettings(time, scale, devices){
             .then(function (periodRes) {
                 var period = periodRes[0]; // TODO : generalize to the all set of devices
                 var value = period.getPeriod();
+                document.getElementById("periodTime").innerText =  new Date(period.now());
                 document.getElementById("periodValue").innerText =  toAnalogic(value*50/60);
                 document.getElementById("periodValueNull").innerText ="no value for this time, Please go in the future";
                 if(value == undefined){

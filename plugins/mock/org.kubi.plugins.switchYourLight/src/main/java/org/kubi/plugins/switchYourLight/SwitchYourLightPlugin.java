@@ -74,7 +74,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
     private void unredundantiseValues(KubiUniverse universe, long[] keys) {
 
         long now = System.currentTimeMillis();
-        int jumingSteps = 500;
+        int jumingSteps = 5000;
         int nbLoops = 2000;
         KDefer kDefer = universe.model().defer();
         for (int i = 0; i < nbLoops; i++) {

@@ -11,7 +11,7 @@ import org.kubi.StateParameter;
 public class SwitchYourLightExtrapolation implements Extrapolation {
     @Override
     public Object extrapolate(KObject current, KMetaAttribute attribute) {
-        double time = (double)(current.now()*Math.PI/(30000)); // 1 min periodic
+        double time = (double)(current.now()*Math.PI/(300000)); // 10 min periodic
         double phaseShift = 0;
         if (((StateParameter) current).getName().equals("switch")){
             //if it's the light we need to phase shift the signal (simulation of the latency)

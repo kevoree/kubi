@@ -45,14 +45,6 @@
         </dependency>
         -->
 
-        <!-- Infer StateMachine
-        <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.infer.statemachine</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        -->
-
         <!--
                     MOCKS
         -->
@@ -65,12 +57,12 @@
         </dependency>
         -->
         <!-- SmartFridge Repeat Real time
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.smartfridgeRepeatRealTime</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
         <!--
         <dependency>
             <groupId>org.kubi</groupId>
@@ -100,12 +92,12 @@
         </dependency>
         -->
         <!-- switch your light
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.switchYourLight</artifactId>
             <version>${project.version}</version>
         </dependency>
+        -->
 
         <!-- Polynomial Reader
         <dependency>
@@ -116,10 +108,18 @@
         -->
 
         <!-- periodAnalysis
-        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.reader.periodAnalysis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
+        <!-- Infer StateMachine
+        -->
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.infer.statemachine</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -44,7 +44,7 @@
         <module>org.kubi.kernel</module>
 
         <!-- Plugins -->
-        <module>plugins/gui/org.kubi.plugins.web</module>
+        <!--<module>plugins/gui/org.kubi.plugins.web</module>-->
         <module>plugins/gui/org.kubi.plugins.polywebsite</module>
 
         <!-- ZWave driver

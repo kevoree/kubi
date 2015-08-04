@@ -172,14 +172,18 @@ class org.kubi.zwave.ParameterItem {
 
 class org.synoptic.StateMachine {
     name : String
+    @contained
     currentState : org.synoptic.State
+    @contained
     states : org.synoptic.State[0,*]
 }
 
 class org.synoptic.State {
     outCounter : Int
     name : String
+    @contained
     fromTransition : org.synoptic.Transition[0,*]
+    @contained
     toTransition : org.synoptic.Transition[0,*]
     func canGoTo (stateName : String) : Bool
 }
@@ -188,6 +192,8 @@ class org.synoptic.Transition {
     probability :  Double
     deltaMin: Long
     deltaMax: Long
+    @contained
     fromState : org.synoptic.State
+    @contained
     toState : org.synoptic.State
 }

@@ -114,7 +114,7 @@ public class StateMachineBuilder {
                                                             @Override
                                                             public void on(Boolean canGoTo) {
                                                                 if (canGoTo) {
-//                                                                    updateMetrics(((State) currentState), ((State) existingStates[0]), model);
+                                                                    updateMetrics(((State) currentState), ((State) existingStates[0]), model);
                                                                 } else {
                                                                     //the states exist but there is not transition linking them
                                                                     linkStates(((State) currentState), ((State) existingStates[0]), model);
@@ -192,4 +192,5 @@ public class StateMachineBuilder {
             }
         });
     }
+
 }

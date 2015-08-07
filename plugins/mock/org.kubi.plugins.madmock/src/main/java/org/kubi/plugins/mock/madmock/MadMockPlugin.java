@@ -68,6 +68,7 @@ public class MadMockPlugin implements KubiPlugin, Runnable {
                         newDevice.setName(deviceName);
                         currentTechno.addDevices(newDevice);
                     }
+                    /*
                     currentTechno.getDevices(new KCallback<Device[]>() {
                         @Override
                         public void on(Device[] devices) {
@@ -82,6 +83,7 @@ public class MadMockPlugin implements KubiPlugin, Runnable {
                             });
                         }
                     });
+                    */
                 }
             });
             model.save(new KCallback() {

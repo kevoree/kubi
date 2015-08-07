@@ -1,135 +1,114 @@
+with version "1-SNAPSHOT"
+with kmfVersion "4.19.1-SNAPSHOT"
+
 class org.kubi.Ecosystem {
-    @id
-    name : String
-    @contained
-    groupes : org.kubi.Group[0,*]
-    @contained
-    technologies : org.kubi.Technology[0,*]
+    att name: String
+    ref* groupes: org.kubi.Group
+    ref* technologies: org.kubi.Technology
 }
 
 class org.kubi.Group {
-    @id
-    name : String
-    @contained
-    groupes : org.kubi.Group[0,*]
-    devices : org.kubi.Device[0,*] oppositeOf groupes
+    att name: String
+    ref* groupes: org.kubi.Group
+    ref* devices: org.kubi.Device with opposite "groupes"
 }
 
 class org.kubi.Device {
-    @id
-    id : String
-    homeId : String
-    groupes : org.kubi.Group[0,*] oppositeOf devices
-
-    links : org.kubi.Device[0,*]
-    name : String
-    picture : String
-    version : String
-    manufacturer : String
-    technology : org.kubi.Technology
-    @contained
-    stateParameters : org.kubi.StateParameter[0,*]
-    @contained
-    actionParameters : org.kubi.ActionParameter[0,*]
-    productType : org.kubi.Product
+    att id: String
+    att homeId: String
+    ref* groupes: org.kubi.Group with opposite "devices"
+    ref* links: org.kubi.Device
+    att name: String
+    ref technology: org.kubi.Technology
+    ref* stateParameters: org.kubi.StateParameter
+    ref* actionParameters: org.kubi.ActionParameter
+    ref productType: org.kubi.Product
 }
 
 enum org.kubi.ParameterType {
-list
-byte
-short
-bool
-int
-button
-decimal
-string
+    list, byte, short, bool, int, button, decimal, string
 }
 
 class org.kubi.StateParameter {
-    name : String
-    value : String
-    valueType : String
-    precision : Double
-    unit : String
-    range : String
+    att name: String
+    att value: String
+    att valueType: String
+    att precision: Double
+    att unit: String
+    att range: String
 }
 
-class org.kubi.ActionParameter : org.kubi.StateParameter {
-    desired : String
+class org.kubi.ActionParameter extends org.kubi.StateParameter {
+    att desired: String
 }
 
 class org.kubi.Technology {
-    @id
-    name : String
-    @contained
-    devices : org.kubi.Device[0,*] oppositeOf technology
-
-    catalog : org.kubi.Catalog
+    att name: String
+    ref* devices: org.kubi.Device with opposite "technology"
+    ref catalog: org.kubi.Catalog
 }
 
 class org.kubi.Catalog {
-
-    @contained
-    manufacturers : org.kubi.Manufacturer[0,*]
+    ref* manufacturers: org.kubi.Manufacturer
 }
 
 class org.kubi.Manufacturer {
-    name : String
-    id : Int
-    @contained
-    products : org.kubi.Product[0,*]
+    att name: String
+    att id: Int
+    ref* products: org.kubi.Product
 }
 
 class org.kubi.Product {
-    id : Int
-    name : String
+    att id: Int
+    att name: String
+    att version: String
+    att pictureUrl: String
+    ref manufacturer: org.kubi.Manufacturer with opposite "products"
+    ref* devices: org.kubi.Device with opposite "productType"
 }
 
-class org.kubi.ZWaveProduct : org.kubi.Product {
-    @contained
-    commandClasses : org.kubi.zwave.CommandClass[0,*]
-    type : Int
+class org.kubi.ZWaveProduct extends org.kubi.Product {
+    ref* commandClasses: org.kubi.zwave.CommandClass
+    att type: Int
+    att configUrl: String
+    att loaded: Bool
 }
 
 class org.kubi.zwave.CommandClass {
-    id : Int
-    @contained
-    parameters : org.kubi.zwave.Parameter[0,*]
-    @contained
-    associations : org.kubi.zwave.Association[0,*]
+    att id: Int
+    ref* parameters: org.kubi.zwave.Parameter
+    ref* associations: org.kubi.zwave.Association
 }
 
 class org.kubi.zwave.Parameter {
-    type : org.kubi.ParameterType
-    name : String
-    help : String
-    genre : String
-    instance : Int
-    index : Int
-    label : String
-    value : String
-    min : Long
-    min : Long
-    max : Long
-    size : Int
-    @contained
-    items : org.kubi.zwave.ParameterItem[0,*]
+    att type: org.kubi.ParameterType
+    att name: String
+    att help: String
+    att genre: String
+    att instance: Int
+    att index: Int
+    att label: String
+    att value: String
+    att min: Long
+    att min: Long
+    att max: Long
+    att size: Int
+    ref* items: org.kubi.zwave.ParameterItem
 }
 
 class org.kubi.zwave.Association {
-    numGroups : Int
-    @contained
-    groups : org.kubi.zwave.AssociationGroup[0,*]
+    att numGroups: Int
+    ref* groups: org.kubi.zwave.AssociationGroup
 }
 
 class org.kubi.zwave.AssociationGroup {
-    index : Int
-    maxAssociations : Int
-    label : String
-    auto : Bool
+    att index: Int
+    att maxAssociations: Int
+    att label: String
+    att auto: Bool
 }
 
 class org.kubi.zwave.ParameterItem {
-    label : String
-    value : Int
+    att label: String
+    att value: Int
 }

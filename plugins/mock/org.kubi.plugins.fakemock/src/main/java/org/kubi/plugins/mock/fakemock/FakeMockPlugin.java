@@ -3,6 +3,7 @@ package org.kubi.plugins.mock.fakemock;
 import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KObject;
 import org.kevoree.modeling.extrapolation.Extrapolation;
+import org.kevoree.modeling.memory.manager.internal.KInternalDataManager;
 import org.kevoree.modeling.meta.KMetaAttribute;
 import org.kevoree.modeling.meta.impl.MetaAttribute;
 import org.kubi.Device;
@@ -76,6 +77,7 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation {
                         newDevice.setName(deviceName);
                         currentTechno.addDevices(newDevice);
                     }
+                    /*
                     currentTechno.getDevices(new KCallback<Device[]>() {
                         @Override
                         public void on(Device[] devices) {
@@ -91,6 +93,7 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation {
                             });
                         }
                     });
+                    */
                 }
             });
             model.save(new KCallback() {
@@ -108,12 +111,12 @@ public class FakeMockPlugin implements KubiPlugin, Runnable, Extrapolation {
 
 
     @Override
-    public Object extrapolate(KObject current, KMetaAttribute attribute) {
+    public Object extrapolate(KObject current, KMetaAttribute attribute, KInternalDataManager dataManager) {
         return null;
     }
 
     @Override
-    public void mutate(KObject current, KMetaAttribute attribute, Object payload) {
+    public void mutate(KObject current, KMetaAttribute attribute, Object payload, KInternalDataManager dataManager) {
 
     }
 }

@@ -11,6 +11,7 @@ import org.kubi.api.KubiPlugin;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Created by jerome on 12/05/15.
@@ -19,7 +20,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
     private KubiKernel kubiKernel;
     private Technology currentTechnology;
-    private String filename = "./stateMachine.out";
+    private String filename = "./stateMachinePara.rand.2.out";
 
     @Override
     public void start(KubiKernel kernel) {
@@ -65,8 +66,8 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
                 unredundantiseValues(universe, stateKeys);
 
-                //readValues(universe , stateKeys);
-                timeTreeReader(universe, stateKeys);
+                readValues(universe , stateKeys);
+//                timeTreeReader(universe, stateKeys);
             }
         });
     }
@@ -115,7 +116,7 @@ public class SwitchYourLightPlugin implements KubiPlugin{
     private void unredundantiseValuesWithoutKDefer(KubiUniverse universe, long[] keys) {
 
         long now = System.currentTimeMillis();
-        int jumingSteps = 500;
+        int jumingSteps = 100;
         int nbLoops = 2000;
         for (int i = 0; i < nbLoops; i++) {
             universe.time(now + (i * jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
@@ -206,24 +207,28 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
     private int counter;
     public void readValues(KubiUniverse universe, long[] keys) {
+        System.out.println(" -- Read Values");
         this.counter = 0;
         BufferedWriter writer = null;
         try{
             writer = new BufferedWriter( new FileWriter(filename));
             long now = System.currentTimeMillis();
-            int jumingSteps = 7000;
-            int nbLoops = 10000;
+            int jumingSteps = 70000;
+            final Random random = new Random();
+            int nbLoops = 2500;
             for (int i = 0; i < nbLoops; i++) {
                 final BufferedWriter finalWriter = writer;
-                universe.time(now + (i*jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
+                int nb = random.nextInt(jumingSteps/50);
+                final int finalNb = nb;
+                universe.time(now + (i*jumingSteps) +nb).lookupAll(keys, new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length>0){
                             // kObjects[0] -> switchState
                             // kObjects[1] -> lightState
                             try {
-                                finalWriter.write("" + (kObjects[0].now() - 1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[0]).getValue().equals("true") ? "Switch_ON" : "Switch_OFF")+"_"+(((SimulatedParameter) kObjects[1]).getValue().equals("true") ? "Light_ON" : "Light_OFF")+"\n");
-//                                finalWriter.write("" + (kObjects[1].now() + 1 - 1434500000000L) + "\t--\t" + +"\n");
+                                finalWriter.write("" + (kObjects[0].now() - (1434500000000L )+ finalNb) + "--" + (((SimulatedParameter) kObjects[0]).getValueUnredundant().equals("true") ? "Switch_ON" : "Switch_OFF") + "_" + (((SimulatedParameter) kObjects[1]).getValueUnredundant().equals("true") ? "Light_ON" : "Light_OFF")+"\n");
+//                                finalWriter.write("" + (kObjects[1].now() + 1 - 1434500000000L) + "--" + +"\n");
                                 finalWriter.flush();
                                 counter++;
 
@@ -264,15 +269,17 @@ public class SwitchYourLightPlugin implements KubiPlugin{
                         }
                     }
                 });
-                universe.time(1 + now + (i*jumingSteps)).lookupAll(keys, new KCallback<KObject[]>() {
+                nb = random.nextInt(jumingSteps/50);
+                final int finalNb1 = nb;
+                universe.time(100 + now + (i*jumingSteps) +nb).lookupAll(keys, new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         if(kObjects.length>0){
                             // kObjects[0] -> switchState
                             // kObjects[1] -> lightState
                             try {
-                                finalWriter.write("" + (kObjects[0].now() - 1434500000000L) + "\t--\t" + (((SimulatedParameter) kObjects[0]).getValue().equals("true") ? "Switch_ON" : "Switch_OFF")+"_"+(((SimulatedParameter) kObjects[1]).getValue().equals("true") ? "Light_ON" : "Light_OFF")+"\n");
-//                                finalWriter.write("" + (kObjects[1].now() + 1 - 1434500000000L) + "\t--\t" + +"\n");
+                                finalWriter.write("" + (kObjects[0].now() - (1434500000000L )+ finalNb1) + "--" + (((SimulatedParameter) kObjects[0]).getValueUnredundant().equals("true") ? "Switch_ON" : "Switch_OFF")+"_"+(((SimulatedParameter) kObjects[1]).getValueUnredundant().equals("true") ? "Light_ON" : "Light_OFF")+"\n");
+//                                finalWriter.write("" + (kObjects[1].now() + 1 - 1434500000000L) + "--" + +"\n");
                                 finalWriter.flush();
                             } catch (IOException e) {
                                 e.printStackTrace();

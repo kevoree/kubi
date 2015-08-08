@@ -24,7 +24,7 @@ import java.util.List;
 public class StateMachineBuilder {
 
 
-    private String fileName = "sm.out";
+    private String fileName = "stateMachinePara.rand.2.out";
     private List<StateTimed> stateTimedList;
 
     public StateMachineBuilder() {
@@ -115,7 +115,7 @@ public class StateMachineBuilder {
                                                             public void on(Boolean canGoTo) {
                                                                 if (canGoTo) {
                                                                     updateMetrics(((State) currentState), ((State) existingStates[0]), model);
-                                                                } else {
+                                                                } else if(!((State) currentState).getName().equals(((State) existingStates[0]).getName())) {
                                                                     //the states exist but there is not transition linking them
                                                                     linkStates(((State) currentState), ((State) existingStates[0]), model);
                                                                 }

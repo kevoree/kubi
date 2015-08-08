@@ -7,12 +7,13 @@
 
 <script type="text/javascript" src="/js/paperclip.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.0/js/materialize.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.0/css/materialize.min.css">
 <link rel="stylesheet" type="text/css" href="kubi-stateMachine-basic-view.css"/>
 <script src="./kubi-stateMachine-basic-view.js"></script>
 
 <dom-module id="kubi-stateMachine-basic-view">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.0/js/materialize.min.js"></script>
     <template>
         <kubi-model id="modelHandlerSlider" on-model-connected="modelConnected"></kubi-model>
 
@@ -47,15 +48,16 @@
         <script id="kubiStateMachineBasic_template" type="text/x-handlebars-template">
             <div>
                 <repeat each="{{stateMachine.states}}" as="state">
-                <div>
+                <div class="tableFSM">
                     <ul id="table{{state.uuid}}" class="collection with-header">
                         <li class="collection-header">
-                            <h5>{{state.name}} (outCounter : {{state | getOutCounter}} )</h5>
+                            <h5>{{state.name}} (reached {{state | getOutCounter}} times)</h5>
                         </li>
                         <repeat each="{{ state.toTransition }}" as="transition">
                             <repeat each="{{ transition.toState }}" as="toState">
                             <li class="collection-item">
-                                    --> {{toState.name}} (probability : {{transition.probability}})
+                                <i class="small material-icons">trending_down</i>
+                                {{toState.name}} (probability : {{transition.probability}}, time repartition : [{{transition.deltaMin}};{{transition.deltaMax}}])
                             </li>
                             </repeat>
                         </repeat>
@@ -79,7 +81,7 @@
             setFSMModel(details.value);
 //            showBasicStateMachine("kubiStateMachineBasic");
             initTemplateFSM("kubiStateMachineBasic_template", "kubiStateMachineBasic")
-            initTemplateFSM("kubiStateMachineBasicDropdown_template", "kubiStateMachineBasic")
+//            initTemplateFSM("kubiStateMachineBasicDropdown_template", "kubiStateMachineBasic")
         },
         ready: function (){
         }

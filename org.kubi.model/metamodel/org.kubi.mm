@@ -16,6 +16,7 @@ class org.kubi.Group {
 class org.kubi.Device {
     att id: String
     att homeId: String
+    att available : Bool
     ref* groupes: org.kubi.Group with opposite "devices"
     ref* links: org.kubi.Device
     att name: String

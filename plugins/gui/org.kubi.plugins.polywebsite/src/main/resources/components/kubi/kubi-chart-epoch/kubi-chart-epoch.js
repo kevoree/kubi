@@ -23,7 +23,6 @@ function initEpochChart(model){
     var initialTime = ((new Date()).getTime()/1000)+490;
     //var initialTime = 1428797898;
     var initialScale = 4900000;
-    console.log("initEpochChart");
 
     emptyChartData();
     getAllDeviceNames(initialTime, initialScale);

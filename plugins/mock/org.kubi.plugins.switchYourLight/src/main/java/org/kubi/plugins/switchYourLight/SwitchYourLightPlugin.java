@@ -232,35 +232,6 @@ public class SwitchYourLightPlugin implements KubiPlugin{
                                 finalWriter.flush();
                                 counter++;
 
-
-                                if (counter== nbLoops){/*
-                                    // process the file
-                                    Runtime runtime = Runtime.getRuntime();
-
-
-                                    try {
-                                        String path = (new File("")).getAbsolutePath();
-                                        String libs = "/libs/synoptic";
-//                                        Process p = null;
-//                                        ProcessBuilder pb = new ProcessBuilder(
-//                                                );
-//                                        pb.directory(new File( path));
-//                                        p = pb.start();
-                                        int res = runtime.exec("java -ea -cp " +
-                                                path+libs+"/lib/*:" +
-                                                path+libs+"/synoptic/bin/:" +
-                                                path+libs+"/daikonizer/bin/ " +
-                                                "synoptic.main.SynopticMain "+
-
-                                                " -r '^(?<TIME>)[^-]*--[^{L,S}]*(?<TYPE>)$'" +
-                                                " -d /usr/local/bin/dot" +
-                                                " -o "+path+"/libs/synoptic/output " +
-                                                path +"/stateMachine.out").waitFor();
-                                        System.out.println(res);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }*/
-                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

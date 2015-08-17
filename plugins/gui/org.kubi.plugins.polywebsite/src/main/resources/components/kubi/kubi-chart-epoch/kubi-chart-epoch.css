@@ -1,4 +1,8 @@
 #lineChart{
-    width: 1250px;
-    height: 410px;
+    width: 50%;
+}
+
+.legend{
+    padding: -20px;
+    margin: -20px;
 }

@@ -306,7 +306,6 @@ function setInGraphDeviceRangeValuesWithPeriod(deviceName, param, start, end, st
     }
     else {
         // add in graph
-        console.log(deviceName, "-----in -setInGraphDeviceRangeValuesWithPeriod");
         // sort the DataPoints set for the device given for the graph
         var sortedDataPoints = dataSeries[deviceName].dataPoints.sort(function(a,b){return a.x.getTime() - b.x.getTime();});
         dataSeries[deviceName].dataPoints = sortedDataPoints;

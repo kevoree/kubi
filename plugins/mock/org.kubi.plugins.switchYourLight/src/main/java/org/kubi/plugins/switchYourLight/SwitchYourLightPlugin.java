@@ -27,19 +27,15 @@ public class SwitchYourLightPlugin implements KubiPlugin{
         long initialTime = KConfig.BEGINNING_OF_TIME;
         kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(root ->{
             Ecosystem ecosystem = (Ecosystem) root;
-
             currentTechnology = kubiKernel.model().createTechnology(ecosystem.universe(), ecosystem.now()).setName(SwitchYourLightPlugin.class.getSimpleName());
             ecosystem.addTechnologies(currentTechnology);
 
             Device device = kubiKernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("switch");
-
             SimulatedParameter switchState = kubiKernel.model().createSimulatedParameter(device.universe(), device.now()).setName("switch").setUnit("kW");
 //                switchState.setPeriod(switchState.view().createPeriod());
             device.addStateParameters(switchState);
 
-
             Device device2 = kubiKernel.model().createDevice(ecosystem.universe(), ecosystem.now()).setName("light");
-
             SimulatedParameter lightState = kubiKernel.model().createSimulatedParameter(device2.universe(), device2.now()).setName("light");
             device2.addStateParameters(lightState);
 
@@ -47,7 +43,6 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
             currentTechnology.addDevices(device);
             currentTechnology.addDevices(device2);
-
             kubiKernel.model().save(o -> {});
 
 
@@ -59,13 +54,12 @@ public class SwitchYourLightPlugin implements KubiPlugin{
 
             unredundantiseValues(kubiKernel.model(), universe, stateKeys);
 
-            readValues(universe , stateKeys);
+//            readValues(universe , stateKeys);
 //                timeTreeReader(universe, stateKeys);
         });
     }
 
     private void unredundantiseValues(KubiModel model, KubiUniverse universe, long[] keys) {
-
         long now = System.currentTimeMillis();
         int jumingSteps = 5000;
         int nbLoops = 2000;
@@ -96,26 +90,6 @@ public class SwitchYourLightPlugin implements KubiPlugin{
         });
     }
 
-
-    private void unredundantiseValuesWithoutKDefer(KubiModel model, KubiUniverse universe, long[] keys) {
-
-        long now = System.currentTimeMillis();
-        int jumingSteps = 100;
-        int nbLoops = 2000;
-        for (int i = 0; i < nbLoops; i++) {
-            universe.time(now + (i * jumingSteps)).lookupAll(keys, resLoop -> {
-                if (resLoop.length > 0) {
-                    // kObjects[0] -> switchState
-                    // kObjects[1] -> lightState
-                    ((SimulatedParameter) resLoop[0]).setValue(stringBoolToStringInt(((SimulatedParameter) resLoop[0]).getValueUnredundant()));
-                    ((SimulatedParameter) resLoop[1]).setValue(stringBoolToStringInt(((SimulatedParameter) resLoop[1]).getValueUnredundant()));
-                    // set the values of [0] && [1]
-                    model.save(à -> {});
-                }
-            });
-        }
-        model.save(o -> {});
-    }
 
     private String stringBoolToStringInt(String StringBool) {
         return ""+(StringBool.equals("true")?1:0);

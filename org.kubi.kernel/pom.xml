@@ -49,26 +49,14 @@
                     MOCKS
         -->
 
-        <!-- SmartFridge
-        <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.plugins.smartfridge</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        -->
-        <!-- SmartFridge Repeat Real time
-        -->
-        <dependency>
-            <groupId>org.kubi</groupId>
-            <artifactId>org.kubi.plugins.smartfridgeRepeatRealTime</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!--
+        <!-- tutorials mocks -->
+
+        <!-- madmock
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.madmock</artifactId>
             <version>${project.version}</version>
-        </dependency>madmock
+        </dependency>
         -->
         <!-- fakemock
  		<dependency>
@@ -77,6 +65,23 @@
             <version>${project.version}</version>
         </dependency>
         -->
+
+        <!-- SmartFridge
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.smartfridge</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
+        <!-- SmartFridge Repeat Real time
+        <dependency>
+            <groupId>org.kubi</groupId>
+            <artifactId>org.kubi.plugins.smartfridgeRepeatRealTime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
         <!-- simulated smartfridge
         <dependency>
             <groupId>org.kubi</groupId>
@@ -92,12 +97,12 @@
         </dependency>
         -->
         <!-- switch your light
+        -->
         <dependency>
             <groupId>org.kubi</groupId>
             <artifactId>org.kubi.plugins.switchYourLight</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
 
         <!-- Polynomial Reader
         <dependency>

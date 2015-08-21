@@ -6,7 +6,7 @@
 <script src="/js/js/org.kevoree.modeling.microframework.browser.js"></script>
 <script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
-<script src="./kubi-data.js"></script>
+<script src="./kubi-data2.js"></script>
 
 <!-- canvasJS -->
 <script src="../../../js/canvasjs.min.js"></script>
@@ -45,7 +45,7 @@
         updateGraph: function (event) {
             if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
                 try {
-                    updateGraphSettings(this.time, this.scale, this.devices, this.wantperiod);
+                    updateGraph(this.time, this.scale, this.devices, this.wantperiod);
                 } catch (e) {
                     console.error(e);
                 }
@@ -58,7 +58,7 @@
                 {
                     initWithModel(this.$.modelHandlerData.model());
                 }
-            }catch (err){console.error(err);}
+            }catch (err){console.error("ready",err);}
         },
         modelConnected : function(event, details){
             // TODO : clean & init

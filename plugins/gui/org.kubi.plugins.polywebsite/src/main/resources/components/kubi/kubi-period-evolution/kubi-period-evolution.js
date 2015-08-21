@@ -6,12 +6,12 @@ var periodEvolution = {
 };
 
 function initWithModelPeriod(model){
-    this.periodEvolution.model = model;
+    periodEvolution.model = model;
 }
 
 function updatePeriodSettings(time, scale, devices){
-    this.periodEvolution.time = time * 1000;
-    var currentView = kModeldata.universe(this.periodEvolution.univers).time(this.periodEvolution.time);
+    periodEvolution.time = time * 1000;
+    var currentView = periodEvolution.model.universe(periodEvolution.univers).time(periodEvolution.time);
     currentView.getRoot(function (root) {
         if(root!=null){
             root.traversal()

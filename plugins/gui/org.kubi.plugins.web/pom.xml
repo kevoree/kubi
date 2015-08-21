@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>org.kevoree.modeling</groupId>
-            <artifactId>org.kevoree.modeling.microframework.addons.nunjucks</artifactId>
+            <artifactId>org.kevoree.modeling.microframework.addons.template</artifactId>
             <version>${kmf.version}</version>
         </dependency>
         <dependency>

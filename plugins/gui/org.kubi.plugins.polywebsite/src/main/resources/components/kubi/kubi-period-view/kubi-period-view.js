@@ -3,8 +3,7 @@
  */
 
 var periodViewVar = {
-    universe : 0,
-    model : new org.kubi.KubiModel()
+    universe : 0
 }
 
 

@@ -130,12 +130,7 @@ public class StateMachineBuilder {
                     }
                 }
             });
-            model.save(new KCallback() {
-                @Override
-                public void on(Object o) {
-
-                }
-            });
+            model.save(o -> {});
         }
     }
 
@@ -157,15 +152,12 @@ public class StateMachineBuilder {
                                 // for all the states S where (currentState --> S)
                                 if(((State) stateFromCurrentObj).getName().equals(existingState.getName())){
                                     // The transition currentState --> existingState  <==> destination state
-                                    currentState.timeWalker().timesBefore(existingState.now(), new KCallback<long[]>() {
-                                        @Override
-                                        public void on(long[] longs) {
+                                    currentState.timesBefore(existingState.now(), longs -> {
                                             Long deltaNow = existingState.now() - longs[1];
                                             Long deltaMin = transition.getDeltaMin()==null? KConfig.END_OF_TIME:transition.getDeltaMin();
                                             Long deltaMax = transition.getDeltaMin()==null?0:transition.getDeltaMin();
                                             transition.setDeltaMin(Math.min(deltaMin, deltaNow));
                                             transition.setDeltaMax(Math.max(deltaMax, deltaNow));
-                                        }
                                     });
                                     newProba = (((probability*currentStateOutCounter)+1)/(currentStateOutCounter+1));
                                 }else {
@@ -186,11 +178,7 @@ public class StateMachineBuilder {
         transition.setToState(existingState);
         currentState.addToTransition(transition);
         existingState.addFromTransition(transition);
-        model.save(new KCallback() {
-            @Override
-            public void on(Object o) {
-            }
-        });
+        model.save(o -> {});
     }
 
 }

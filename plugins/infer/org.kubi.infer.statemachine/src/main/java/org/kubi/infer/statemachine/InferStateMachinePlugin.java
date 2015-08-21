@@ -4,7 +4,6 @@ import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.KObject;
 import org.kevoree.modeling.meta.KMeta;
-import org.kevoree.modeling.operation.KOperation;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.KubiUniverse;
@@ -17,7 +16,6 @@ import org.synoptic.StateMachine;
 import org.synoptic.Transition;
 import org.synoptic.meta.MetaState;
 import org.synoptic.meta.MetaStateMachine;
-import org.synoptic.meta.MetaTransition;
 
 /**
  * Created by jerome on 10/07/15.
@@ -42,26 +40,26 @@ public class InferStateMachinePlugin  implements KubiPlugin {
 //                    Log.debug("Initiate the operation");
                     System.out.println("Initiate the operation");
 
-                    statemachineModel.setOperation(MetaState.OP_CANGOTO, new KOperation() {
-                        @Override
-                        public void on(KObject source, Object[] params, KCallback<Object> result) {
-                            if (params.length > 0) {
-                                source.traversal()
-                                        .traverse(MetaState.REF_TOTRANSITION)
-                                        .traverse(MetaTransition.REF_TOSTATE).withAttribute(MetaState.ATT_NAME, params[0])
-                                        .then(new KCallback<KObject[]>() {
-                                            @Override
-                                            public void on(KObject[] kObjects) {
-                                                if (kObjects.length > 0) {
-                                                    result.on(true);
-                                                } else {
-                                                    result.on(false);
-                                                }
-                                            }
-                                        });
-                            }
-                        }
-                    });
+//                    statemachineModel.setOperation(MetaState.OP_CANGOTO, new KOperation() {
+//                        @Override
+//                        public void on(KObject source, Object[] params, KCallback<Object> result) {
+//                            if (params.length > 0) {
+//                                source.traversal()
+//                                        .traverse(MetaState.REF_TOTRANSITION)
+//                                        .traverse(MetaTransition.REF_TOSTATE).withAttribute(MetaState.ATT_NAME, params[0])
+//                                        .then(new KCallback<KObject[]>() {
+//                                            @Override
+//                                            public void on(KObject[] kObjects) {
+//                                                if (kObjects.length > 0) {
+//                                                    result.on(true);
+//                                                } else {
+//                                                    result.on(false);
+//                                                }
+//                                            }
+//                                        });
+//                            }
+//                        }
+//                    });
 
                     System.out.println("Initiate the Root");
 
@@ -177,7 +175,7 @@ public class InferStateMachinePlugin  implements KubiPlugin {
                                     // for all the states S where currentState --> S
                                     if (stateFromCurrentObj.getName().equals(existingState.getName())) {
                                         // The transition currentState --> existingState  <==> destination state
-                                        currentState.timeWalker().timesBefore(existingState.now(), new KCallback<long[]>() {
+                                        currentState.timesBefore(existingState.now(), new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
                                                 Long deltaNow = longs[0] - longs[1];

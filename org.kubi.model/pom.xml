@@ -56,7 +56,7 @@
                         <configuration>
                             <target name="copy swf files to web project">
                                 <copy todir="${project.build.directory}/classes">
-                                    <fileset dir="${project.build.directory}/js">
+                                    <fileset dir="${project.build.directory}/classes">
                                         <include name="${project.artifactId}.d.ts"/>
                                     </fileset>
                                 </copy>

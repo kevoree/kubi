@@ -2,8 +2,7 @@
  * Created by jerome on 03/06/15.
  */
 var sideDevicePicker = {
-    universe : 0,
-    model : new org.kubi.KubiModel()
+    universe : 0
 }
 
 

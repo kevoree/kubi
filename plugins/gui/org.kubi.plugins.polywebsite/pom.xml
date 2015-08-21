@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>org.kevoree.modeling</groupId>
-            <artifactId>org.kevoree.modeling.microframework.addons.nunjucks</artifactId>
+            <artifactId>org.kevoree.modeling.microframework.addons.template</artifactId>
             <version>${kmf.version}</version>
         </dependency>
         <dependency>
@@ -37,65 +37,66 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.kevoree.modeling</groupId>
-                <artifactId>org.kevoree.modeling.java2typescript.mavenplugin</artifactId>
-                <version>${java2typescript.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>genDep</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>extract</goal>
-                        </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>.*[^d]\.ts</exclude>
-                                <exclude>java.js</exclude>
-                                <exclude>org.kevoree.modeling.microframework.typescript.js</exclude>
-                                <exclude>tsc.js</exclude>
-                            </excludes>
-                            <target>${project.build.directory}/js</target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>compile-ts</id>
-                        <goals>
-                            <goal>tsc</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <outputClasses>${project.build.directory}/js</outputClasses>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
-                        <id>copyFileJS</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy todir="${project.basedir}/src/main/resources/js/js">
-                                    <fileset dir="${project.build.directory}/js">
-                                        <include name="kubiTemplate.js"/>
-                                        <include name="kubiData.js"/>
-                                        <include name="org.kubi.model-all.js"/>
-                                        <include name="org.kevoree.modeling.drivers.websocket.js"/>
-                                    </fileset>
-                                </copy>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.kevoree.modeling</groupId>-->
+                <!--<artifactId>org.kevoree.modeling.java2typescript.mavenplugin</artifactId>-->
+                <!--<version>${java2typescript.plugin.version}</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>genDep</id>-->
+                        <!--<phase>generate-resources</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>extract</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<excludes>-->
+                                <!--<exclude>.*[^d]\.ts</exclude>-->
+                                <!--<exclude>java.js</exclude>-->
+                                <!--<exclude>org.kevoree.modeling.microframework.typescript.js</exclude>-->
+                                <!--<exclude>tsc.js</exclude>-->
+                                <!--<exclude>java.d.ts</exclude>-->
+                            <!--</excludes>-->
+                            <!--<target>${project.build.directory}/jsdeps</target>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                    <!--<execution>-->
+                        <!--<id>compile-ts</id>-->
+                        <!--<goals>-->
+                            <!--<goal>tsc</goal>-->
+                        <!--</goals>-->
+                        <!--<phase>generate-resources</phase>-->
+                        <!--<configuration>-->
+                            <!--<outputClasses>${project.build.directory}/jsdeps</outputClasses>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-antrun-plugin</artifactId>-->
+                <!--<version>1.7</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>copyFileJS</id>-->
+                        <!--<phase>process-resources</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>run</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<target>-->
+                                <!--<copy todir="${project.basedir}/src/main/resources/jsdeps">-->
+                                    <!--<fileset dir="${project.build.directory}/jsdeps">-->
+                                        <!--<include name="kubiTemplate.js"/>-->
+                                        <!--<include name="kubiData.js"/>-->
+                                        <!--<include name="org.kubi.model-all.js"/>-->
+                                        <!--<include name="org.kevoree.modeling.drivers.websocket.js"/>-->
+                                    <!--</fileset>-->
+                                <!--</copy>-->
+                            <!--</target>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 

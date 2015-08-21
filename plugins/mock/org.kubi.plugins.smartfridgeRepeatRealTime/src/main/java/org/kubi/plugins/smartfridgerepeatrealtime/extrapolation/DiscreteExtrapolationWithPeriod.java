@@ -4,6 +4,7 @@ import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KObject;
 import org.kevoree.modeling.defer.KDefer;
 import org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation;
+import org.kevoree.modeling.memory.manager.internal.KInternalDataManager;
 import org.kevoree.modeling.meta.KMetaAttribute;
 import org.kubi.Period;
 import org.kubi.StateParameter;
@@ -15,8 +16,8 @@ import org.kubi.plugins.smartfridgerepeatrealtime.brain.JavaPeriodCalculatorFFT;
  */
 public class DiscreteExtrapolationWithPeriod extends DiscreteExtrapolation {
     @Override
-    public void mutate(KObject current, KMetaAttribute attribute, Object payload) {
-        super.mutate(current, attribute, payload);
+    public void mutate(KObject current, KMetaAttribute attribute, Object payload, KInternalDataManager dataManager) {
+        super.mutate(current, attribute, payload,dataManager);
 
         StateParameter stateParameter = ((StateParameter) current);
 

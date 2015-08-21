@@ -1,5 +1,5 @@
 var last_timestamp = (new Date()).getTime();
-var kModeldata = new org.kubi.KubiModel();
+var kModeldata ;
 var chart;
 /**
  * Contain the list of data for the graph
@@ -33,18 +33,6 @@ var dataSeries = [];
 var windowSize = 1000000;
 var universeNumber = 0;
 
-function init() {
-    kModeldata.setContentDeliveryDriver(new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn"));
-    kModeldata.connect(function (e) {
-        if (e) {
-            console.error(e);
-        }
-        else {
-            initGraph();
-            initDataAndListener();
-        }
-    });
-}
 
 function initWithModel(model) {
     kModeldata = model;

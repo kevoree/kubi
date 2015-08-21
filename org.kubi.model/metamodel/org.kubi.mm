@@ -1,95 +1,82 @@
 class org.kubi.Ecosystem {
-    @id
-    name : String
-    @contained
-    groupes : org.kubi.Group[0,*]
-    @contained
-    technologies : org.kubi.Technology[0,*]
-    @contained
-    stateMachine : org.synoptic.StateMachine
+    att name : String
+    ref* groupes : org.kubi.Group
+    ref* technologies : org.kubi.Technology
+    ref stateMachine : org.synoptic.StateMachine
 }
 
 class org.kubi.Group {
-    @id
-    name : String
-    @contained
-    groupes : org.kubi.Group[0,*]
-    devices : org.kubi.Device[0,*] oppositeOf groupes
+    att name : String
+    ref* groupes : org.kubi.Group
+    ref* devices : org.kubi.Device with opposite "groupes"
 }
 
 class org.kubi.Device {
-    @id
-    id : String
-    homeId : String
-    groupes : org.kubi.Group[0,*] oppositeOf devices
+    att id : String
+    att homeId : String
+    ref* groupes : org.kubi.Group with oppositeO "devices"
 
-    links : org.kubi.Device[0,*]
-    name : String
-    picture : String
-    version : String
-    manufacturer : String
-    technology : org.kubi.Technology
-    @contained
-    stateParameters : org.kubi.StateParameter[0,*]
-    @contained
-    actionParameters : org.kubi.ActionParameter[0,*]
+    ref links : org.kubi.Device
+    att name : String
+    att picture : String
+    att version : String
+    att manufacturer : String
+    ref technology : org.kubi.Technology
+    ref* stateParameters : org.kubi.StateParameter
+    ref* actionParameters : org.kubi.ActionParameter
 }
 
 enum org.kubi.ParameterType {
-list
-byte
-short
-bool
-int
-button
-decimal
+list,
+byte,
+short,
+bool,
+int,
+button,
+decimal,
 string
 }
 
 class org.kubi.StateParameter {
-    name : String
-    value : String
-    valueType : String
-    precision : Double
-    unit : String
-    range : String
-    @contained
-    period : org.kubi.Period
+    att name : String
+    att value : String
+    att valueType : String
+    att precision : Double
+    att unit : String
+    att range : String
+    ref period : org.kubi.Period
 
     // information for the process of the period
-    frequencyOfCalculation : Int
-    predictedPeriodMin : Int
-    predictedPeriodMax : Int
+    att frequencyOfCalculation : Int
+    att predictedPeriodMin : Int
+    att predictedPeriodMax : Int
 }
 
-class org.kubi.ActionParameter : org.kubi.StateParameter {
-    desired : String
+class org.kubi.ActionParameter extends org.kubi.StateParameter {
+    att desired : String
 }
 
 class org.kubi.Technology {
-    @id
-    name : String
-    @contained
-    devices : org.kubi.Device[0,*] oppositeOf technology
-    @contained
-    catalog : org.kubi.Catalog
+    att name : String
+    ref* devices : org.kubi.Device with opposite "technology"
+    ref catalog : org.kubi.Catalog
 }
 
 ///------ Simulation
 
-class org.kubi.SimulatedParameter : org.kubi.StateParameter {
-    valueUnredundant : String
+class org.kubi.SimulatedParameter extends org.kubi.StateParameter {
+    att valueUnredundant : String
 }
 
-class org.kubi.SimulatedLightParameter : org.kubi.SimulatedParameter {
+class org.kubi.SimulatedLightParameter extends org.kubi.SimulatedParameter {
 }
 
-class org.kubi.SimulatedSwitchParameter : org.kubi.SimulatedParameter {
+class org.kubi.SimulatedSwitchParameter extends org.kubi.SimulatedParameter {
 }
 
 class org.kubi.Period{
 // The value of the period at a time T is the period calculated between T and T+x (at the beginning of the segment).
-    period : String
+    att period : String
 }
 
 
@@ -98,69 +85,62 @@ class org.kubi.Period{
 
 class org.kubi.Catalog {
 
-    @contained
-    manufacturers : org.kubi.Manufacturer[0,*]
+    ref* manufacturers : org.kubi.Manufacturer
 }
 
 class org.kubi.Manufacturer {
-    name : String
-    id : Int
-    @contained
-    products : org.kubi.Product[0,*]
+    att name : String
+    att id : Int
+    ref* products : org.kubi.Product
 }
 
 class org.kubi.Product {
-    id : Int
-    name : String
+    att id : Int
+    att name : String
 }
 
-class org.kubi.ZWaveProduct : org.kubi.Product {
-    @contained
-    commandClasses : org.kubi.zwave.CommandClass[0,*]
-    type : Int
+class org.kubi.ZWaveProduct extends org.kubi.Product {
+    ref* commandClasses : org.kubi.zwave.CommandClass
+    att type : Int
 }
 
 class org.kubi.zwave.CommandClass {
-    id : Int
-    @contained
-    parameters : org.kubi.zwave.Parameter[0,*]
-    @contained
-    associations : org.kubi.zwave.Association[0,*]
+    att id : Int
+    ref* parameters : org.kubi.zwave.Parameter
+    ref* associations : org.kubi.zwave.Association
 }
 
 class org.kubi.zwave.Parameter {
-    type : org.kubi.ParameterType
-    name : String
-    help : String
-    genre : String
-    instance : Int
-    index : Int
-    label : String
-    value : String
-    min : Long
-    min : Long
-    max : Long
-    size : Int
-    @contained
-    items : org.kubi.zwave.ParameterItem[0,*]
+    att type : org.kubi.ParameterType
+    att name : String
+    att help : String
+    att genre : String
+    att instance : Int
+    att index : Int
+    att label : String
+    att value : String
+    att min : Long
+    att min : Long
+    att max : Long
+    att size : Int
+    ref* items : org.kubi.zwave.ParameterItem
 }
 
 class org.kubi.zwave.Association {
-    numGroups : Int
-    @contained
-    groups : org.kubi.zwave.AssociationGroup[0,*]
+    att numGroups : Int
+    ref* groups : org.kubi.zwave.AssociationGroup
 }
 
 class org.kubi.zwave.AssociationGroup {
-    index : Int
-    maxAssociations : Int
-    label : String
-    auto : Bool
+    att index : Int
+    att maxAssociations : Int
+    att label : String
+    att auto : Bool
 }
 
 class org.kubi.zwave.ParameterItem {
-    label : String
-    value : Int
+    att label : String
+    att value : Int
 }
 
 
@@ -171,23 +151,23 @@ class org.kubi.zwave.ParameterItem {
 
 
 class org.synoptic.StateMachine {
-    name : String
-    currentState : org.synoptic.State
-    states : org.synoptic.State[0,*]
+    att name : String
+    ref currentState : org.synoptic.State
+    ref* states : org.synoptic.State
 }
 
 class org.synoptic.State {
-    outCounter : Int
-    name : String
-    fromTransition : org.synoptic.Transition[0,*]
-    toTransition : org.synoptic.Transition[0,*]
+    att outCounter : Int
+    att name : String
+    ref* fromTransition : org.synoptic.Transition
+    ref* toTransition : org.synoptic.Transition
     func canGoTo (stateName : String) : Bool
 }
 
 class org.synoptic.Transition {
-    probability :  Double
-    deltaMin: Long
-    deltaMax: Long
-    fromState : org.synoptic.State
-    toState : org.synoptic.State
+    att probability :  Double
+    att deltaMin: Long
+    att deltaMax: Long
+    ref fromState : org.synoptic.State
+    ref toState : org.synoptic.State
 }

@@ -3,6 +3,7 @@ package org.kubi.plugins.smartfridgerepeatrealtime;
 import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.KObject;
+import org.kevoree.modeling.defer.KDefer;
 import org.kubi.*;
 import org.kubi.api.KubiKernel;
 import org.kubi.api.KubiPlugin;
@@ -17,8 +18,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Created by jerome on 10/04/15.
@@ -59,38 +58,21 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
 
                 currentTechnology.addDevices(device);
 
-                long[] stateKeys = new long[2];
-                stateKeys[0] = temperatureParam.uuid();
-
-
                 KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
-                initData(universe, stateKeys, this.getClass().getClassLoader().getResourceAsStream(fileToLoad), temperatureParam);
-                kernel.model().save(new KCallback() {
-                    @Override
-                    public void on(Object o) {
-                    }
-                });
+                initData(universe, this.getClass().getClassLoader().getResourceAsStream(fileToLoad), temperatureParam);
+                kernel.model().save(o -> {});
                 // TODO : reader
-                // readData();
+                readData();
 
-                try {
-                    Thread.sleep(10000);
-                    if (currentTechnology != null) {
-//                        currentTechnology.delete(new KCallback() {
-//                            @Override
-//                            public void on(Object o) {
-//                            }
-//                        });
-                        kubiKernel.model().save(new KCallback() {
-                            @Override
-                            public void on(Object o) {
-
-                            }
-                        });
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(10000);
+//                    if (currentTechnology != null) {
+//                        currentTechnology.delete(o -> {});
+//                        kubiKernel.model().save(o -> {});
+//                    }
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
             }
         });
     }
@@ -99,23 +81,14 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
     @Override
     public void stop() {
         if (currentTechnology != null) {
-            currentTechnology.delete(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
-            kubiKernel.model().save(new KCallback() {
-                @Override
-                public void on(Object o) {
-
-                }
-            });
-//            currentTechnology.view().universe().model().save();
+            System.out.println("STOP -> delete.");
+            currentTechnology.delete(o -> {});
+            kubiKernel.model().save(o -> {});
         }
         System.out.println("SmartFridgePlugin stops ...");
     }
 
-    private void initData(KubiUniverse universe, long[] keys, InputStream stream, StateParameter param) {
+    private void initData(KubiUniverse universe, InputStream stream, StateParameter param) {
         BufferedReader bufferedReader = null;
         String line;
         long firstValue = -1;
@@ -132,7 +105,7 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                             firstValue = recordTime;
                         }
                         lastValue = recordTime;
-                        if(temp != null) {
+                        if (temp != null) {
                             this.tempValueList.add(new TemperatureSensorValue(temp, recordTime));
                         }
                     }
@@ -153,55 +126,46 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
         this.dataRange = lastValue - firstValue;
 
 
-        putDataInKubi(universe, keys, 0, param);
+        putDataInKubi(universe, param);
     }
 
 
-    private void putData(final int dataIndex, StateParameter param) {
-        param.jump(this.tempValueList.get(dataIndex).getTime(), new KCallback<KObject>() {
-            @Override
-            public void on(KObject kObject) {
-                StateParameter param2 = (StateParameter) kObject;
-                param2.setValue(tempValueList.get(dataIndex).getTemperature() + "");
-                System.out.println("Inserting:" + tempValueList.get(dataIndex).getTime() + " -> " + tempValueList.get(dataIndex).getTemperature());
-                if (dataIndex + 1 < 10) {
-                    putData(dataIndex + 1, (StateParameter) kObject);
-                }
-            }
-        });
-    }
 
-
-    private void putDataInKubi(KubiUniverse universe, long[] keys, int it, StateParameter param) {
-        System.out.println("Size:" +this.tempValueList.size());
+    private void putDataInKubi(KubiUniverse universe, StateParameter param) {
+        System.out.println("Size:" + this.tempValueList.size());
         long[] times = new long[tempValueList.size()];
         for (int i = 0; i < tempValueList.size(); i++) {
             times[i] = tempValueList.get(i).getTime();
         }
 
         // ------- V0
-//        KDefer kDefer = universe.model().defer();
-//        for (long l : times){
-//            universe.model().manager().lookup(0, l, keys[4], kDefer.waitResult());
-//        }
-//        kDefer.then(new KCallback<Object[]>() {
-//            @Override
-//            public void on(Object[] objects) {
-//                for (int i = 0; i < objects.length; i++) {
-//                    ((StateParameter) objects[i]).setValue(tempValueList.get(i).getTemperature()+"");
-//                }
-//            }
-//        });
+        KDefer kDefer = kubiKernel.model().defer();
+        for (long l : times){
+            kubiKernel.model().manager().lookup(0, l, param.uuid(), kDefer.waitResult());
+        }
+        kDefer.then(new KCallback<Object[]>() {
+            @Override
+            public void on(Object[] objects) {
+                for (int i = 0; i < objects.length; i++) {
+                    ((StateParameter) objects[i]).setValue(tempValueList.get(i).getTemperature()+"");
+                }
+                ((StateParameter) objects[0]).allTimes(longs->{
+                    System.out.println("*****"+longs.length);
+                });
+
+                kubiKernel.model().save(o -> {});
+            }
+        });
 
         // ------- V1
-//        universe.model().manager().lookupAllTimes(0, times, keys[0], new KCallback<KObject[]>() {
+//        kubiKernel.model().manager().lookupAllTimes(0, times, param.uuid(), new KCallback<KObject[]>() {
 //            @Override
 //            public void on(KObject[] kObjects) {
 //                System.out.println(kObjects.length + "___" + tempValueList.size());
 //                for (int i = 0; i < tempValueList.size(); i++) {
 //                    ((StateParameter) kObjects[i]).setValue(tempValueList.get(i).getTemperature() + "");
 //                }
-//                universe.model().save(new KCallback() {
+//                kubiKernel.model().save(new KCallback() {
 //                    @Override
 //                    public void on(Object o) {
 //
@@ -209,113 +173,48 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
 //                });
 //            }
 //        });
-//
-
 
 
         // ------- V2
 
-        for (TemperatureSensorValue tempVal : this.tempValueList) {
-            long recordTime = tempVal.getTime();
-            Double temp = tempVal.getTemperature();
-
-            param.jump(recordTime, new KCallback<KObject>() {
-                @Override
-                public void on(KObject kObject) {
-                    if (temp != null) {
-                        ((StateParameter) kObject).setValue(temp + "");
-                    }
-                }
-            });
-//            System.out.println("Record time:" + recordTime);
-//            universe.time((it * this.dataRange) + recordTime).lookupAll(keys, new KCallback<KObject[]>() {
-//                @Override
-//                public void on(KObject[] kObjects) {
-//                    if (kObjects[0] != null) {
-////                        System.out.println(temp + "____" + kObjects[0].now());
-//                        ((StateParameter) kObjects[0]).setValue(temp + "");
-//                        kubiKernel.model().save(new KCallback() {
-//                            @Override
-//                            public void on(Object o) {
-//                            }
-//                        });
-//                    }
+//        for (TemperatureSensorValue tempVal : this.tempValueList) {
+//            long recordTime = tempVal.getTime();
+//            Double temp = tempVal.getTemperature();
+//
+//            param.jump(recordTime, kObject -> {
+//                if (temp != null) {
+//                    ((StateParameter) kObject).setValue(temp + "");
 //                }
 //            });
-        }
+//        }
     }
 
 
     private void readData() {
-
         try {
-            kubiKernel.model().manager().cache().clear(kubiKernel.model().metaModel());
             Thread.sleep(5500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot(new KCallback<KObject>() {
-            @Override
-            public void on(KObject kObject) {
-                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).then(new KCallback<KObject[]>() {
-                    @Override
-                    public void on(KObject[] kObjects) {
-                        for (KObject t : kObjects) {
-                            t.traversal().traverse(MetaTechnology.REF_DEVICES)
-                                    .traverse(MetaDevice.REF_STATEPARAMETERS).then(new KCallback<KObject[]>() {
-                                @Override
-                                public void on(KObject[] a) {
-                                    for (KObject stateP : a) {
-
-                                        stateP.timeWalker().allTimes(new KCallback<long[]>() {
-                                            @Override
-                                            public void on(long[] longs) {
-                                                for (long l : longs) {
-                                                    stateP.jump(l, new KCallback<KObject>() {
-                                                        @Override
-                                                        public void on(KObject kObject) {
-//                                                            if(kObject.now() == 22321860941l) {
-//                                                                KMemoryElement g = kObject.manager().cache().get(0, KConfig.NULL_LONG, kObject.uuid());
-//                                                                System.out.println("jkhg");
-//
-//                                                            }
-                                                            if(((StateParameter) kObject).getValue() != null) {
-//                                                                System.out.println(((StateParameter) kObject).getValue() + "-----" + kObject.now());
-                                                            }else{
-                                                                System.err.println(((StateParameter) kObject).getValue() + "-----"+ kObject.now());
-
-                                                            }
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
+        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot(root -> {
+            root.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES)
+                    .traverse(MetaTechnology.REF_DEVICES)
+                    .traverse(MetaDevice.REF_STATEPARAMETERS).then(a -> {
+                for (KObject stateP : a) {
+//                    System.out.println(stateP.universe()+", "+stateP.now()+", "+stateP.uuid());
+                    stateP.allTimes(longs -> {
+                        for (long l : longs) {
+                            stateP.jump(l, kObject -> {
+//                                if (((StateParameter) kObject).getValue() != null) {
+                                System.out.println(((StateParameter) kObject).getValue() + "-----" + kObject.now());
+//                                } else {
+//                                    System.err.println(((StateParameter) kObject).getValue() + "-----" + kObject.now());
+//                                }
                             });
-
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
         });
-    }
-
-    private int checkValues(){
-        Map<Long, Double> map = new TreeMap<>();
-        for (TemperatureSensorValue sensor: this.tempValueList) {
-            map.put(sensor.getTime(), sensor.getTemperature());
-        }
-        Double previous = null;
-
-        int counter = 1; // 1 to include the creation time
-        for (Map.Entry<Long, Double> entry : map.entrySet()) {
-            Double value = entry.getValue();
-            if(previous==null || !value.equals(previous)){
-                counter++;
-            }
-            previous = value;
-        }
-        return counter;
     }
 }

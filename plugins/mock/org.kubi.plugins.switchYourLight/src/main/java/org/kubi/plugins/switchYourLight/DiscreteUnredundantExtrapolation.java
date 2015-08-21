@@ -3,11 +3,14 @@ package org.kubi.plugins.switchYourLight;
 import org.kevoree.modeling.KObject;
 import org.kevoree.modeling.abs.AbstractKObject;
 import org.kevoree.modeling.extrapolation.Extrapolation;
-import org.kevoree.modeling.memory.struct.segment.KMemorySegment;
+import org.kevoree.modeling.memory.chunk.KObjectChunk;
+import org.kevoree.modeling.memory.manager.internal.KInternalDataManager;
 import org.kevoree.modeling.meta.KLiteral;
 import org.kevoree.modeling.meta.KMetaAttribute;
 import org.kevoree.modeling.meta.KMetaEnum;
+import org.kevoree.modeling.meta.KPrimitiveTypes;
 import org.kevoree.modeling.meta.impl.MetaLiteral;
+import org.kevoree.modeling.util.PrimitiveHelper;
 
 /**
  * Created by jerome on 17/07/15.
@@ -24,13 +27,14 @@ public class DiscreteUnredundantExtrapolation implements Extrapolation {
     }
 
     @Override
-    public Object extrapolate(KObject current, KMetaAttribute attribute) {
-        KMemorySegment payload = ((AbstractKObject) current)._manager.segment(current.universe(), current.now(), current.uuid(), true, current.metaClass(), null);
+    public Object extrapolate(KObject current, KMetaAttribute attribute, KInternalDataManager dataManager) {
+        KObjectChunk payload = dataManager.closestChunk(current.universe(), current.now(), current.uuid(), current.metaClass(), ((AbstractKObject) current).previousResolved());
         if (payload != null) {
-            if (attribute.attributeType().isEnum()) {
-                return ((KMetaEnum) attribute.attributeType()).literal((int) payload.get(attribute.index(), current.metaClass()));
+            if (KPrimitiveTypes.isEnum(attribute.attributeTypeId())) {
+                KMetaEnum metaEnum = ((AbstractKObject) current)._manager.model().metaModel().metaTypes()[attribute.attributeTypeId()];
+                return metaEnum.literal((int) payload.getPrimitiveType(attribute.index(), current.metaClass()));
             } else {
-                return payload.get(attribute.index(), current.metaClass());
+                return payload.getPrimitiveType(attribute.index(), current.metaClass());
             }
         } else {
             return null;
@@ -38,28 +42,95 @@ public class DiscreteUnredundantExtrapolation implements Extrapolation {
     }
 
     @Override
-    public void mutate(KObject current, KMetaAttribute attribute, Object payload) {
-        Object oldPayloadValue = this.extrapolate(current, attribute);
-        if(oldPayloadValue!=null && !oldPayloadValue.equals(payload)) {
+    public void mutate(KObject current, KMetaAttribute attribute, Object payload, KInternalDataManager dataManager) {
+        Object oldPayloadValue = this.extrapolate(current, attribute, dataManager);
+        if (oldPayloadValue != null) {
             // The previous value value of the current KObject is different than the previous one
             //By requiring a raw on the current object, we automatically create and copy the previous object
-            KMemorySegment internalPayload = ((AbstractKObject) current)._manager.segment(current.universe(), current.now(), current.uuid(), false, current.metaClass(), null);
+            KObjectChunk internalPayload = dataManager.preciseChunk(current.universe(), current.now(), current.uuid(), current.metaClass(), ((AbstractKObject) current).previousResolved());
             //The object is also automatically cset to Dirty
-            if (internalPayload != null) {
-                if (attribute.attributeType().isEnum()) {
+            if (internalPayload != null && !oldPayloadValue.equals(payload)) {
+                if (KPrimitiveTypes.isEnum(attribute.attributeTypeId())) {
                     if (payload instanceof MetaLiteral) {
-                        internalPayload.set(attribute.index(), ((KLiteral) payload).index(), current.metaClass());
+                        internalPayload.setPrimitiveType(attribute.index(), ((KLiteral) payload).index(), current.metaClass());
                     } else {
-                        KMetaEnum metaEnum = (KMetaEnum) attribute.attributeType();
+                        KMetaEnum metaEnum = ((AbstractKObject) current)._manager.model().metaModel().metaTypes()[attribute.attributeTypeId()];
                         KLiteral foundLiteral = metaEnum.literalByName(payload.toString());
                         if (foundLiteral != null) {
-                            internalPayload.set(attribute.index(), foundLiteral.index(), current.metaClass());
+                            internalPayload.setPrimitiveType(attribute.index(), foundLiteral.index(), current.metaClass());
                         }
                     }
                 } else {
-                    internalPayload.set(attribute.index(), payload, current.metaClass());
+                    if (payload == null) {
+                        internalPayload.setPrimitiveType(attribute.index(), null, current.metaClass());
+                    } else {
+                        internalPayload.setPrimitiveType(attribute.index(), convert(attribute, payload), current.metaClass());
+                    }
                 }
             }
+        }
+    }
+
+
+    /**
+     * @native ts
+     * return payload;
+     */
+    private final Object convert(KMetaAttribute attribute, Object payload) {
+        int attTypeId = attribute.attributeTypeId();
+        switch (attTypeId) {
+            case KPrimitiveTypes.INT_ID:
+                if (payload instanceof Integer) {
+                    return payload;
+                } else {
+                    try {
+                        return PrimitiveHelper.parseInt(payload.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            case KPrimitiveTypes.DOUBLE_ID:
+                if (payload instanceof Double) {
+                    return payload;
+                } else {
+                    try {
+                        return PrimitiveHelper.parseDouble(payload.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            case KPrimitiveTypes.LONG_ID:
+                if (payload instanceof Long) {
+                    return payload;
+                } else {
+                    try {
+                        return PrimitiveHelper.parseLong(payload.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            case KPrimitiveTypes.STRING_ID:
+                if (payload instanceof String) {
+                    return payload;
+                } else {
+                    try {
+                        return payload.toString();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            case KPrimitiveTypes.BOOL_ID:
+                if (payload instanceof Boolean) {
+                    return payload;
+                } else {
+                    try {
+                        return PrimitiveHelper.parseBoolean(payload.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            default:
+                return payload;
         }
     }
 }

@@ -48,7 +48,7 @@ function allTimes(kobjects, callback){
     var count = kobjects.length;
     var resTimesAppend = [];
     for(var index=0; index<kobjects.length; index++){
-        kobjects[index].timeWalker().allTimes(function (longs){
+        kobjects[index].allTimes(function (longs){
             // concat the longs table with the resTimeAppend table
             for(var j=0; j<longs.length;j++){
                 resTimesAppend[resTimesAppend.length] = longs[j];

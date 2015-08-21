@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<script src="/js/js/org.kubi.model-all.js"></script>
+<script src="/js/js/org.kubi.model.js"></script>
+<script src="/js/js/org.kevoree.modeling.microframework.browser.js"></script>
 <script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
 <dom-module name="kubi-model">
@@ -8,16 +9,14 @@
     </template>
 </dom-module>
 
+
+
 <script>
     var modelConnectedCallbacks = [];
     var kubiModel2;
     var modelConnected;
     var modelConnecting;
-    // --------------
-//    if(kubiModel2 == undefined){
-//        kubiModel2 = new org.kubi.KubiModel();
-//    }
-    // --------------
+
     if( modelConnected == undefined){
         modelConnected = false;
     }
@@ -30,11 +29,11 @@
             var selfKubiModel = this;
             if(!modelConnecting && !modelConnected) {
                 modelConnecting = true;
-                // --------------
-                kubiModel2 = new org.kubi.KubiModel();
-                // --------------
+
                 var dataBaseConnection2 = new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn");
-                kubiModel2.setContentDeliveryDriver(dataBaseConnection2);
+                var dm = org.kevoree.modeling.memory.manager.DataManagerBuilder.create().withContentDeliveryDriver(dataBaseConnection2).build();
+                kubiModel2 = new org.kubi.KubiModel(dm);
+
                 kubiModel2.connect(function(err){
                     if(err) {
                         console.error(err);

@@ -165,7 +165,7 @@ public class SmartFridgePlugin implements KubiPlugin {
                                 @Override
                                 public void on(KObject[] a) {
                                     for(KObject stateP : a){
-                                        stateP.timeWalker().allTimes(new KCallback<long[]>() {
+                                        stateP.allTimes(new KCallback<long[]>() {
                                             @Override
                                             public void on(long[] longs) {
                                             }

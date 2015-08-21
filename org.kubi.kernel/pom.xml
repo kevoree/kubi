@@ -66,6 +66,8 @@
         </dependency>
         -->
 
+        <!-- SmartFridge mocks-->
+
         <!-- SmartFridge
         <dependency>
             <groupId>org.kubi</groupId>
@@ -89,6 +91,8 @@
             <version>${project.version}</version>
         </dependency>
         -->
+
+
         <!-- manual data
         <dependency>
             <groupId>org.kubi</groupId>
@@ -103,6 +107,10 @@
             <artifactId>org.kubi.plugins.switchYourLight</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+
+        <!-- Readers -->
+
 
         <!-- Polynomial Reader
         <dependency>
@@ -134,7 +142,10 @@
             <artifactId>org.kubi.bugsMain</artifactId>
             <version>${project.version}</version>
         </dependency>
-    -->
+        -->
+
+
+        <!-- GUI -->
 
         <!-- web view
         <dependency>

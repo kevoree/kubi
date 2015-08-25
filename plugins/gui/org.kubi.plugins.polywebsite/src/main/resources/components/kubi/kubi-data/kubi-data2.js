@@ -9,7 +9,7 @@ var kubiDataVar = {
     universe:0,
     windowSize: 1000000,
     chartData: [],
-    numberOfPoints : 300
+    numberOfPoints : 100
 };
 
 function initWithModel(model){
@@ -69,8 +69,16 @@ function initGraph() {
             horizontalAlign: "center",
             fontSize: 16,
             fontColor: "black",
-            cursor: "pointer"
-
+            cursor: "pointer",
+            itemclick: function (e) {
+                if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                    e.dataSeries.visible = false;
+                }
+                else {
+                    e.dataSeries.visible = true;
+                }
+                e.chart.render();
+            }
         },
         toolTip: {
             shared: true
@@ -81,15 +89,7 @@ function initGraph() {
 
 
 /*
- itemclick: function (e) {
- if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
- e.dataSeries.visible = false;
- }
- else {
- e.dataSeries.visible = true;
- }
- e.chart.render();
- }
+
  */
 function initData(){
     kubiDataVar.deviceNames = [];
@@ -149,7 +149,6 @@ function drawAll(deviceNames, start, end, step, showPeriod){
 function getAndDraw(device, start, end, step, showPeriod){
     var deviceName = device.getName();
     createDeviceInChart(deviceName);
-    console.log("&&&&&&& -> ", kubiDataVar.chartData);
     device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function(params){
         var param = params[0];
         var kDefer = kubiDataVar.model.defer();
@@ -159,7 +158,10 @@ function getAndDraw(device, start, end, step, showPeriod){
         kDefer.then(function(paramsTimed){
             var index = 0;
             var values = [];
-            for(var time= start; time<end; time+=+step) {
+
+            var kDeferPeriod = kubiDataVar.model.defer();
+            var valuesPeriod = [];
+            for(var time= start; time<end; time+=step) {
                 var value = paramsTimed[index].getValue();
                 if(value != undefined) {
                     values.push({
@@ -167,25 +169,48 @@ function getAndDraw(device, start, end, step, showPeriod){
                         y: parseFloat(value+"")
                     });
                 }
+                // add the period if needed
+                if(showPeriod){
+                    createDeviceInChart(deviceName + "_period");
+                    paramsTimed[index].traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(kDeferPeriod.waitResult());
+                }
                 index++;
             }
             addValueInGraph(deviceName, values);
-            // TODO
+            if(showPeriod) {
+                kDeferPeriod.then(function (periods) {
+                    for (var i = 0; i < periods.length; i++) {
+                        var period = periods[i][0].getPeriod();
+                        if (period != undefined) {
+                            valuesPeriod.push({
+                                x: new Date(periods[i][0].now()),
+                                y: parseFloat(period + "")
+                            });
+                        }
+                    }
+                    addValueInGraph(deviceName + "_period", valuesPeriod);
+                });
+            }
             kubiDataVar.chart.options.data = kubiDataVar.chartData;
-            console.log(",,,,,,",kubiDataVar.chart.options.data, kubiDataVar.chartData);
             kubiDataVar.chart.render();
         });
     });
 }
 
-function createDeviceInChart(device){
-    kubiDataVar.chartData.push({
-        type: "line",
-        showInLegend: true,
-        name: device,
-        title: device,
-        dataPoints: []
-    });
+function createDeviceInChart(device) {
+    var alreadyExist = false;
+    for(var i=0; i<kubiDataVar.chartData.length; i++){
+        alreadyExist = alreadyExist || (kubiDataVar.chartData[i].name.valueOf()==device.valueOf());
+    }
+    if(!alreadyExist) {
+        kubiDataVar.chartData.push({
+            type: "line",
+            showInLegend: true,
+            name: device,
+            title: device,
+            dataPoints: []
+        });
+    }
 }
 
 

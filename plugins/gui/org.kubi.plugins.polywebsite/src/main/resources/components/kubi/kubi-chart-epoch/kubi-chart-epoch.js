@@ -114,7 +114,7 @@ function addValueInEpochGraphKDefer(deviceName,parameter, start, end, step, have
         kDeferPeriod.then(function(periods){
             for(var p in periods){
                 if(periods[p][0] != undefined) {
-                    console.log("_________)(_______",periods[p], periods[p][0].now(), parseFloat(periods[p][0].getPeriod()));
+                    //console.log("PolyWeb :: Epoch :: ",periods[p], periods[p][0].now(), parseFloat(periods[p][0].getPeriod()));
                     addEpochPointWithPeriod(periods[p][0].now(), parseFloat(periods[p][0].getPeriod()), deviceName + "_Period");
                 }
             }

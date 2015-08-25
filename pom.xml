@@ -48,7 +48,6 @@
 
         <!-- plugin web
         -->
-        <!--<module>plugins/gui/org.kubi.plugins.web</module>-->
         <module>plugins/gui/org.kubi.plugins.polywebsite</module>
 
         <!-- ZWave driver
@@ -79,9 +78,8 @@
         <module>plugins/mock/org.kubi.plugins.smartfridgeRepeatRealTime</module>
 
         <!-- Infer State Machine
-        <module>org.kubi.statemachine.model</module>
-        <module>plugins/infer/org.kubi.infer.statemachine</module>
          -->
+        <module>plugins/infer/org.kubi.infer.statemachine</module>
 
 
         <!-- End Plugins -->

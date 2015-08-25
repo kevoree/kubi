@@ -1,7 +1,6 @@
 package org.kubi.reader.periodAnalysis.extrapolation;
 
 import org.kevoree.brain.JavaPeriodCalculatorFFT;
-import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KObject;
 import org.kevoree.modeling.defer.KDefer;
 import org.kevoree.modeling.extrapolation.impl.DiscreteExtrapolation;
@@ -32,20 +31,17 @@ public class DiscreteExtrapolationWithPeriod extends DiscreteExtrapolation {
             current.jump(start,kDefer.waitResult());
             start = start + step;
         }
-        kDefer.then(new KCallback<Object[]>() {
-            @Override
-            public void on(Object[] objects) {
-                double[] paramValues = new double[objects.length];
-                for (int i = 0; i < objects.length; i++) {
-                    String value = ((StateParameter) objects[i]).getValue();
-                    if (value==null) {
-                        System.err.println("Period computing error : some values are null.");
-                        return;
-                    }
-                    paramValues[i] = Double.parseDouble(value);
+        kDefer.then(objects -> {
+            double[] paramValues = new double[objects.length];
+            for (int i = 0; i < objects.length; i++) {
+                String value = ((StateParameter) objects[i]).getValue();
+                if (value==null) {
+                    System.err.println("Period computing error : some values are null.");
+                    return;
                 }
-                calculatePeriod(paramValues, (StateParameter) current);
+                paramValues[i] = Double.parseDouble(value);
             }
+            calculatePeriod(paramValues, (StateParameter) current);
         });
     }
 
@@ -62,22 +58,15 @@ public class DiscreteExtrapolationWithPeriod extends DiscreteExtrapolation {
         int periodInPtNbMin = parameter.getPredictedPeriodMin() / parameter.getFrequencyOfCalculation();
         int periodInPtNbMax = parameter.getPredictedPeriodMin() / parameter.getFrequencyOfCalculation();
         int period = JavaPeriodCalculatorFFT.getOtherPeriod(result, periodInPtNbMin, periodInPtNbMax);
-        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(new KCallback<KObject[]>() {
-            @Override
-            public void on(KObject[] kObjects) {
-                if (kObjects.length > 0) {
-                    Period kPeriod = ((Period) kObjects[0]);
-                    if (kPeriod.getPeriod() == null) {
-                        kPeriod.setPeriod(((double) period) + "");
-                        System.out.println("_period_" + kPeriod.getPeriod());
-                        parameter.manager().model().save(new KCallback() {
-                            @Override
-                            public void on(Object o) {
-                            }
-                        });
-                    } else
-                        System.out.println(kPeriod.getPeriod());
-                }
+        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(kObjects -> {
+            if (kObjects.length > 0) {
+                Period kPeriod = ((Period) kObjects[0]);
+                if (kPeriod.getPeriod() == null) {
+                    kPeriod.setPeriod(((double) period) + "");
+                    System.out.println("_period_" + kPeriod.getPeriod());
+                    parameter.manager().model().save(o -> {});
+                } else
+                    System.out.println(kPeriod.getPeriod());
             }
         });
 

@@ -103,8 +103,8 @@ public class JavaPeriodCalculatorFFT {
 
     public static int getOtherPeriod(double[] entryTimeLine, int estimPerLow, int estimPerUp){
         SortedSet<Map.Entry<Integer, Double>> allresults = getAllPeriods(entryTimeLine, estimPerLow, estimPerUp);
-        double nintyFivePerCent = 0.95;
-        double maxValueThreshold = nintyFivePerCent * allresults.first().getValue();
+        double percentage = 0.9;
+        double maxValueThreshold = percentage * allresults.first().getValue();
         double maxKey   = allresults.first().getKey();
         SortedSet<Integer> res = new TreeSet<>();
         res.add((int) maxKey);

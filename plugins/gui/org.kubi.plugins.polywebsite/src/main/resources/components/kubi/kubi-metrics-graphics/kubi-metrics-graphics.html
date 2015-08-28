@@ -1,0 +1,74 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="../kubi-model/kubi-model.html"/>
+
+<script src="/js/js/org.kubi.model.js"></script>
+<script src="/js/js/org.kevoree.modeling.microframework.browser.js"></script>
+<script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
+
+<script src="./kubi-metrics-graphics.js"></script>
+
+<!-- Mozilla metrics graphics -->
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.0/d3.min.js' charset='utf-8'></script>
+
+<link href="/metrics-graphics-2.6.0/dist/metricsgraphics.css" rel="stylesheet" type="text/css"/>
+<script src="/metrics-graphics-2.6.0/dist/metricsgraphics.min.js"></script>
+<link rel='stylesheet' href='/metrics-graphics-2.6.0/examples/css/addons/mg_line_brushing.css' />
+<script src='/metrics-graphics-2.6.0/examples/js/addons/mg_line_brushing.js'></script>
+
+<dom-module id="kubi-metrics-graphics">
+    <link rel="stylesheet" type="text/css" href="kubi-metrics-graphics.css"/>
+    <template>
+        <kubi-model id="modelHandler" on-model-connected="modelConnected"></kubi-model>
+        <div id="chartContainerMetrics"></div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: "kubi-metrics-graphics",
+        properties: {
+            time: {
+                type: Number,
+                observer: 'updateGraph'
+            },
+            scale: {
+                type: Number,
+                observer: 'updateGraph'
+            },
+            devices: {
+                type: Array,
+                value: ["plug"],
+                observer: 'updateGraph'
+            },
+            wantperiod: {
+                type: String,
+                value: false,
+                observer: 'updateGraph'
+            }
+        },
+        updateGraph: function (event) {
+            if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
+                try {
+                    updateGraph(this.time, this.scale, this.devices, this.wantperiod);
+                } catch (e) {
+                    console.error(e);
+                }
+
+            }
+        },
+        ready: function (){
+            try{
+                if (this.$.modelHandler.modelAvailable())
+                {
+                    initWithModel(this.$.modelHandler.model());
+                }
+            }catch (err){console.error("ready",err);}
+        },
+        modelConnected : function(event, details){
+            // TODO : clean & init
+            initWithModel(details.value);
+        }
+    });
+</script>

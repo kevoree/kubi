@@ -39,14 +39,12 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
 //                            for (int i =0;i<kObjects.length;i++){
                             for (int i = 0; i < 1; i++) {
                                 StateParameter parameter = (StateParameter) kObjects[i];
-//                                parameter.timeWalker().allTimes().then(new Callback<long[]>() {
-//                                    @Override
-//                                    public void on(long[] longs) {
-                                long timeMax = 1428997126000L;
-//                                        timeMax = longs[0];
-                                getPreviousValues(parameter, timeMax, 50000);
-//                                    }
-//                                });
+                                parameter.allTimes(alltimes -> {
+                                    long timeMax = alltimes[0];
+                                    long timeMin = alltimes[alltimes.length - 2];
+                                    System.out.println("max & min: "+timeMax+"-----//"+timeMin);
+                                    getPreviousValues(parameter, timeMax, 50000);
+                                });
                             }
                         } else {
                             System.err.println("ERROR PeriodAnalysisPlugin: no device detected");
@@ -71,7 +69,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
      * @return
      */
     private void getPreviousValues(StateParameter parameter, long time, long periodOfGets) {
-        int frequencyOfCalculationOfThePeriod = 100;
+        int frequencyOfCalculationOfThePeriod = 10;
         KDefer kDefer = kubiKernel.model().defer();
         for(int i=0; i<this.maxSize;i++){
             parameter.jump(time - i * periodOfGets, kDefer.waitResult());
@@ -85,7 +83,6 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                 if (p != null && p.getValue() != null) {
                     try {
                         results[j] = Double.parseDouble(p.getValue());
-                        System.out.println(p.getValue());
                         //System.out.print("--" + p.getValue());
                     } catch (Exception e) {
                         System.err.println("PeriodAnalysis :: parsing to double failed");
@@ -107,7 +104,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
         }
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
-        int period = JavaPeriodCalculatorFFT.getOtherPeriod(observationsDouble, 150, 700);
+        int period = JavaPeriodCalculatorFFT.getOtherPeriod(observationsDouble, 100, 700);
         parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(kObjects -> {
             if (kObjects.length > 0) {
                 Period kPeriod = ((Period) kObjects[0]);
@@ -115,7 +112,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                     kPeriod.setPeriod(((double) period) + "");
                     kubiKernel.model().save(o -> {});
                 }
-                    System.out.println(period +" --> "+ kPeriod.now());
+                System.out.println(period +" --> "+ kPeriod.now());
             }
         });
     }

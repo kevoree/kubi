@@ -5,17 +5,18 @@
 
 var kubiDataVar = {
     time: (new Date()).getTime(),
-    model: undefined,
+    model : undefined,
     universe:0,
     windowSize: 1000000,
     chartData: [],
     numberOfPoints : 100
 };
 
-function initWithModel(model){
+function initWithModelCanvas(model){
+    console.log("Kubi Data :: init model");
     kubiDataVar.model = model;
-    initGraph();
-    initData();
+    initializeGraph();
+    initializeData();
 }
 
 
@@ -23,7 +24,7 @@ function initWithModel(model){
 /**
  * Initialize the graph empty
  **/
-function initGraph() {
+function initializeGraph() {
     kubiDataVar.chart = new CanvasJS.Chart("chartContainer", {
         width: 700,
         height: 500,
@@ -91,7 +92,7 @@ function initGraph() {
 /*
 
  */
-function initData(){
+function initializeData(){
     kubiDataVar.deviceNames = [];
     var initialRange = 4900000;
     var initialTime = ((new Date()).getTime()/1000)+4900;
@@ -139,6 +140,7 @@ function drawAll(deviceNames, start, end, step, showPeriod){
                     .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
                     .then(function(devices){
                         if(devices.length >0) {
+                            console.log("-->",devices[0]);
                             getAndDraw(devices[0], start, end, step, showPeriod);
                         }
                     });

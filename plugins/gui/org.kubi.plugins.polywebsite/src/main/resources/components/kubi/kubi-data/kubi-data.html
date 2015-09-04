@@ -56,13 +56,14 @@
             try{
                 if (this.$.modelHandlerData.modelAvailable())
                 {
-                    initWithModel(this.$.modelHandlerData.model());
+                    initWithModelCanvas(this.$.modelHandlerData.model());
                 }
             }catch (err){console.error("ready",err);}
         },
         modelConnected : function(event, details){
+                    console.log(" 2-  init model",details.value);
             // TODO : clean & init
-            initWithModel(details.value);
+            initWithModelCanvas(details.value);
         }
     });
 </script>

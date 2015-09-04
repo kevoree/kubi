@@ -51,7 +51,7 @@
         updateGraph: function (event) {
             if (this.time != undefined && this.scale != undefined && this.devices != undefined) {
                 try {
-                    updateGraph(this.time, this.scale, this.devices, this.wantperiod);
+                    updateMetricsGraph(this.time, this.scale, this.devices, this.wantperiod);
                 } catch (e) {
                     console.error(e);
                 }

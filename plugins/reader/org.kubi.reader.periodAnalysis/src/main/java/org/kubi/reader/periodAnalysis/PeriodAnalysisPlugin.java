@@ -89,18 +89,18 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                     }
                 }
                 if (j > size && ((j % frequencyOfCalculationOfThePeriod) == 0) && j != 0) {
-                    calculatePeriod(results, p);
+                    calculatePeriod(results, p,j);
                 }
             }
-            calculatePeriod(results, p);
+            calculatePeriod(results, p, results.length-1);
         });
     }
 
-    private void calculatePeriod(double[] result, StateParameter parameter) {
+    private void calculatePeriod(double[] result, StateParameter parameter, int end) {
 //        int size = result.length%2==0 ? result.length : result.length-1 ;
         double[] observationsDouble = new double[size];
         for (int i = 0; i < size; i++) {
-            observationsDouble[i] = Double.parseDouble(result[i + result.length - size] + "");
+            observationsDouble[i] = Double.parseDouble(result[i + end - size] + "");
         }
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);

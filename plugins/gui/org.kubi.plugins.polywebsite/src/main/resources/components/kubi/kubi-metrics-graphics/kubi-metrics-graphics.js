@@ -5,7 +5,6 @@
 
 var kubiMetricsVar = {
     time: (new Date()).getTime(),
-    model: undefined,
     universe:0,
     windowSize: 1000000,
     chartData: [],
@@ -29,6 +28,7 @@ function initGraph() {
         width: 800,
         height: 300,
         right: 40,
+        left: 40,
         target: document.getElementById('chartContainerMetrics'),
         y_extended_ticks: true,
         x_accessor: 'date',
@@ -58,13 +58,13 @@ function initData(){
                     for(var i=0; i<devices.length; i++){
                         kubiMetricsVar.deviceNames[i] = devices[i].getName();
                     }
-                    updateGraph(initialTime, initialRange, kubiMetricsVar.deviceNames, false);
+                    updateMetricsGraph(initialTime, initialRange, kubiMetricsVar.deviceNames, false);
                 });
         }
     });
 }
 
-function updateGraph(time, range, deviceNames, showPeriod){
+function updateMetricsGraph(time, range, deviceNames, showPeriod){
     time = time * 1000;
     var start = time - range;
     var end = parseFloat(time) + parseFloat(range);

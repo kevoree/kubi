@@ -48,14 +48,13 @@ function initData(){
     kubiMetricsVar.deviceNames = [];
     var initialRange = 4900000;
     var initialTime = ((new Date()).getTime()/1000)+4900;
-
-    kubiMetricsVar.model.universe(kubiMetricsVar.universe).time(kubiMetricsVar.time).getRoot(function(root){
-        if(root != undefined){
+    kubiMetricsVar.model.universe(kubiMetricsVar.universe).time(kubiMetricsVar.time).getRoot(function (root) {
+        if (root != undefined) {
             root.traversal()
                 .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
                 .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
-                .then(function (devices){
-                    for(var i=0; i<devices.length; i++){
+                .then(function (devices) {
+                    for (var i = 0; i < devices.length; i++) {
                         kubiMetricsVar.deviceNames[i] = devices[i].getName();
                     }
                     updateMetricsGraph(initialTime, initialRange, kubiMetricsVar.deviceNames, false);
@@ -83,51 +82,53 @@ function updateMetricsGraph(time, range, deviceNames, showPeriod){
  */
 function collectData(deviceNames, start, end, step, showPeriod){
     showPeriod = showPeriod==undefined ? false : showPeriod;
-    kubiMetricsVar.model.universe(kubiMetricsVar.universe).time(end).getRoot(function(root){
-        if(root!=undefined){
-            // defer to get all the devices wanted
-            var kDeferDevice = kubiMetricsVar.model.defer();
-            for(var i =0; i< deviceNames.length; i++){
-                root.traversal()
-                    .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
-                    .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS)
-                    .then(kDeferDevice.waitResult());
-            }
-            kDeferDevice.then(function(results){
-                var uuidList = [];
-                for(var j=0; j<results.length; j++){
-                    if(results[j].length >0) {
-                        uuidList.push(results[j][0].uuid());
-                    }
+    if(kubiMetricsVar.model != undefined) {
+        kubiMetricsVar.model.universe(kubiMetricsVar.universe).time(end).getRoot(function (root) {
+            if (root != undefined) {
+                // defer to get all the devices wanted
+                var kDeferDevice = kubiMetricsVar.model.defer();
+                for (var i = 0; i < deviceNames.length; i++) {
+                    root.traversal()
+                        .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+                        .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
+                        .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS)
+                        .then(kDeferDevice.waitResult());
                 }
-
-                var kDeferParameters = kubiMetricsVar.model.defer();
-                // times is the set of times when we want data to be print in the graph
-                for(var time= start; time<end; time+=step){
-                    kubiMetricsVar.model.lookupAll(kubiMetricsVar.universe,time,uuidList,kDeferParameters.waitResult());
-                }
-                kDeferParameters.then(function(parametersTimed){
-                    var index =0;
-                    for(var time= start; time<end; time+=step){
-
-                        var dataTimed = {
-                            date : new Date(time)
-                        };
-                        for(var j=0; j<parametersTimed[index].length; j++){
-                            var value = parametersTimed[index][j].getValue();
-                            if(value != undefined) {
-                                dataTimed[kubiMetricsVar.deviceNames[j]] = value;
-                            }
+                kDeferDevice.then(function (results) {
+                    var uuidList = [];
+                    for (var j = 0; j < results.length; j++) {
+                        if (results[j].length > 0) {
+                            uuidList.push(results[j][0].uuid());
                         }
-                        kubiMetricsVar.chartData.push(dataTimed);
-                        index++;
                     }
-                    initGraph();
+
+                    var kDeferParameters = kubiMetricsVar.model.defer();
+                    // times is the set of times when we want data to be print in the graph
+                    for (var time = start; time < end; time += step) {
+                        kubiMetricsVar.model.lookupAll(kubiMetricsVar.universe, time, uuidList, kDeferParameters.waitResult());
+                    }
+                    kDeferParameters.then(function (parametersTimed) {
+                        var index = 0;
+                        for (var time = start; time < end; time += step) {
+
+                            var dataTimed = {
+                                date: new Date(time)
+                            };
+                            for (var j = 0; j < parametersTimed[index].length; j++) {
+                                var value = parametersTimed[index][j].getValue();
+                                if (value != undefined) {
+                                    dataTimed[kubiMetricsVar.deviceNames[j]] = value;
+                                }
+                            }
+                            kubiMetricsVar.chartData.push(dataTimed);
+                            index++;
+                        }
+                        initGraph();
+                    });
                 });
-            });
-        }
-    });
+            }
+        });
+    }
 }
 
 

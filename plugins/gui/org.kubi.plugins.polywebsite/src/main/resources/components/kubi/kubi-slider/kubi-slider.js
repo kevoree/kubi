@@ -11,24 +11,28 @@ function setModelSlider(model){
     kModelSlider = model;
 }
 function setMaxSlider(){
-    kModelSlider.universe(universeSlider).time(timeSlider).getRoot(function(root){
-        try {
-            root.traversal()
-                .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
-                .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (stateParams) {
-                    allTimes(stateParams, function (timestamps) {
-                        try{
-                            var max = getMax(timestamps);
-                            var min = getMinExcept(timestamps,-9007199254740990);
-                            setupSlider(min, max);
-                        }catch (e){
-                            console.error(e);
-                        }
-                    })
-                });
-        }catch(e){console.error(e);}
-    });
+    if(kModelSlider != undefined && kModelSlider != null) {
+        kModelSlider.universe(universeSlider).time(timeSlider).getRoot(function (root) {
+            try {
+                root.traversal()
+                    .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
+                    .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (stateParams) {
+                        allTimes(stateParams, function (timestamps) {
+                            try {
+                                var max = getMax(timestamps);
+                                var min = getMinExcept(timestamps, -9007199254740990);
+                                setupSlider(min, max);
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        })
+                    });
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    }
 }
 
 function setupSlider(min, max){

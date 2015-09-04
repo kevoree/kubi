@@ -96,14 +96,13 @@ function initializeData(){
     kubiDataVar.deviceNames = [];
     var initialRange = 4900000;
     var initialTime = ((new Date()).getTime()/1000)+4900;
-
-    kubiDataVar.model.universe(kubiDataVar.universe).time(kubiDataVar.time).getRoot(function(root){
-        if(root != undefined){
+    kubiDataVar.model.universe(kubiDataVar.universe).time(kubiDataVar.time).getRoot(function (root) {
+        if (root != undefined) {
             root.traversal()
                 .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
                 .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
-                .then(function (devices){
-                    for(var i=0; i<devices.length; i++){
+                .then(function (devices) {
+                    for (var i = 0; i < devices.length; i++) {
                         kubiDataVar.deviceNames[i] = devices[i].getName();
                     }
                     updateGraph(initialTime, initialRange, kubiDataVar.deviceNames, false);
@@ -132,20 +131,22 @@ function updateGraph(time, range, deviceNames, showPeriod){
  */
 function drawAll(deviceNames, start, end, step, showPeriod){
     showPeriod = showPeriod==undefined ? false : showPeriod;
-    kubiDataVar.model.universe(kubiDataVar.universe).time(end).getRoot(function(root){
-        if(root!=undefined){
-            for(var i =0; i< deviceNames.length; i++){
-                root.traversal()
-                    .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
-                    .then(function(devices){
-                        if(devices.length >0) {
-                            getAndDraw(devices[0], start, end, step, showPeriod);
-                        }
-                    });
+    if(kubiDataVar.model != undefined && kubiDataVar.model != null) {
+        kubiDataVar.model.universe(kubiDataVar.universe).time(end).getRoot(function (root) {
+            if (root != undefined) {
+                for (var i = 0; i < deviceNames.length; i++) {
+                    root.traversal()
+                        .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
+                        .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
+                        .then(function (devices) {
+                            if (devices.length > 0) {
+                                getAndDraw(devices[0], start, end, step, showPeriod);
+                            }
+                        });
+                }
             }
-        }
-    });
+        });
+    }
 }
 function getAndDraw(device, start, end, step, showPeriod){
     var deviceName = device.getName();

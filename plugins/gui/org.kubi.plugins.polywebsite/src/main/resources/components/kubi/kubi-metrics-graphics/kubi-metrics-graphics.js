@@ -108,7 +108,6 @@ function collectData(deviceNames, start, end, step, showPeriod){
                     kubiMetricsVar.model.lookupAll(kubiMetricsVar.universe,time,uuidList,kDeferParameters.waitResult());
                 }
                 kDeferParameters.then(function(parametersTimed){
-                    console.log(parametersTimed.length);
                     var index =0;
                     for(var time= start; time<end; time+=step){
 

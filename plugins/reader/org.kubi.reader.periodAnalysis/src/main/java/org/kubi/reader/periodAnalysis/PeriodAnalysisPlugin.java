@@ -42,7 +42,6 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                                 parameter.allTimes(alltimes -> {
                                     long timeMax = alltimes[0];
                                     long timeMin = alltimes[alltimes.length - 2];
-                                    System.out.println("max & min: "+timeMax+"-----//"+timeMin);
                                     getPreviousValues(parameter, timeMax, 50000);
                                 });
                             }
@@ -75,7 +74,6 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
             parameter.jump(time - i * periodOfGets, kDefer.waitResult());
         }
         kDefer.then(res -> {
-            System.out.println(res.length+" -----------*****");
             double[] results = new double[res.length];
             StateParameter p = parameter;
             for (int j = 0; j < res.length; j++) {
@@ -83,7 +81,6 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
                 if (p != null && p.getValue() != null) {
                     try {
                         results[j] = Double.parseDouble(p.getValue());
-                        //System.out.print("--" + p.getValue());
                     } catch (Exception e) {
                         System.err.println("PeriodAnalysis :: parsing to double failed");
                     }

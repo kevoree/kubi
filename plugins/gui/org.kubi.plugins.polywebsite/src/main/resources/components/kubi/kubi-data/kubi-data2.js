@@ -140,7 +140,6 @@ function drawAll(deviceNames, start, end, step, showPeriod){
                     .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
                     .then(function(devices){
                         if(devices.length >0) {
-                            console.log("-->",devices[0]);
                             getAndDraw(devices[0], start, end, step, showPeriod);
                         }
                     });

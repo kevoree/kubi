@@ -83,7 +83,6 @@
         },
         dateUpdated: function (event, detail) {
             this.slider_time = detail.value/1000;
-            console.log("******", this.$.slider.value);
             this.$.slider.value = detail.value/1000;
             this.$.slider.fire("notifySlider", detail.value); // TODO : doesn't work :'( => need to find a way to notify the slider of the change
         },

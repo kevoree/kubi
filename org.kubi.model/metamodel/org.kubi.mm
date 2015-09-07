@@ -3,27 +3,27 @@ with kmfVersion "4.19.1-SNAPSHOT"
 
 class org.kubi.Ecosystem {
     att name: String
-    ref* groupes: org.kubi.Group
-    ref* technologies: org.kubi.Technology
+    rel groupes: org.kubi.Group
+    rel technologies: org.kubi.Technology
 }
 
 class org.kubi.Group {
     att name: String
-    ref* groupes: org.kubi.Group
-    ref* devices: org.kubi.Device with opposite "groupes"
+    rel groupes: org.kubi.Group
+    rel devices: org.kubi.Device with opposite "groupes"
 }
 
 class org.kubi.Device {
     att id: String
     att homeId: String
     att available : Bool
-    ref* groupes: org.kubi.Group with opposite "devices"
-    ref* links: org.kubi.Device
+    rel groupes: org.kubi.Group with opposite "devices"
+    rel links: org.kubi.Device
     att name: String
-    ref technology: org.kubi.Technology
-    ref* stateParameters: org.kubi.StateParameter
-    ref* actionParameters: org.kubi.ActionParameter
-    ref productType: org.kubi.Product
+    rel technology: org.kubi.Technology with maxBound 1
+    rel stateParameters: org.kubi.StateParameter
+    rel actionParameters: org.kubi.ActionParameter
+    rel productType: org.kubi.Product with maxBound 1
 }
 
 enum org.kubi.ParameterType {
@@ -45,18 +45,18 @@ class org.kubi.ActionParameter extends org.kubi.StateParameter {
 
 class org.kubi.Technology {
     att name: String
-    ref* devices: org.kubi.Device with opposite "technology"
-    ref catalog: org.kubi.Catalog
+    rel devices: org.kubi.Device with opposite "technology"
+    rel catalog: org.kubi.Catalog with maxBound 1
 }
 
 class org.kubi.Catalog {
-    ref* manufacturers: org.kubi.Manufacturer
+    rel manufacturers: org.kubi.Manufacturer with maxBound 1
 }
 
 class org.kubi.Manufacturer {
     att name: String
     att id: Int
-    ref* products: org.kubi.Product
+    rel products: org.kubi.Product
 }
 
 class org.kubi.Product {
@@ -64,12 +64,12 @@ class org.kubi.Product {
     att name: String
     att version: String
     att pictureUrl: String
-    ref manufacturer: org.kubi.Manufacturer with opposite "products"
-    ref* devices: org.kubi.Device with opposite "productType"
+    rel manufacturer: org.kubi.Manufacturer with opposite "products" with maxBound 1
+    rel devices: org.kubi.Device with opposite "productType"
 }
 
 class org.kubi.ZWaveProduct extends org.kubi.Product {
-    ref* commandClasses: org.kubi.zwave.CommandClass
+    rel commandClasses: org.kubi.zwave.CommandClass
     att type: Int
     att configUrl: String
     att loaded: Bool
@@ -77,8 +77,8 @@ class org.kubi.ZWaveProduct extends org.kubi.Product {
 
 class org.kubi.zwave.CommandClass {
     att id: Int
-    ref* parameters: org.kubi.zwave.Parameter
-    ref* associations: org.kubi.zwave.Association
+    rel parameters: org.kubi.zwave.Parameter
+    rel associations: org.kubi.zwave.Association
 }
 
 class org.kubi.zwave.Parameter {
@@ -94,12 +94,12 @@ class org.kubi.zwave.Parameter {
     att min: Long
     att max: Long
     att size: Int
-    ref* items: org.kubi.zwave.ParameterItem
+    rel items: org.kubi.zwave.ParameterItem
 }
 
 class org.kubi.zwave.Association {
     att numGroups: Int
-    ref* groups: org.kubi.zwave.AssociationGroup
+    rel groups: org.kubi.zwave.AssociationGroup
 }
 
 class org.kubi.zwave.AssociationGroup {

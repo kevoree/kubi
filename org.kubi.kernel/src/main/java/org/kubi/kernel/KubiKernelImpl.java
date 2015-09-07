@@ -87,7 +87,7 @@ public class KubiKernelImpl implements KubiKernel {
             executorService.shutdownNow();
 
             executorService = null;
-            kubiModel.close(new KCallback() {
+            kubiModel.disconnect(new KCallback() {
                 @Override
                 public void on(Object o) {
 

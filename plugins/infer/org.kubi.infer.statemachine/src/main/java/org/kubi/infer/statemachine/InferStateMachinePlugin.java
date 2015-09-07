@@ -1,7 +1,9 @@
 package org.kubi.infer.statemachine;
 
-import org.kevoree.modeling.*;
-import org.kevoree.modeling.meta.KMeta;
+import org.kevoree.modeling.KCallback;
+import org.kevoree.modeling.KConfig;
+import org.kevoree.modeling.KListener;
+import org.kevoree.modeling.KObject;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.KubiUniverse;
@@ -63,8 +65,10 @@ public class InferStateMachinePlugin  implements KubiPlugin {
 //                    TODO : uncomment
 //                    for (int m = 0; m < modifications.length; m++) {
 //                        if (modifications[m] == MetaStateMachine.REF_CURRENTSTATE) {
-//                            currentStateListener(kObject, modifications[m], statemachineModel);
-//                        }
+//                    if (kObject instanceof MetaState) {
+                    System.out.println("coucou");
+                        currentStateListener(kObject, statemachineModel);
+//                    }
 //                    }
                 });
 
@@ -94,7 +98,7 @@ public class InferStateMachinePlugin  implements KubiPlugin {
 
     }
 
-    private void currentStateListener(KObject src, KMeta modification, KubiModel statemachineModel) {
+    private void currentStateListener(KObject src, KubiModel statemachineModel) {
         System.out.println("coucou");
         ((StateMachine) src).getCurrentState(newState -> {
             if (newState == null) {

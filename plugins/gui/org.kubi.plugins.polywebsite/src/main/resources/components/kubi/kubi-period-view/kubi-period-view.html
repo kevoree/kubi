@@ -55,7 +55,13 @@
             initTemplatePeriod("periodView_template", "periodView", 0, (new Date()).getTime());
         },
         ready : function (){
-
+            try{
+                if (this.$.modelHandlerPeriod.modelAvailable())
+                {
+                    testPeriod(this.$.modelHandlerPeriod.model());
+                    initTemplatePeriod("periodView_template", "periodView", 0, (new Date()).getTime());
+                }
+            }catch (err){console.error(err);}
         }
 
     });

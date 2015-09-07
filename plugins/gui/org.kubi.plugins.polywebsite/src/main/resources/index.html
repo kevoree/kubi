@@ -1,39 +1,26 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html">
 <head lang="en">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-
     <title>Smarthome Polymer</title>
-
-    <!-- css Tiles -->
-    <link rel="stylesheet" href="css/kubiSoft.css"/>
-
-    <!-- materialize-->
-    <link href="./materialize/css/materialize.css" rel="stylesheet" type="text/css"/>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="./materialize/js/materialize.js"></script>
-
 
     <!-- polymer -->
     <script src="./components/bower_components/webcomponentsjs/webcomponents.js"></script>
 
     <!-- components -->
+    <link rel="import" href="components/kubi/kubi-body/kubi-body.html"/>
+
     <link rel="import" href="components/kubi/kubi-header/kubi-header.html"/>
-    <link rel="import" href="./components/kubi/kubi-data/kubi-data.html"/>
     <link rel="import" href="components/kubi/kubi-footer/kubi-footer.html"/>
 
-    <!-- kubi
-    -->
-    <script src="./js/nunjucks.js"></script>
-    <script src="./js/js/org.kubi.model-all.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/KubiSoft.css"/>
+
 </head>
 <body>
+
 <kubi-header></kubi-header>
-<main>
-    <kubi-data></kubi-data>
-</main>
+<kubi-body></kubi-body>
 <kubi-footer></kubi-footer>
+
 </body>
 </html>

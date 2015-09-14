@@ -99,8 +99,6 @@ public class SwitchYourLightPlugin implements KubiPlugin{
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete(o -> {});
-            kubiKernel.model().save(o -> {});
         }
         System.out.println("SmartFridgePlugin stops ...");
     }

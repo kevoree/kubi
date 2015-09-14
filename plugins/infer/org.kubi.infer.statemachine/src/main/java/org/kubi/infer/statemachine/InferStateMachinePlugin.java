@@ -37,11 +37,11 @@ public class InferStateMachinePlugin  implements KubiPlugin {
 
                 System.out.println("Initiate the operation");
 
-                statemachineModel.setClassOperation(MetaState.OP_CANGOTO, (KObject source, Object[] params, KCallback result) -> {
+                statemachineModel.setOperation(MetaState.OP_CANGOTO, (KObject source, Object[] params, KCallback result) -> {
                     if (params.length > 0) {
                         source.traversal()
-                                .traverse(MetaState.REF_TOTRANSITION)
-                                .traverse(MetaTransition.REF_TOSTATE).withAttribute(MetaState.ATT_NAME, params[0])
+                                .traverse(MetaState.REL_TOTRANSITION)
+                                .traverse(MetaTransition.REL_TOSTATE).withAttribute(MetaState.ATT_NAME, params[0])
                                 .then(toState -> {
                                     if (toState.length > 0) {
                                         result.on(true);
@@ -57,7 +57,7 @@ public class InferStateMachinePlugin  implements KubiPlugin {
 
                 StateMachine stateMachine = smView.createStateMachine();
                 stateMachine.setName("StateMachine");
-                ((Ecosystem) kObjects).setStateMachine(stateMachine);
+                ((Ecosystem) kObjects).addStateMachine(stateMachine);
 
                 KListener kListener = statemachineModel.createListener(smUniverse.key());
                 kListener.listen(stateMachine);
@@ -77,7 +77,7 @@ public class InferStateMachinePlugin  implements KubiPlugin {
                 stateMachineBuilder.processData(statemachineModel, stateMachine);
                 System.out.println("Processed the data collected from the file");
 
-                statemachineModel.save( o -> {});
+                statemachineModel.save(o -> {});
 
 
                 try {
@@ -95,7 +95,6 @@ public class InferStateMachinePlugin  implements KubiPlugin {
     @Override
     public void stop() {
         // TODO
-
     }
 
     private void currentStateListener(KObject src, KubiModel statemachineModel) {
@@ -104,11 +103,11 @@ public class InferStateMachinePlugin  implements KubiPlugin {
             if (newState == null) {
 
             } else {
-                newState.timesBefore(newState.now(), longs -> {
+                newState[0].timesBefore(newState[0].now(), longs -> {
                     if(longs.length>1) {
                         src.jump(longs[1], prevStateMachine -> {
                             ((StateMachine) prevStateMachine).getCurrentState(prevState -> {
-                                updateMetrics((State) prevState, newState, statemachineModel);
+                                updateMetrics((State) prevState[0], newState[0], statemachineModel);
                             });
                         });
                     }
@@ -128,7 +127,7 @@ public class InferStateMachinePlugin  implements KubiPlugin {
         Integer currentStateOutCounter = existingState.getOutCounter()==null?0:existingState.getOutCounter();
         existingState.setOutCounter(currentStateOutCounter+1);
         currentState.jump(existingState.now(), kObject -> {
-            kObject.traversal().traverse(MetaState.REF_TOTRANSITION).then(toTransitionObjs -> {
+            kObject.traversal().traverse(MetaState.REL_TOTRANSITION).then(toTransitionObjs -> {
                 for(KObject toTransitionObj : toTransitionObjs){
                     // for all the transitions leaving the current State
                     Transition transition = (Transition) toTransitionObj ;
@@ -136,7 +135,7 @@ public class InferStateMachinePlugin  implements KubiPlugin {
                         Double probability = transition.getProbability() == null ? 0 : transition.getProbability();
                         Double newProba;
                         // for all the states S where currentState --> S
-                        if (stateFromCurrentObj.getName().equals(existingState.getName())) {
+                        if (stateFromCurrentObj[0].getName().equals(existingState.getName())) {
                             // The transition currentState --> existingState  <==> destination state
                             currentState.timesBefore(existingState.now(),longs -> {
                                 Long deltaNow = longs[0] - longs[1];
@@ -163,12 +162,12 @@ public class InferStateMachinePlugin  implements KubiPlugin {
         final KubiView smView = smUniverse.time(System.currentTimeMillis());
         smView.getRoot(kObject -> {
             if (kObject != null) {
-                kObject.traversal().traverse(MetaEcosystem.REF_STATEMACHINE).then(kObjects -> {
+                kObject.traversal().traverse(MetaEcosystem.REL_STATEMACHINE).then(kObjects -> {
                     System.out.println(((StateMachine) kObjects[0]).getName());
-                    kObjects[0].traversal().traverse(MetaStateMachine.REF_STATES).then(statesObj -> {
+                    kObjects[0].traversal().traverse(MetaStateMachine.REL_STATES).then(statesObj -> {
                         for(KObject stateObj: statesObj){
                             String name = ((State) stateObj).getName();
-                            stateObj.traversal().traverse(MetaState.REF_TOTRANSITION).then(toTransObjs -> {
+                            stateObj.traversal().traverse(MetaState.REL_TOTRANSITION).then(toTransObjs -> {
                                 System.out.println(" - " + name + "(" + ((State) stateObj).getOutCounter() + ")");
                                 for(KObject toTransObj : toTransObjs){
                                     System.out.println("\t --> " + toTransObj);

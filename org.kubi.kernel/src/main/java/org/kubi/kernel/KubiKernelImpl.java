@@ -6,7 +6,7 @@ import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.cdn.KContentDeliveryDriver;
 import org.kevoree.modeling.memory.manager.DataManagerBuilder;
 import org.kevoree.modeling.memory.manager.internal.KInternalDataManager;
-import org.kevoree.modeling.scheduler.impl.ExecutorServiceScheduler;
+import org.kevoree.modeling.scheduler.impl.DirectScheduler;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.api.KubiKernel;
@@ -30,7 +30,8 @@ public class KubiKernelImpl implements KubiKernel {
         // setting the content delivery driver to LevelDB
         KInternalDataManager dm ;
         dm = DataManagerBuilder.create()
-                .withScheduler(new ExecutorServiceScheduler())
+//                .withScheduler(new ExecutorServiceScheduler())
+                .withScheduler(new DirectScheduler())
                 .withContentDeliveryDriver(cdd).build();
 
         kubiModel = new KubiModel(dm);
@@ -94,7 +95,7 @@ public class KubiKernelImpl implements KubiKernel {
             executorService.shutdownNow();
 
             executorService = null;
-            kubiModel.close(new KCallback() {
+            kubiModel.disconnect(new KCallback() {
                 @Override
                 public void on(Object o) {
 

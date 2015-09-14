@@ -30,26 +30,23 @@ public class PolynomialReaderPlugin implements KubiPlugin {
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
                 ecosystem.traversal()
-                        .traverse(MetaEcosystem.REF_TECHNOLOGIES)
-                        .traverse(MetaTechnology.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "ElectricConsommation")
-                        .traverse(MetaDevice.REF_STATEPARAMETERS)//.withAttribute(MetaStateParameter.ATT_NAME, "name")
-                        .then(new KCallback<KObject[]>() {
-                    @Override
-                    public void on(KObject[] kObjects) {
-                        if (kObjects.length == 0) {
-                            System.err.println("Error PolynomialReader : no device detected");
-                        } else {
-                            kObjects[0].jump(time, new KCallback<KObject>() {
-                                @Override
-                                public void on(KObject kObject) {
-                                    StateParameter parameter = (SimulatedParameter) kObject;
-                                    String extrapolation = "" + polynomialLaw.evaluate((double) ((time / 1000) % 11));
-                                    System.out.println("Extrapollation :" + extrapolation + "..value: " + parameter.getValue() + " ==> " + extrapolation.equals(parameter.getValue()));
-                                }
-                            });
-                        }
-                    }
-                });
+                        .traverse(MetaEcosystem.REL_TECHNOLOGIES)
+                        .traverse(MetaTechnology.REL_DEVICES).withAttribute(MetaDevice.ATT_NAME, "ElectricConsommation")
+                        .traverse(MetaDevice.REL_STATEPARAMETERS)//.withAttribute(MetaStateParameter.ATT_NAME, "name")
+                        .then(kObjects -> {
+                            if (kObjects.length == 0) {
+                                System.err.println("Error PolynomialReader : no device detected");
+                            } else {
+                                kObjects[0].jump(time, new KCallback<KObject>() {
+                                    @Override
+                                    public void on(KObject kObject) {
+                                        StateParameter parameter = (SimulatedParameter) kObject;
+                                        String extrapolation = "" + polynomialLaw.evaluate((double) ((time / 1000) % 11));
+                                        System.out.println("Extrapollation :" + extrapolation + "..value: " + parameter.getValue() + " ==> " + extrapolation.equals(parameter.getValue()));
+                                    }
+                                });
+                            }
+                        });
             }
         });
     }

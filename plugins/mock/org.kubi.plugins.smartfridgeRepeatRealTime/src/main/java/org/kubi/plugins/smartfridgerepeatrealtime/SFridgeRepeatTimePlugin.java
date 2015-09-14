@@ -53,14 +53,17 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
                 temperatureParam.setPredictedPeriodMin(3500000);
                 temperatureParam.setPredictedPeriodMax(20000000);
                 kubiKernel.model().metaModel().metaClassByName("org.kubi.StateParameter").attribute("value").setExtrapolation(new DiscreteExtrapolationWithPeriod());
-                temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(), ecosystem.now()));
+                temperatureParam.addPeriod(kernel.model().createPeriod(ecosystem.universe(), ecosystem.now()));
                 device.addStateParameters(temperatureParam);
 
                 currentTechnology.addDevices(device);
 
-                KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
-                initData(universe, this.getClass().getClassLoader().getResourceAsStream(fileToLoad), temperatureParam);
-                kernel.model().save(o -> {});
+
+                kernel.model().save(o -> {
+                    KubiUniverse universe = kernel.model().universe(kernel.currentUniverse());
+                    initData(universe, this.getClass().getClassLoader().getResourceAsStream(fileToLoad), temperatureParam);
+                });
+
                 // TODO : reader
 //                readData();
             }
@@ -72,8 +75,6 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
     public void stop() {
         if (currentTechnology != null) {
             System.out.println("STOP -> delete.");
-            currentTechnology.delete(o -> {});
-            kubiKernel.model().save(o -> {});
         }
         System.out.println("SmartFridgePlugin stops ...");
     }
@@ -134,18 +135,14 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
             kubiKernel.model().manager().lookup(0, l, param.uuid(), kDefer.waitResult());
         }
         kDefer.then(objects -> {
-                for (int i = 0; i < objects.length; i++) {
-                    ((StateParameter) objects[i]).setValue(tempValueList.get(i).getTemperature()+"");
-                }
-                ((StateParameter) objects[0]).allTimes(longs->{
-                    System.out.println("*****"+longs.length);
-                });
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        kubiKernel.model().save(o -> {});
-                    }
-                }).start();
+            for (int i = 0; i < objects.length; i++) {
+                ((StateParameter) objects[i]).setValue(tempValueList.get(i).getTemperature()+"");
+            }
+//            ((StateParameter) objects[0]).allTimes(longs->{
+//                System.out.println("*****"+longs.length);
+//            });
+            kubiKernel.model().save(o -> {});
+
         });
         // ------- V1
 //        kubiKernel.model().manager().lookupAllTimes(0, times, param.uuid(), new KCallback<KObject[]>() {
@@ -181,15 +178,13 @@ public class SFridgeRepeatTimePlugin implements KubiPlugin {
 
 
     private void readData() {
-        try {
-            Thread.sleep(5500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        kubiKernel.model().universe(0).time(System.currentTimeMillis()).getRoot(root -> {
-            root.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES)
-                    .traverse(MetaTechnology.REF_DEVICES)
-                    .traverse(MetaDevice.REF_STATEPARAMETERS).then(a -> {
+        System.out.println("SFRepeat :: readData");
+        kubiKernel.model().universe(kubiKernel.currentUniverse()).time(System.currentTimeMillis()).getRoot(root -> {
+            System.out.println("SFRepeat :: root " + root.metaClass());
+            root.traversal().traverse(MetaEcosystem.REL_TECHNOLOGIES)
+                    .traverse(MetaTechnology.REL_DEVICES)
+                    .traverse(MetaDevice.REL_STATEPARAMETERS).then(a -> {
+                System.out.println("SFRepeat :: res size == " + a.length);
                 for (KObject stateP : a) {
 //                    System.out.println(stateP.universe()+", "+stateP.now()+", "+stateP.uuid());
                     stateP.allTimes(longs -> {

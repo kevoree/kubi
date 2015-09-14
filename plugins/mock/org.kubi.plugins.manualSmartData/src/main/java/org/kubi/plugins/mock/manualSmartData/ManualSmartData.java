@@ -41,7 +41,7 @@ public class ManualSmartData implements KubiPlugin{
                         }
                     });
 
-                    device.traversal().traverse(MetaDevice.REF_STATEPARAMETERS).then((params) -> {
+                    device.traversal().traverse(MetaDevice.REL_STATEPARAMETERS).then((params) -> {
                         if (params.length > 0) {
                             for (int i = 0; i < 100; i++) {
                                 int k = 300000;
@@ -71,16 +71,6 @@ public class ManualSmartData implements KubiPlugin{
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
-            kubiKernel.model().save(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
         }
         System.out.println("ManualSmartData Stop ... ");
     }

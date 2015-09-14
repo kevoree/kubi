@@ -1,29 +1,29 @@
 class org.kubi.Ecosystem {
     att name : String
-    ref* groupes : org.kubi.Group
-    ref* technologies : org.kubi.Technology
-    ref stateMachine : org.synoptic.StateMachine
+    rel groupes : org.kubi.Group
+    rel technologies : org.kubi.Technology
+    rel stateMachine : org.synoptic.StateMachine with maxBound 1
 }
 
 class org.kubi.Group {
     att name : String
-    ref* groupes : org.kubi.Group
-    ref* devices : org.kubi.Device with opposite "groupes"
+    rel groupes : org.kubi.Group
+    rel devices : org.kubi.Device with opposite "groupes"
 }
 
 class org.kubi.Device {
     att id : String
     att homeId : String
-    ref* groupes : org.kubi.Group with oppositeO "devices"
+    rel groupes : org.kubi.Group with oppositeO "devices"
 
-    ref links : org.kubi.Device
+    rel links : org.kubi.Device with maxBound 1
     att name : String
     att picture : String
     att version : String
     att manufacturer : String
-    ref technology : org.kubi.Technology
-    ref* stateParameters : org.kubi.StateParameter
-    ref* actionParameters : org.kubi.ActionParameter
+    rel technology : org.kubi.Technology with maxBound 1
+    rel stateParameters : org.kubi.StateParameter
+    rel actionParameters : org.kubi.ActionParameter
 }
 
 enum org.kubi.ParameterType {
@@ -44,7 +44,7 @@ class org.kubi.StateParameter {
     att precision : Double
     att unit : String
     att range : String
-    ref period : org.kubi.Period
+    rel period : org.kubi.Period with maxBound 1
 
     // information for the process of the period
     att frequencyOfCalculation : Int
@@ -58,8 +58,8 @@ class org.kubi.ActionParameter extends org.kubi.StateParameter {
 
 class org.kubi.Technology {
     att name : String
-    ref* devices : org.kubi.Device with opposite "technology"
-    ref catalog : org.kubi.Catalog
+    rel devices : org.kubi.Device with opposite "technology"
+    rel catalog : org.kubi.Catalog with maxBound 1
 }
 
 ///------ Simulation
@@ -85,13 +85,13 @@ class org.kubi.Period{
 
 class org.kubi.Catalog {
 
-    ref* manufacturers : org.kubi.Manufacturer
+    rel manufacturers : org.kubi.Manufacturer
 }
 
 class org.kubi.Manufacturer {
     att name : String
     att id : Int
-    ref* products : org.kubi.Product
+    rel products : org.kubi.Product
 }
 
 class org.kubi.Product {
@@ -100,14 +100,14 @@ class org.kubi.Product {
 }
 
 class org.kubi.ZWaveProduct extends org.kubi.Product {
-    ref* commandClasses : org.kubi.zwave.CommandClass
+    rel commandClasses : org.kubi.zwave.CommandClass
     att type : Int
 }
 
 class org.kubi.zwave.CommandClass {
     att id : Int
-    ref* parameters : org.kubi.zwave.Parameter
-    ref* associations : org.kubi.zwave.Association
+    rel parameters : org.kubi.zwave.Parameter
+    rel associations : org.kubi.zwave.Association
 }
 
 class org.kubi.zwave.Parameter {
@@ -123,12 +123,12 @@ class org.kubi.zwave.Parameter {
     att min : Long
     att max : Long
     att size : Int
-    ref* items : org.kubi.zwave.ParameterItem
+    rel items : org.kubi.zwave.ParameterItem
 }
 
 class org.kubi.zwave.Association {
     att numGroups : Int
-    ref* groups : org.kubi.zwave.AssociationGroup
+    rel groups : org.kubi.zwave.AssociationGroup
 }
 
 class org.kubi.zwave.AssociationGroup {
@@ -152,15 +152,15 @@ class org.kubi.zwave.ParameterItem {
 
 class org.synoptic.StateMachine {
     att name : String
-    ref currentState : org.synoptic.State
-    ref* states : org.synoptic.State
+    rel currentState : org.synoptic.State with maxBound 1
+    rel states : org.synoptic.State
 }
 
 class org.synoptic.State {
     att outCounter : Int
     att name : String
-    ref* fromTransition : org.synoptic.Transition
-    ref* toTransition : org.synoptic.Transition
+    rel fromTransition : org.synoptic.Transition
+    rel toTransition : org.synoptic.Transition
     func canGoTo (stateName : String) : Bool
 }
 
@@ -168,6 +168,6 @@ class org.synoptic.Transition {
     att probability :  Double
     att deltaMin: Long
     att deltaMax: Long
-    ref fromState : org.synoptic.State
-    ref toState : org.synoptic.State
+    rel fromState : org.synoptic.State with maxBound 1
+    rel toState : org.synoptic.State with maxBound 1
 }

@@ -35,20 +35,17 @@ public class DiscreteExtrapolationWithPeriod extends DiscreteExtrapolation {
             current.jump(start, kDefer.waitResult());
             start = start + step;
         }
-        kDefer.then(new KCallback<Object[]>() {
-            @Override
-            public void on(Object[] objects) {
-                double[] paramValues = new double[objects.length];
-                for (int i = 0; i < objects.length - 1; i++) {
-                    if (objects[i] == null || ((StateParameter) objects[i]).getValue() == null) {
-                        // System.out.println("not enough point in the past");
-                        return;
-                    }
-                    String value = ((StateParameter) objects[i]).getValue();
-                    paramValues[i] = Double.parseDouble(value);
+        kDefer.then(objects -> {
+            double[] paramValues = new double[objects.length];
+            for (int i = 0; i < objects.length - 1; i++) {
+                if (objects[i] == null || ((StateParameter) objects[i]).getValue() == null) {
+                    // System.out.println("not enough point in the past");
+                    return;
                 }
-                calculatePeriod(paramValues, (StateParameter) current);
+                String value = ((StateParameter) objects[i]).getValue();
+                paramValues[i] = Double.parseDouble(value);
             }
+            calculatePeriod(paramValues, (StateParameter) current);
         });
     }
 
@@ -68,7 +65,7 @@ public class DiscreteExtrapolationWithPeriod extends DiscreteExtrapolation {
 //        System.out.print("min : " + periodInPtNbMin);
 //        System.out.println("  __  max : " + periodInPtNbMax);
         int period = JavaPeriodCalculatorFFT.getOtherPeriod(result, periodInPtNbMin, periodInPtNbMax);
-        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(new KCallback<KObject[]>() {
+        parameter.traversal().traverse(MetaStateParameter.REL_PERIOD).then(new KCallback<KObject[]>() {
             @Override
             public void on(KObject[] kObjects) {
                 if (kObjects.length > 0) {

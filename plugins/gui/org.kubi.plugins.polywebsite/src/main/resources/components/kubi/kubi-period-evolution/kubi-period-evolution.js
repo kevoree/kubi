@@ -15,11 +15,11 @@ function updatePeriodSettings(time, scale, devices) {
         periodEvolution.model.universe(periodEvolution.univers).time(periodEvolution.time).getRoot(function (root) {
             if (root != null) {
                 root.traversal()
-                    .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, devices[0])// TODO: generalize with the all table of devices
-                    .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS)
-                    .traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD)
-                    .then(function (periodRes) {
+                    .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                    .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, devices[0])// TODO: generalize with the all table of devices
+                    .traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS)
+                    .traverse(org.kubi.meta.MetaStateParameter.REL_PERIOD)
+                    .then(function (periodRes){
                         if (periodRes != null && periodRes.length > 0) {
                             var period = periodRes[0]; // TODO : generalize to the all set of devices
                             var value = period.getPeriod();

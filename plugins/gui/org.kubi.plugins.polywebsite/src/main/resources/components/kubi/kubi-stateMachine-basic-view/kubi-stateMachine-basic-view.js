@@ -3,14 +3,16 @@
  */
 
 
-var stateMachineBasicVar = {
-    universe : 0,
-    time : (new Date()).getTime()
-}
+var stateMachineBasicVar = stateMachineBasicVar || {
+        universe : 0,
+        time : (new Date()).getTime()
+    }
 
 
 function setFSMModel(model) {
     stateMachineBasicVar.model = model;
+    stateMachineBasicVar.modelContext = stateMachineBasicVar.model.createModelContext();
+    stateMachineBasicVar.modelContext.set((new Date()).getTime(),org.kevoree.modeling.KConfig.END_OF_TIME,0,0);
 }
 
 function showBasicStateMachine(fsmDivId){
@@ -40,7 +42,7 @@ function initTemplateFSM(htmlIdSource, htmlIdTarget) {
             ecosystem.traversal().traverse(org.kubi.meta.MetaEcosystem.REF_STATEMACHINE).then(function(stateMachine){
                 try {
                     var template = paperclip.template((document.getElementById(htmlIdSource)).innerHTML);
-                    var view = template.view({stateMachine: stateMachine[0] });
+                    var view = template.view({stateMachine: stateMachine[0] }, {modelContext : stateMachineBasicVar.modelContext});
                     (document.getElementById(htmlIdTarget)).appendChild(view.render());
                 }
                 catch (e) {

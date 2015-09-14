@@ -51,16 +51,6 @@ public class SimulSmartFridgePlugin implements KubiPlugin {
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
-            kubiKernel.model().save(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
         }
         System.out.println("SmartFridge Stop ... ");
     }

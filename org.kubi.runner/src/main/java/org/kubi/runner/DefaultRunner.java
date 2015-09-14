@@ -1,8 +1,10 @@
 package org.kubi.runner;
 
-import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
-import org.kubi.kernel.KubiKernelImpl;
 import org.kevoree.log.Log;
+import org.kevoree.modeling.drivers.leveldb.LevelDbContentDeliveryDriver;
+import org.kevoree.modeling.drivers.websocket.WebSocketPeer;
+import org.kevoree.modeling.drivers.websocket.gateway.WebSocketGateway;
+import org.kubi.kernel.KubiKernelImpl;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -20,24 +22,40 @@ public class DefaultRunner {
     private static final String DB_FSM_NAME = "fsmDB";
 
     public static void main(String[] args) throws IOException {
-        Log.DEBUG();
-        clearDB();
-        LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(DB_NAME);
-        KubiKernelImpl kernel = new KubiKernelImpl(leveldb);
-        kernel.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Log.debug("Shutdown");
-                try {
-                    kernel.stop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }));
+        Log.TRACE();
 
-        kernel.start();
+        clearDB();
+
+        Log.trace("Initiating LevelDB");
+        LevelDbContentDeliveryDriver leveldb = new LevelDbContentDeliveryDriver(DB_NAME);
+
+        Log.trace("Starting WSGateway");
+        WebSocketGateway.expose(leveldb, 8082).start();
+
+        leveldb.connect(throwable -> {
+            if (throwable != null) {
+                throwable.printStackTrace();
+            }
+
+            Log.trace("Creating Kernel");
+            try {
+                final KubiKernelImpl kernel = new KubiKernelImpl(new WebSocketPeer("ws://localhost:8082/cdn"));
+
+                Log.trace("Kernel start");
+                kernel.start();
+
+                Runtime.getRuntime().addShutdownHook(new Thread( () ->  {
+                    try {
+                        kernel.stop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private static void startKeepUpThread() {

@@ -31,10 +31,10 @@ public class PeriodBecomeNull implements KubiPlugin {
             public void on(KObject kObject) {
                 Ecosystem ecosystem = (Ecosystem) kObject;
                 ecosystem.traversal()
-                        .traverse(MetaEcosystem.REF_TECHNOLOGIES)
-                        .traverse(MetaTechnology.REF_DEVICES).withAttribute(MetaDevice.ATT_NAME, "plug")
-                        .traverse(MetaDevice.REF_STATEPARAMETERS).withAttribute(MetaStateParameter.ATT_NAME, "name")
-                        .traverse(MetaStateParameter.REF_PERIOD)
+                        .traverse(MetaEcosystem.REL_TECHNOLOGIES)
+                        .traverse(MetaTechnology.REL_DEVICES).withAttribute(MetaDevice.ATT_NAME, "plug")
+                        .traverse(MetaDevice.REL_STATEPARAMETERS).withAttribute(MetaStateParameter.ATT_NAME, "name")
+                        .traverse(MetaStateParameter.REL_PERIOD)
                         .then(new KCallback<KObject[]>() {
                             @Override
                             public void on(KObject[] kObjects) {

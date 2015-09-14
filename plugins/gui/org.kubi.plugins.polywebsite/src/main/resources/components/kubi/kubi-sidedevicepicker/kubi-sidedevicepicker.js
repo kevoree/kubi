@@ -1,13 +1,15 @@
 /**
  * Created by jerome on 03/06/15.
  */
-var sideDevicePicker = {
-    universe : 0
-}
+var sideDevicePicker = sideDevicePicker || {
+        universe : 0
+    }
 
 
 function setModelForTemplate(modelForTemplate) {
     sideDevicePicker.model = modelForTemplate;
+    sideDevicePicker.modelContext = sideDevicePicker.model.createModelContext();
+    sideDevicePicker.modelContext.set((new Date()).getTime(),org.kevoree.modeling.KConfig.END_OF_TIME,0,0);
 }
 
 
@@ -23,7 +25,8 @@ function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate
     viewTemplate.getRoot(function (rootNow) {
         try {
             var template = paperclip.template((document.getElementById(htmlIdSource)).innerHTML);
-            var view = template.view({ecosystem: rootNow });
+            var view = template.view({ecosystem: rootNow }, {modelContext: sideDevicePicker.modelContext});
+            console.log("res :", view.render());
             (document.getElementById(htmlIdTarget)).appendChild(view.render());
         }
         catch (e) {

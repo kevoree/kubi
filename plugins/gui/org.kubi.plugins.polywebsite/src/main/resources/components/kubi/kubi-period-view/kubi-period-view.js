@@ -2,13 +2,15 @@
  * Created by jerome on 03/06/15.
  */
 
-var periodViewVar = {
+var periodViewVar = periodViewVar || {
     universe : 0
 }
 
 
 function testPeriod(model){
     periodViewVar.model = model;
+    periodViewVar.modelContext = periodViewVar.model.createModelContext();
+    periodViewVar.modelContext.set((new Date()).getTime(),org.kevoree.modeling.KConfig.END_OF_TIME,0,0);
 }
 
 
@@ -23,7 +25,7 @@ function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTe
     viewPeriod.getRoot(function (rootNow) {
         try{
             var template = paperclip.template((document.getElementById(htmlIdSource)).innerHTML);
-            var view = template.view({ecosystem: rootNow });
+            var view = template.view({ecosystem: rootNow }, {modelContext : periodViewVar.modelContext});
             (document.getElementById(htmlIdTarget)).appendChild(view.render());
 
         }

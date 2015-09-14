@@ -81,53 +81,43 @@ public class StateMachineBuilder {
 
     public void processData(KubiModel model, StateMachine stateMachine){
         for (StateTimed stateTimed : this.stateTimedList){
-            stateMachine.jump(stateTimed.getTimestamp(), new KCallback<KObject>() {
-                @Override
-                public void on(KObject stateMachineTimedObj) {
-                    if (stateMachineTimedObj != null) {
-                        StateMachine stateMachineTimed = ((StateMachine) stateMachineTimedObj);
-                        stateMachineTimed.getCurrentState(new KCallback<State>() {
-                            @Override
-                            public void on(State currentState) {
-                                if (currentState == null) {
-                                    // the first state to add in the current StateMachine
-                                    State state = model.createState(0, stateTimed.getTimestamp());
-                                    state.setName(stateTimed.getState());
-                                    stateMachineTimed.addStates(state);
-                                    stateMachineTimed.setCurrentState(state);
+            stateMachine.jump(stateTimed.getTimestamp(), stateMachineTimedObj -> {
+                if (stateMachineTimedObj != null) {
+                    StateMachine stateMachineTimed = ((StateMachine) stateMachineTimedObj);
+                    stateMachineTimed.getCurrentState(currentState -> {
+                        if (currentState.length == 0) {
+                            // the first state to add in the current StateMachine
+                            State state = model.createState(0, stateTimed.getTimestamp());
+                            state.setName(stateTimed.getState());
+                            stateMachineTimed.addStates(state);
+                            stateMachineTimed.addCurrentState(state);
 
-                                } else {
-                                    stateMachineTimed.traversal().traverse(MetaStateMachine.REF_STATES).withAttribute(MetaState.ATT_NAME, stateTimed.getState())
-                                            .then(new KCallback<KObject[]>() {
-                                                @Override
-                                                public void on(KObject[] existingStates) {
-                                                    if (existingStates.length == 0) {
-                                                        // the state doesn't exist yet
-                                                        State state = model.createState(0, stateTimed.getTimestamp());
-                                                        state.setName(stateTimed.getState());
-                                                        linkStates(((State) currentState), state, model);
-                                                        stateMachineTimed.addStates(state);
-                                                        stateMachineTimed.setCurrentState(state);
-                                                    } else {
-                                                        stateMachineTimed.setCurrentState((State) existingStates[0]);
-                                                        ((State) currentState).canGoTo(((State) existingStates[0]).getName(), new KCallback<Boolean>() {
-                                                            @Override
-                                                            public void on(Boolean canGoTo) {
-                                                                if (canGoTo) {
-                                                                    updateMetrics(((State) currentState), ((State) existingStates[0]), model);
-                                                                } else if(!((State) currentState).getName().equals(((State) existingStates[0]).getName())) {
-                                                                    //the states exist but there is not transition linking them
-                                                                    linkStates(((State) currentState), ((State) existingStates[0]), model);
-                                                                }
-                                                            }
-                                                        });
-                                                    }
-                                                }
-                                            });
-                                }
-                            }
-                        });
-                    }
+                        } else {
+                            stateMachineTimed.traversal().traverse(MetaStateMachine.REL_STATES).withAttribute(MetaState.ATT_NAME, stateTimed.getState())
+                                    .then(existingStates -> {
+                                        if (existingStates.length == 0) {
+                                            // the state doesn't exist yet
+                                            State state = model.createState(0, stateTimed.getTimestamp());
+                                            state.setName(stateTimed.getState());
+                                            linkStates(((State) currentState[0]), state, model);
+                                            stateMachineTimed.addStates(state);
+                                            stateMachineTimed.addCurrentState(state);
+//                                        } else {
+//                                            stateMachineTimed.setCurrentState((State) existingStates[0]);
+//                                            System.out.println(currentState);
+//                                            ((State) currentState).canGoTo(((State) existingStates[0]).getName(), canGoTo -> {
+//                                                if (canGoTo) {
+//                                                    System.out.println("canGoTo");
+//// todo uncomment                                                    updateMetrics(((State) currentState), ((State) existingStates[0]), model);
+//                                                } else if (!((State) currentState).getName().equals(((State) existingStates[0]).getName())) {
+//                                                    //the states exist but there is not transition linking them
+//                                                    linkStates(((State) currentState), ((State) existingStates[0]), model);
+//                                                }
+//                                            });
+                                        }
+                                    });
+                        }
+                    });
                 }
             });
             model.save(o -> {});
@@ -137,13 +127,13 @@ public class StateMachineBuilder {
     private void updateMetrics(State currentState, State existingState, KubiModel model) {
         Integer currentStateOutCounter = currentState.getOutCounter()==null?0:currentState.getOutCounter();
         currentState.setOutCounter(currentStateOutCounter+1);
-        currentState.traversal().traverse(MetaState.REF_TOTRANSITION).then(new KCallback<KObject[]>() {
+        currentState.traversal().traverse(MetaState.REL_TOTRANSITION).then(new KCallback<KObject[]>() {
             @Override
             public void on(KObject[] toTransitionObjs) {
                 for(KObject toTransitionObj : toTransitionObjs){
                     // for all the transitions leaving the current State
                     Transition transition = (Transition) toTransitionObj ;
-                    toTransitionObj.traversal().traverse(MetaTransition.REF_TOSTATE).then(new KCallback<KObject[]>() {
+                    toTransitionObj.traversal().traverse(MetaTransition.REL_TOSTATE).then(new KCallback<KObject[]>() {
                         @Override
                         public void on(KObject[] stateFromCurrentObjs) {
                             for (KObject stateFromCurrentObj : stateFromCurrentObjs){
@@ -153,11 +143,11 @@ public class StateMachineBuilder {
                                 if(((State) stateFromCurrentObj).getName().equals(existingState.getName())){
                                     // The transition currentState --> existingState  <==> destination state
                                     currentState.timesBefore(existingState.now(), longs -> {
-                                            Long deltaNow = existingState.now() - longs[1];
-                                            Long deltaMin = transition.getDeltaMin()==null? KConfig.END_OF_TIME:transition.getDeltaMin();
-                                            Long deltaMax = transition.getDeltaMin()==null?0:transition.getDeltaMin();
-                                            transition.setDeltaMin(Math.min(deltaMin, deltaNow));
-                                            transition.setDeltaMax(Math.max(deltaMax, deltaNow));
+                                        Long deltaNow = existingState.now() - longs[1];
+                                        Long deltaMin = transition.getDeltaMin()==null? KConfig.END_OF_TIME:transition.getDeltaMin();
+                                        Long deltaMax = transition.getDeltaMin()==null?0:transition.getDeltaMin();
+                                        transition.setDeltaMin(Math.min(deltaMin, deltaNow));
+                                        transition.setDeltaMax(Math.max(deltaMax, deltaNow));
                                     });
                                     newProba = (((probability*currentStateOutCounter)+1)/(currentStateOutCounter+1));
                                 }else {
@@ -174,8 +164,8 @@ public class StateMachineBuilder {
 
     private void linkStates(State currentState, State existingState, KubiModel model) {
         Transition transition = model.createTransition(0, existingState.now());
-        transition.setFromState(currentState);
-        transition.setToState(existingState);
+        transition.addFromState(currentState);
+        transition.addToState(existingState);
         currentState.addToTransition(transition);
         existingState.addFromTransition(transition);
         model.save(o -> {});

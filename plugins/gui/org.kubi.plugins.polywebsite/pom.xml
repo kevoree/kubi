@@ -37,6 +37,20 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.kevoree.modeling</groupId>
+                <artifactId>org.kevoree.modeling.java2typescript.mavenplugin</artifactId>
+                <version>${java2typescript.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>extract</id>
+                        <goals><goal>extract</goal></goals>
+                        <configuration>
+                            <target>${project.build.outputDirectory}/js</target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!--<plugin>-->
                 <!--<groupId>org.kevoree.modeling</groupId>-->
                 <!--<artifactId>org.kevoree.modeling.java2typescript.mavenplugin</artifactId>-->

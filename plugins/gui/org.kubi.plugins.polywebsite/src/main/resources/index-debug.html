@@ -3,18 +3,19 @@
 <head lang="en">
     <title>Smarthome Polymer</title>
 
-    <script src="/js/js/org.kubi.model.js"></script>
-    <script src="/js/js/org.kevoree.modeling.microframework.browser.js"></script>
-    <script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
+    <script src="/js/org.kubi.model.js"></script>
+    <script src="/js/org.kevoree.modeling.microframework.browser.js"></script>
+    <script src="/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
 </head>
 <body>
 
 
 <script>
+    console.log("aodzioaueiozueiouaz");
     var debugVar ={};
     // --------------
-    debugVar.wsClient = new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn");
+    debugVar.wsClient = new org.kevoree.modeling.drivers.websocket.WebSocketPeer("ws://localhost:8082/cdn");
     debugVar.manager = org.kevoree.modeling.memory.manager.DataManagerBuilder.create().withContentDeliveryDriver(debugVar.wsClient).build();
     debugVar.model = new org.kubi.KubiModel(debugVar.manager);
 
@@ -23,22 +24,22 @@
             console.error(err);
         } else {
             debugVar.model.lookup(0, 1440077899625, 4, function(obj){
+                console.log(obj,obj.toString(), obj.getValue());
                 obj.allTimes(function(longs){
                     console.log("-->  ", longs.length);
                     for(var i=0;i<longs.length;i++){
                         console.log("**",longs[i]);
                     }
                 });
-//                console.log(obj,obj.toString(), obj.getValue());
             });
 
             debugVar.model.universe(0).time((new Date()).getTime()).getRoot(function(root){
                 root.traversal()
-                        .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                        .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
-                        .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS)
+                        .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                        .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES)
+//                        .traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS)
                         .then(function(params){
-                            console.log(params[0].getValue(), "---",params[0].now());
+                            console.log(params[0].getName(), "---",params[0].now());
                 });
             });
 

@@ -31,9 +31,9 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
         long initialTime = KConfig.BEGINNING_OF_TIME;
         kernel.model().universe(kernel.currentUniverse()).time(initialTime).getRoot(root -> {
             Ecosystem ecosystem = (Ecosystem) root;
-            ecosystem.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES)
-                    .traverse(MetaTechnology.REF_DEVICES)
-                    .traverse(MetaDevice.REF_STATEPARAMETERS)
+            ecosystem.traversal().traverse(MetaEcosystem.REL_TECHNOLOGIES)
+                    .traverse(MetaTechnology.REL_DEVICES)
+                    .traverse(MetaDevice.REL_STATEPARAMETERS)
                     .then(kObjects -> {
                         if (kObjects.length > 0) {
 //                            for (int i =0;i<kObjects.length;i++){
@@ -102,7 +102,7 @@ public class PeriodAnalysisPlugin implements KubiPlugin {
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, observationsDouble.length / 8, observationsDouble.length / 4);
 //        int period = JavaPeriodCalculatorFFT.getPeriod(observationsDouble, 2, observationsDouble.length / 2);
         int period = JavaPeriodCalculatorFFT.getOtherPeriod(observationsDouble, 100, 700);
-        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(kObjects -> {
+        parameter.traversal().traverse(MetaStateParameter.REL_PERIOD).then(kObjects -> {
             if (kObjects.length > 0) {
                 Period kPeriod = ((Period) kObjects[0]);
                 if (kPeriod.getPeriod() == null) {

@@ -15,9 +15,9 @@ function setMaxSlider(){
         kModelSlider.universe(universeSlider).time(timeSlider).getRoot(function (root) {
             try {
                 root.traversal()
-                    .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                    .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
-                    .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function (stateParams) {
+                    .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                    .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES)
+                    .traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS).then(function (stateParams) {
                         allTimes(stateParams, function (timestamps) {
                             try {
                                 var max = getMax(timestamps);

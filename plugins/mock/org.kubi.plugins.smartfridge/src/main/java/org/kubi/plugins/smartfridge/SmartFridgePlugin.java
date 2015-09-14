@@ -42,13 +42,13 @@ public class SmartFridgePlugin implements KubiPlugin {
                 Device device = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("plug");
 
                 StateParameter temperatureParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name").setUnit("kW");
-                temperatureParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
+                temperatureParam.addPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
                 device.addStateParameters(temperatureParam);
 
                 Device device2 = kernel.model().createDevice(ecosystem.universe(),ecosystem.now()).setName("openCheck");
 
                 StateParameter openCheckParam = kernel.model().createStateParameter(ecosystem.universe(),ecosystem.now()).setName("name");
-                openCheckParam.setPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
+                openCheckParam.addPeriod(kernel.model().createPeriod(ecosystem.universe(),ecosystem.now()));
                 device2.addStateParameters(openCheckParam);
 
                 currentTechnology.addDevices(device);
@@ -77,17 +77,7 @@ public class SmartFridgePlugin implements KubiPlugin {
     @Override
     public void stop() {
         if(currentTechnology != null){
-            currentTechnology.delete(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
-            kubiKernel.model().save(new KCallback() {
-                @Override
-                public void on(Object o) {
-                }
-            });
-//            currentTechnology.view().universe().model().save();
+            // todo delete
         }
         System.out.println("SmartFridgePlugin stops ...");
     }
@@ -155,13 +145,13 @@ public class SmartFridgePlugin implements KubiPlugin {
             @Override
             public void on(KObject kObject) {
 
-                kObject.traversal().traverse(MetaEcosystem.REF_TECHNOLOGIES).then(new KCallback<KObject[]>() {
+                kObject.traversal().traverse(MetaEcosystem.REL_TECHNOLOGIES).then(new KCallback<KObject[]>() {
                     @Override
                     public void on(KObject[] kObjects) {
                         for (KObject t : kObjects){
                             System.out.println((Technology)t);
-                            t.traversal().traverse(MetaTechnology.REF_DEVICES)
-                                    .traverse(MetaDevice.REF_STATEPARAMETERS).then(new KCallback<KObject[]>() {
+                            t.traversal().traverse(MetaTechnology.REL_DEVICES)
+                                    .traverse(MetaDevice.REL_STATEPARAMETERS).then(new KCallback<KObject[]>() {
                                 @Override
                                 public void on(KObject[] a) {
                                     for(KObject stateP : a){

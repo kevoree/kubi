@@ -58,7 +58,7 @@ public class DiscreteExtrapolationWithPeriod extends DiscreteExtrapolation {
         int periodInPtNbMin = parameter.getPredictedPeriodMin() / parameter.getFrequencyOfCalculation();
         int periodInPtNbMax = parameter.getPredictedPeriodMin() / parameter.getFrequencyOfCalculation();
         int period = JavaPeriodCalculatorFFT.getOtherPeriod(result, periodInPtNbMin, periodInPtNbMax);
-        parameter.traversal().traverse(MetaStateParameter.REF_PERIOD).then(kObjects -> {
+        parameter.traversal().traverse(MetaStateParameter.REL_PERIOD).then(kObjects -> {
             if (kObjects.length > 0) {
                 Period kPeriod = ((Period) kObjects[0]);
                 if (kPeriod.getPeriod() == null) {

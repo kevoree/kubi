@@ -1,7 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<script src="/js/js/org.kubi.model.js"></script>
-<script src="/js/js/org.kevoree.modeling.microframework.browser.js"></script>
-<script src="/js/js/org.kevoree.modeling.drivers.websocket.js"></script>
+<script src="/js/org.kubi.model.js"></script>
+<script src="/js/org.kevoree.modeling.microframework.browser.js"></script>
+<script src="/js/org.kevoree.modeling.drivers.websocket.js"></script>
+
+
+<script type="text/javascript" src="/js/paperclip.js"></script>
+<script type="text/javascript" src="/js/parser.js"></script>
+
 
 <dom-module name="kubi-model">
     <template>
@@ -30,7 +35,7 @@
             if(!modelConnecting && !modelConnected) {
                 modelConnecting = true;
 
-                var dataBaseConnection2 = new org.kevoree.modeling.drivers.websocket.WebSocketCDNClient("ws://" + location.host + "/cdn");
+                var dataBaseConnection2 = new org.kevoree.modeling.drivers.websocket.WebSocketPeer("ws://localhost:8082/cdn");
                 var dm = org.kevoree.modeling.memory.manager.DataManagerBuilder.create().withContentDeliveryDriver(dataBaseConnection2).build();
                 kubiModel2 = new org.kubi.KubiModel(dm);
 
@@ -65,4 +70,48 @@
             return last_timestamp2;
         }
     });
+
+/*
+var KubiModel = KubiModel || {
+isConnecting: false,
+isConnected: false,
+connectionCallbacks: [],
+
+connect: function (callback) {
+if (!this.isConnected) {
+if (!this.isConnecting) {
+this.isConnecting = true;
+
+var dataBaseConnection = new org.kevoree.modeling.drivers.websocket.WebSocketPeer("ws://" + location.hostname + ":8082/cdn");
+var dataManager = org.kevoree.modeling.memory.manager.DataManagerBuilder.create().withContentDeliveryDriver(dataBaseConnection).build();
+KubiModel.modelInstance = new org.kubi.KubiModel(dataManager);
+
+KubiModel.connectionCallbacks.push(callback);
+
+KubiModel.modelInstance.connect(function (err) {
+if (err) {
+console.error(err);
+KubiModel.isConnecting = false;
+} else {
+KubiModel.modelContext = KubiModel.modelInstance.createModelContext();
+KubiModel.modelContext.set((new Date()).getTime(),org.kevoree.modeling.KConfig.END_OF_TIME,0,0);
+
+KubiModel.isConnected = true;
+console.log("ModelConnected");
+KubiModel.connectionCallbacks.forEach(function (cb) {
+cb(KubiModel.modelInstance);
+});
+KubiModel.connectionCallbacks = [];
+}
+});
+} else {
+KubiModel.connectionCallbacks.push(callback);
+}
+} else {
+callback(KubiModel.modelInstance);
+}
+}
+};
+*/
 </script>
+

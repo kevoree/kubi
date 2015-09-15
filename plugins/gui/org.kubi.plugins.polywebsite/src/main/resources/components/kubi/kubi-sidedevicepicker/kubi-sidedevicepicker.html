@@ -26,7 +26,7 @@
                             <ul>
                                 <repeat each="{{techno.devices}}" as="device">
                                     <li>
-                                        <input name="radioDevicePicker-group" class="filled-in" value="{{device.name}}" type="checkbox" checked="checked" id="radio{{device.name}}"/>
+                                        <input name="radioDevicePicker-group" class="filled-in" value="{{ ~>device.name }}" type="checkbox" checked="checked" id="radio{{device.name}}"/>
                                         <label for="radio{{device.name}}">{{device.name}}</label>
                                     </li>
                                 </repeat>

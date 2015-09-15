@@ -2,13 +2,16 @@
 
 <link rel="import" href="../kubi-model/kubi-model.html"/>
 
+
+<script src="./kubi-period-view.js"></script>
+
 <script src="/js/paperclip.js"></script>
+<script src="/js/parser.js"></script>
 
 <script src="/js/org.kubi.model.js"></script>
 <script src="/js/org.kevoree.modeling.microframework.browser.js"></script>
 <script src="/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
-<script src="./kubi-period-view.js"></script>
 
 
 <dom-module id="kubi-period-view">
@@ -19,29 +22,30 @@
             <div id="periodView"></div>
 
             <script id="periodView_template" type="text/x-handlebars-template">
-                <ul repeat.each="{{ecosystem.technologies}}" repeat.as="techno">
-                    <li>
-                        <h4>{{techno.name}} ({{ techno.now | timestampToDate }}) :</h4> <!--{{techno.now()|timestampToDate}}-->
-                        <ul>
-                            <repeat each="{{techno.devices}}" as="device">
-                                <li>
-                                    <ul class="collection with-header">
-                                        <li class="collection-header"><h5>Device : {{device.name}}</h5></li>
-                                        <repeat each="{{device.stateParameters}}" as="param">
-                                            <li class="collection-item">Parameter : {{param.name}}</li>
-                                            <li class="collection-item">Value : {{param.value}}</li>
-                                            <repeat each="{{param.period}}" as="p">
-                                                <li class="collection-item">Period :{{p.period}}</li>
+                <ul>
+                    <repeat each="{{ecosystem.technologies}}" as="techno">
+                        <li>
+                            <!--<h4>{{techno.name}} ({{ techno.now | timestampToDateConverter }}) :</h4> &lt;!&ndash;{{techno.now()|timestampToDate}}&ndash;&gt;-->
+                            <h4>{{techno.name}} ({{ techno.now }}) :</h4>
+                            <ul>
+                                <repeat each="{{techno.devices}}" as="device">
+                                    <li>
+                                        <ul class="collection with-header">
+                                            <li class="collection-header"><h5>Device : {{device.name}}</h5></li>
+                                            <repeat each="{{device.stateParameters}}" as="param">
+                                                <li class="collection-item">Parameter : {{param.name}}</li>
+                                                <li class="collection-item">Value : {{param.value}}</li>
+                                                <repeat each="{{param.period}}" as="p">
+                                                    <li class="collection-item">Period :{{p.period}}</li>
+                                                </repeat>
                                             </repeat>
-                                        </repeat>
-                                    </ul>
-                                </li>
-                            </repeat>
-                        </ul>
-                    </li>
+                                        </ul>
+                                    </li>
+                                </repeat>
+                            </ul>
+                        </li>
+                    </repeat>
                 </ul>
-
-
             </script>
         </div>
     </template>

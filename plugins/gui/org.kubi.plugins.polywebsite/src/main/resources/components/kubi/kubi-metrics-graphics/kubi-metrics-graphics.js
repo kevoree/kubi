@@ -51,8 +51,8 @@ function initData(){
     kubiMetricsVar.model.universe(kubiMetricsVar.universe).time(kubiMetricsVar.time).getRoot(function (root) {
         if (root != undefined) {
             root.traversal()
-                .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
+                .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES)
                 .then(function (devices) {
                     for (var i = 0; i < devices.length; i++) {
                         kubiMetricsVar.deviceNames[i] = devices[i].getName();
@@ -89,9 +89,9 @@ function collectData(deviceNames, start, end, step, showPeriod){
                 var kDeferDevice = kubiMetricsVar.model.defer();
                 for (var i = 0; i < deviceNames.length; i++) {
                     root.traversal()
-                        .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                        .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
-                        .traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS)
+                        .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                        .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
+                        .traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS)
                         .then(kDeferDevice.waitResult());
                 }
                 kDeferDevice.then(function (results) {

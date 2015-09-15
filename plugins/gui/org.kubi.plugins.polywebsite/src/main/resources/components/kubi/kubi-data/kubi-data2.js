@@ -99,8 +99,8 @@ function initializeData(){
     kubiDataVar.model.universe(kubiDataVar.universe).time(kubiDataVar.time).getRoot(function (root) {
         if (root != undefined) {
             root.traversal()
-                .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES)
+                .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES)
                 .then(function (devices) {
                     for (var i = 0; i < devices.length; i++) {
                         kubiDataVar.deviceNames[i] = devices[i].getName();
@@ -136,8 +136,8 @@ function drawAll(deviceNames, start, end, step, showPeriod){
             if (root != undefined) {
                 for (var i = 0; i < deviceNames.length; i++) {
                     root.traversal()
-                        .traverse(org.kubi.meta.MetaEcosystem.REF_TECHNOLOGIES)
-                        .traverse(org.kubi.meta.MetaTechnology.REF_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
+                        .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                        .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES).withAttribute(org.kubi.meta.MetaDevice.ATT_NAME, deviceNames[i])
                         .then(function (devices) {
                             if (devices.length > 0) {
                                 getAndDraw(devices[0], start, end, step, showPeriod);
@@ -151,7 +151,7 @@ function drawAll(deviceNames, start, end, step, showPeriod){
 function getAndDraw(device, start, end, step, showPeriod){
     var deviceName = device.getName();
     createDeviceInChart(deviceName);
-    device.traversal().traverse(org.kubi.meta.MetaDevice.REF_STATEPARAMETERS).then(function(params){
+    device.traversal().traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS).then(function(params){
         var param = params[0];
         var kDefer = kubiDataVar.model.defer();
         for(var time= start; time<end; time+=step){
@@ -174,7 +174,7 @@ function getAndDraw(device, start, end, step, showPeriod){
                 // add the period if needed
                 if(showPeriod){
                     createDeviceInChart(deviceName + "_period");
-                    paramsTimed[index].traversal().traverse(org.kubi.meta.MetaStateParameter.REF_PERIOD).then(kDeferPeriod.waitResult());
+                    paramsTimed[index].traversal().traverse(org.kubi.meta.MetaStateParameter.REL_PERIOD).then(kDeferPeriod.waitResult());
                 }
                 index++;
             }

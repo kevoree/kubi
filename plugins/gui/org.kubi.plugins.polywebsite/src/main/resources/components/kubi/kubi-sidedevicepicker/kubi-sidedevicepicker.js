@@ -26,7 +26,6 @@ function initTemplate(htmlIdSource, htmlIdTarget, universeTemplate, timeTemplate
         try {
             var template = paperclip.template((document.getElementById(htmlIdSource)).innerHTML);
             var view = template.view({ecosystem: rootNow }, {modelContext: sideDevicePicker.modelContext});
-            console.log("res :", view.render());
             (document.getElementById(htmlIdTarget)).appendChild(view.render());
         }
         catch (e) {

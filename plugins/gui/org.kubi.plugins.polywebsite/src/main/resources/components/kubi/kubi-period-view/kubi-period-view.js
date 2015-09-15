@@ -35,7 +35,7 @@ function initTemplatePeriod(htmlIdSource, htmlIdTarget, universeTemplate, timeTe
     });
 }
 
-paperclip.modifiers.timestampToDate = function (timestamp){
+paperclip.modifiers.timestampToDateConverter = function (timestamp){
     var date = new Date(timestamp);
     return (date.getDate()<10?("0"+date.getDate()):date.getDate())+"/"
         +   ((date.getMonth()+1)<10?("0"+(date.getMonth()+1)):(date.getMonth()+1))+"/"

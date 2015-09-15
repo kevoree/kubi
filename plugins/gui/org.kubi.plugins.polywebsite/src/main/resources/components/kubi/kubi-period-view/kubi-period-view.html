@@ -3,7 +3,6 @@
 <link rel="import" href="../kubi-model/kubi-model.html"/>
 
 
-<script src="./kubi-period-view.js"></script>
 
 <script src="/js/paperclip.js"></script>
 <script src="/js/parser.js"></script>
@@ -13,6 +12,7 @@
 <script src="/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
 
+<script src="./kubi-period-view.js"></script>
 
 <dom-module id="kubi-period-view">
     <template>
@@ -25,8 +25,8 @@
                 <ul>
                     <repeat each="{{ecosystem.technologies}}" as="techno">
                         <li>
-                            <!--<h4>{{techno.name}} ({{ techno.now | timestampToDateConverter }}) :</h4> &lt;!&ndash;{{techno.now()|timestampToDate}}&ndash;&gt;-->
-                            <h4>{{techno.name}} ({{ techno.now }}) :</h4>
+                            <h4>{{techno.name}} ({{ techno.now | timestampToDateConverter }}) :</h4> <!--{{techno.now()|timestampToDate}}-->
+                            <!--<h4>{{techno.name}} ({{ techno.now }}) :</h4>-->
                             <ul>
                                 <repeat each="{{techno.devices}}" as="device">
                                     <li>
@@ -66,7 +66,20 @@
                     initTemplatePeriod("periodView_template", "periodView", 0, (new Date()).getTime());
                 }
             }catch (err){console.error(err);}
+
+
+            paperclip.modifiers.timestampToDateConverter = function (timestamp){
+                var date = new Date(timestamp);
+                return (date.getDate()<10?("0"+date.getDate()):date.getDate())+"/"
+                        +   ((date.getMonth()+1)<10?("0"+(date.getMonth()+1)):(date.getMonth()+1))+"/"
+                        +   (date.getFullYear()) +" At "
+                        +   (date.getHours()<10?("0"+date.getHours()):date.getHours()) +":"
+                        +   (date.getMinutes()<10?("0"+date.getMinutes()):date.getMinutes())+":"
+                        +   (date.getSeconds()<10?("0"+date.getSeconds()):date.getSeconds());
+            }
         }
+
+
 
     });
 </script>

@@ -57,6 +57,10 @@
         }
     });
 
+    /**
+     * Debug method to show an issue with the double binding of the template
+     *      in case you are using it in the value attribute of an input
+     */
     function debugTemplateInput(){
         var time = (new Date()).getTime();
         var technology = debugVar.model.createTechnology(1,time);

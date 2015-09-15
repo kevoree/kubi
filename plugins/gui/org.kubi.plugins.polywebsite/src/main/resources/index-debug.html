@@ -3,17 +3,40 @@
 <head lang="en">
     <title>Smarthome Polymer</title>
 
+    <script src="/js/paperclip.js"></script>
+    <script src="/js/parser.js"></script>
+
     <script src="/js/org.kubi.model.js"></script>
     <script src="/js/org.kevoree.modeling.microframework.browser.js"></script>
     <script src="/js/org.kevoree.modeling.drivers.websocket.js"></script>
 
 </head>
 <body>
+    <form id="debugTemplateInput" action="#"></form>
 
+    <script id="debugTemplateInput_template" type="text/x-handlebars-template">
+        <p class="filled-in" >{{techno.name}} :</p>
+        <ul>
+            <repeat each="{{techno.devices}}" as="device">
+                <li>
+                    <p>This case works because the value of the input in only one way bind</p>
+                    <input name="radioDevicePicker-group" class="filled-in" value="{{ ~>device.name }}" type="checkbox" checked="checked" id="radio{{device.name}}"/>
+                    <label for="radio{{device.name}}">{{device.name}}</label>
+                </li>
+                <li>
+                    <p>(TODO : uncomment if you can see this message)</p>
+                    <p>This case DOESN'T work because the value of the input in only two ways bind</p>
+                    <!-- // TODO uncomment to see that the double side binding doesn't work -->
+                    <!--The following ligne doesn't wor because the value of the input is two ways bind (default settings)-->
+                    <!--<input name="radioDevicePicker-group" class="filled-in" value="{{ device.name }}" type="checkbox" checked="checked" id="radio1{{device.name}}"/>-->
+                    <label for="radio1{{device.name}}">{{device.name}}</label>
+                </li>
+            </repeat>
+        </ul>
+    </script>
 
 <script>
-    console.log("aodzioaueiozueiouaz");
-    var debugVar ={};
+    var debugVar = debugVar || {};
     // --------------
     debugVar.wsClient = new org.kevoree.modeling.drivers.websocket.WebSocketPeer("ws://localhost:8082/cdn");
     debugVar.manager = org.kevoree.modeling.memory.manager.DataManagerBuilder.create().withContentDeliveryDriver(debugVar.wsClient).build();
@@ -23,29 +46,70 @@
         if(err) {
             console.error(err);
         } else {
-            debugVar.model.lookup(0, 1440077899625, 4, function(obj){
-                console.log(obj,obj.toString(), obj.getValue());
-                obj.allTimes(function(longs){
-                    console.log("-->  ", longs.length);
-                    for(var i=0;i<longs.length;i++){
-                        console.log("**",longs[i]);
-                    }
-                });
-            });
+            debugVar.modelContext = debugVar.model.createModelContext();
+            debugVar.modelContext.set((new Date()).getTime(),org.kevoree.modeling.KConfig.END_OF_TIME,1,1);
 
-            debugVar.model.universe(0).time((new Date()).getTime()).getRoot(function(root){
-                root.traversal()
-                        .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
-                        .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES)
-//                        .traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS)
-                        .then(function(params){
-                            console.log(params[0].getName(), "---",params[0].now());
-                });
-            });
+            debugTemplateInput();
 
+
+//            test1();
+//            test2();
         }
     });
 
+    function debugTemplateInput(){
+        var time = (new Date()).getTime();
+        var technology = debugVar.model.createTechnology(1,time);
+        debugVar.model.universe(1).time(time).setRoot(technology, function(res){
+            // initialize the model
+            technology.setName("debugTemplateInputTechnology");
+            debugVar.model.createDevice(1, time);
+            var device = debugVar.model.createDevice(1, time);
+            device.setName("debugTemplateInputDevice");
+            var param = debugVar.model.createStateParameter(1, time);
+            param.setName("debugTemplateInputParam");
+            param.setValue(12+"");
+            device.addStateParameters(param);
+            technology.addDevices(device);
+            // Save then call the template
+            debugVar.model.save(function (o){
+                try {
+                    var template = paperclip.template((document.getElementById("debugTemplateInput_template")).innerHTML);
+                    var view = template.view({techno: technology }, {modelContext: debugVar.modelContext});
+                    (document.getElementById("debugTemplateInput")).appendChild(view.render());
+                }
+                catch (e) {
+                    console.error("debugTemplateInput has some issues initializing the template.",e);
+                }
+            });
+
+        });
+    }
+
+
+    function test1(){
+        debugVar.model.lookup(0, 1440077899625, 4, function(obj){
+            console.log(obj,obj.toString(), obj.getValue());
+            obj.allTimes(function(longs){
+                console.log("-->  ", longs.length);
+                for(var i=0;i<longs.length;i++){
+                    console.log("**",longs[i]);
+                }
+            });
+        });
+    }
+
+    function test2(){
+        debugVar.model.universe(0).time((new Date()).getTime()).getRoot(function(root){
+            root.traversal()
+                    .traverse(org.kubi.meta.MetaEcosystem.REL_TECHNOLOGIES)
+                    .traverse(org.kubi.meta.MetaTechnology.REL_DEVICES)
+//                        .traverse(org.kubi.meta.MetaDevice.REL_STATEPARAMETERS)
+                    .then(function(params){
+                        console.log(params[0].getName(), "---",params[0].now());
+                    });
+        });
+    }
 
 </script>
 

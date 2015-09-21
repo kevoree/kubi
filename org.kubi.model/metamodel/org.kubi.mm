@@ -24,6 +24,7 @@ class org.kubi.Device {
     rel stateParameters: org.kubi.StateParameter
     rel actionParameters: org.kubi.ActionParameter
     rel productType: org.kubi.Product with maxBound 1
+    rel adminParameters: org.kubi.AdminParameter
 }
 
 enum org.kubi.ParameterType {
@@ -41,6 +42,10 @@ class org.kubi.StateParameter {
 
 class org.kubi.ActionParameter extends org.kubi.StateParameter {
     att desired: String
+}
+
+class org.kubi.AdminParameter extends org.kubi.ActionParameter {
+
 }
 
 class org.kubi.Technology {

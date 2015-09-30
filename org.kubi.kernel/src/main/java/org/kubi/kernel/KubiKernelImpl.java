@@ -5,7 +5,6 @@ import org.kevoree.modeling.KCallback;
 import org.kevoree.modeling.KConfig;
 import org.kevoree.modeling.cdn.KContentDeliveryDriver;
 import org.kevoree.modeling.memory.manager.DataManagerBuilder;
-import org.kevoree.modeling.scheduler.impl.ExecutorServiceScheduler;
 import org.kubi.Ecosystem;
 import org.kubi.KubiModel;
 import org.kubi.api.KubiKernel;

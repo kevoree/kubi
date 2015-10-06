@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="out.js"></script>
+
+
+</head>
+<body>
+
+<div id="temperatures" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<div id="luminosity_hydro" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<div id="presence" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<script>
+    $(function () {
+        Highcharts.setOptions({                                            // This is for all plots, change Date axis to local timezone
+            global : {
+                useUTC : false
+            }
+        });
+
+
+        $('#temperatures').highcharts({
+            chart: {
+                type: 'line',
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Temperature in the C122 office'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+                },
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: [{
+                title: {
+                    text: 'Temperature (C)'
+                },
+                labels: {
+                    format: '{value}°C'
+                },
+                min: 19
+            },{
+                linkedTo:0,
+                opposite: true,
+                labels: {
+                    format: '{value}°C'
+                }
+            }],
+            tooltip: {
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f}°C'
+            },
+
+            plotOptions: {
+                spline: {
+                    marker: {
+                        enabled: true
+                    }
+                }
+            },
+
+            series: [{
+                name: "Window",
+                data: _3_TEMPERATURE
+            }, {
+                name: "Door",
+                data: _4_TEMPERATURE
+            }, {
+                name: "Desk",
+                data: _5_TEMPERATURE
+            }]
+        });
+
+
+        $('#luminosity_hydro').highcharts({
+            chart: {
+                type: 'line',
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Luminance in the C122 office'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+                },
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: [{
+                id:0,
+                title: {
+                    text: 'Luminance (Lux)'
+                },
+                labels: {
+                    format: '{value} Lux'
+                },
+                min: 19
+            },{
+                id:1,
+                title: {
+                    text: 'Hydrometry (%)'
+                },
+                labels: {
+                    format: '{value} %'
+                },
+                min: 0,
+                opposite: true
+            }],
+            tooltip: {
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f}'
+            },
+
+            plotOptions: {
+                spline: {
+                    marker: {
+                        enabled: true
+                    }
+                }
+            },
+
+            series: [{
+                name: "Window",
+                data: _3_LUMINANCE
+            }, {
+                name: "Door",
+                data: _4_LUMINANCE
+            }, {
+                name: "Desk",
+                data: _5_LUMINANCE
+            }, {
+                name: "Desk Hydro",
+                data: _5_RELATIVE_HUMIDITY,
+                yAxis: 1
+            }]
+        });
+
+        $('#presence').highcharts({
+            chart: {
+                type: 'line',
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Presence in the C122 office'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+                },
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: {
+                id:0,
+                title: {
+                    text: 'Presence (Lux)'
+                },
+                labels: {
+                    format: '{value} Lux'
+                },
+                min: 0,
+                max:1.5
+            },
+            tooltip: {
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f}'
+            },
+
+            plotOptions: {
+                spline: {
+                    marker: {
+                        enabled: true
+                    }
+                }
+            },
+
+            series: [{
+                name: "Door Motion",
+                data: _4_DOOR_SENSOR
+            }, {
+                name: "Door Sensor",
+                data: _4_MOTION_SENSOR
+            }, {
+                name: "Door Basic",
+                data: _4_BASIC
+            }, {
+                name: "Window Motion",
+                data: _3_MOTION
+            }, {
+                name: "Window Basic",
+                data: _3_BASIC
+            }, {
+                name: "Desk Basic",
+                data: _5_BASIC
+            }]
+        });
+    });
+
+</script>
+
+</body>
+</html>

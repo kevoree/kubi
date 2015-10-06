@@ -3,23 +3,25 @@ package org.kubi.zwave.spy;
 import lu.snt.zwave.protocol.messages.ZWaveMessage;
 
 import java.io.*;
-import java.util.Date;
 
 /**
- * Created by gnain on 09/04/15.
+ * Created by gnain on 05/10/15.
  */
-public class FileParser {
+public abstract class RawFilesReader {
+
+    private File _folderFile;
 
 
-    public static void main(String[] args) {
-        File folderFile;
-        if (args.length > 0) {
-            folderFile = new File(args[0] + File.separator);
-        } else {
-            folderFile = new File("./");
-        }
+    public RawFilesReader(File folderFile) {
+
+        this._folderFile = folderFile;
         System.out.println(folderFile.getAbsolutePath());
-        for (File f : folderFile.listFiles((dir, name) -> name.endsWith(".csv"))) {
+
+    }
+
+    public void parse() {
+        File[] filteredFiles = _folderFile.listFiles((dir, name) -> name.endsWith(".csv"));
+        for (File f : filteredFiles) {
             try {
 
                 BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -31,7 +33,7 @@ public class FileParser {
                     for (int i = 0; i+1 < frame.length(); i += 2) {
                         back[i/2] = (byte)Integer.parseInt(frame.substring(i, i + 2),16);
                     }
-                    readMessage(Long.valueOf(infos[0]), ZWaveMessage.parseMessage(back));
+                    processMessage(Long.valueOf(infos[0]), ZWaveMessage.parseMessage(back));
                 }
 
             } catch (FileNotFoundException e) {
@@ -40,10 +42,13 @@ public class FileParser {
                 e.printStackTrace();
             }
         }
+        allDone();
     }
 
-    private static void readMessage(long timeStamp, ZWaveMessage m) {
-        System.out.println(new Date(timeStamp) + " :: " + m);
-    }
+    protected abstract void processMessage(long timeStamp, ZWaveMessage m);
+
+    protected abstract void allDone();
+
+
 
 }

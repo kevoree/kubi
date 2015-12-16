@@ -14,6 +14,11 @@
             <artifactId>lu.snt.zwave.driver</artifactId>
             <version>1.0.3-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>1.2.10.Final</version>
+        </dependency>
     </dependencies>
 
     <build>

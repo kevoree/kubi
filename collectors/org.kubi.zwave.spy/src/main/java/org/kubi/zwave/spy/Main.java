@@ -1,15 +1,23 @@
 package org.kubi.zwave.spy;
 
+import io.undertow.Handlers;
+import io.undertow.Undertow;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.websockets.WebSocketConnectionCallback;
+import io.undertow.websockets.core.*;
+import io.undertow.websockets.spi.WebSocketHttpExchange;
 import lu.snt.zwave.driver.*;
 import org.kevoree.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.*;
+import java.util.logging.Handler;
 
 /**
  * Created by gnain on 09/04/15.
@@ -21,6 +29,9 @@ public class Main implements ZWaveKeyDiscoveryListener {
     private PrintWriter pr;
     private String _folder;
     private Semaphore prSem = new Semaphore(1);
+    private Undertow undertow;
+    private int WS_POST = 39432;
+    private ArrayList<WebSocketChannel> channels = new ArrayList<>();
 
     private ScheduledExecutorService fileChecker = Executors.newSingleThreadScheduledExecutor();
 
@@ -33,6 +44,7 @@ public class Main implements ZWaveKeyDiscoveryListener {
         } else {
             m = new Main("");
         }
+
 
         final ZWaveManager zwaveManager = new ZWaveManager();
         zwaveManager.addZWaveKeyDiscoveryListener(m);
@@ -64,6 +76,37 @@ public class Main implements ZWaveKeyDiscoveryListener {
         }, 6, 6, TimeUnit.HOURS);
 
         renewFile();
+
+
+        undertow = Undertow.builder()
+                .addHttpListener(WS_POST, "0.0.0.0")
+                .setHandler(Handlers.path()
+                        .addPrefixPath("/", Handlers.websocket(new WebSocketConnectionCallback() {
+
+                            @Override
+                            public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
+                                channels.add(channel);
+                                channel.getReceiveSetter().set(new AbstractReceiveListener() {
+
+                                    @Override
+                                    protected void onClose(WebSocketChannel webSocketChannel, StreamSourceFrameChannel channel) throws IOException {
+                                        channels.remove(webSocketChannel);
+                                    }
+
+                                    @Override
+                                    protected void onError(WebSocketChannel channel, Throwable error) {
+                                        channels.remove(channel);
+                                    }
+
+                                });
+                                channel.resumeReceives();
+                            }
+
+                        })))
+                .build();
+
+        undertow.start();
+
     }
 
     private void renewFile() {
@@ -84,21 +127,31 @@ public class Main implements ZWaveKeyDiscoveryListener {
         }
     }
 
+    private void forwardToWebSockets(final String msg) {
+        ArrayList<WebSocketChannel> tmp = new ArrayList<>(channels);
+        for(final WebSocketChannel chan : tmp) {
+            WebSockets.sendText(msg, chan, null);
+        }
+    }
+
     public void zwaveKeyDiscovered(final ZWaveKey zWaveKey) {
 
         zWaveKey.registerRawFrameListener(new ZWaveFrameListener() {
             public void frameReceived(byte[] rawFrame) {
                 try {
 
-                    prSem.acquire();
-                    pr.print(System.currentTimeMillis());
-                    pr.print(",");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(System.currentTimeMillis());
+                    sb.append(",");
                     for (byte b : rawFrame) {
-                        pr.print(String.format("%02x", b));
+                        sb.append(String.format("%02x", b));
                     }
-                    pr.println();
+                    String record = sb.toString();
+                    prSem.acquire();
+                    pr.println(record);
                     pr.flush();
                     prSem.release();
+                    forwardToWebSockets(record);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
